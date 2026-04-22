@@ -78,7 +78,20 @@ class App(ctk.CTk):
         
         self.code_label = ctk.CTkLabel(login_frame, text="", font=ctk.CTkFont(size=24, weight="bold"))
         self.code_label.pack(pady=10)
+        
+        self.copy_code_btn = ctk.CTkButton(
+            login_frame,
+            text="Copy mã",
+            command=self._copy_user_code,
+            width=100
+        )
+        self.copy_code_btn.pack(pady=5)
 
+    def _copy_user_code(self):
+        code = self.code_label.cget("text").replace("Mã xác thực: ", "")
+        self.clipboard_clear()
+        self.clipboard_append(code)
+        
     def _on_login_click(self):
         self.status_label.configure(text="Đang khởi tạo xác thực...")
         self.update()
