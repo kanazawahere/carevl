@@ -1,0 +1,209 @@
+{
+  "version": "1.0.0",
+  "packages": [
+    {
+      "id": "nct",
+      "label": "Người cao tuổi (≥ 60 tuổi)",
+      "icon": "🧓",
+      "sections": [
+        {
+          "id": "demographics",
+          "label": "Thông tin cá nhân",
+          "fields": [
+            { "id": "ho_ten",        "label": "Họ và tên",              "type": "text",   "required": true },
+            { "id": "ngay_sinh",     "label": "Ngày sinh",              "type": "date",   "required": true },
+            { "id": "gioi_tinh",     "label": "Giới tính",              "type": "select", "required": true, "options": ["Nam", "Nữ"] },
+            { "id": "ma_dinh_danh", "label": "Số định danh / BHYT",    "type": "text",   "required": true },
+            { "id": "dia_chi",      "label": "Địa chỉ thường trú",     "type": "text",   "required": false }
+          ]
+        },
+        {
+          "id": "clinical",
+          "label": "Khám lâm sàng",
+          "fields": [
+            { "id": "huyet_ap_tam_thu",   "label": "Huyết áp tâm thu (mmHg)",  "type": "number", "required": true, "validation": { "min": 50, "max": 300 } },
+            { "id": "huyet_ap_tam_truong","label": "Huyết áp tâm trương (mmHg)","type": "number","required": true, "validation": { "min": 30, "max": 200 } },
+            { "id": "nhip_tim",     "label": "Nhịp tim (lần/phút)",    "type": "number", "required": false, "validation": { "min": 30, "max": 200 } },
+            { "id": "can_nang",     "label": "Cân nặng (kg)",          "type": "number", "required": false, "validation": { "min": 20, "max": 150 } },
+            { "id": "chieu_cao",    "label": "Chiều cao (cm)",         "type": "number", "required": false, "validation": { "min": 100, "max": 220 } },
+            { "id": "bmi",          "label": "BMI (tự tính)",          "type": "computed", "required": false, "formula": "can_nang / (chieu_cao/100)^2" },
+            { "id": "tien_su_benh","label": "Tiền sử bệnh",           "type": "textarea","required": false },
+            { "id": "ghi_chu_ls",   "label": "Ghi chú lâm sàng",       "type": "textarea","required": false }
+          ]
+        },
+        {
+          "id": "laboratory",
+          "label": "Xét nghiệm (Sàng lọc NCD)",
+          "fields": [
+            { "id": "duong_huyet_doi",  "label": "Đường huyết đói (mmol/L)",  "type": "number","required": false, "validation": { "min": 1, "max": 30 } },
+            { "id": "cholesterol",      "label": "Cholesterol (mmol/L)",      "type": "number","required": false, "validation": { "min": 1, "max": 15 } },
+            { "id": "nuoc_tieu",        "label": "Nước tiểu",                "type": "select","required": false, "options": ["Bình thường", "Bất thường", "Chưa thực hiện"] }
+          ]
+        },
+        {
+          "id": "conclusion",
+          "label": "Kết luận",
+          "fields": [
+            { "id": "phan_loai_sk", "label": "Phân loại sức khỏe",     "type": "select", "required": true, "options": ["Loại I", "Loại II", "Loại III", "Loại IV"] },
+            { "id": "ket_luan",     "label": "Kết luận của bác sĩ",    "type": "textarea","required": true },
+            { "id": "bac_si",       "label": "Bác sĩ phụ trách",       "type": "text",   "required": true },
+            { "id": "ngay_kham",    "label": "Ngày khám",              "type": "date",   "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hs",
+      "label": "Học sinh (Mầm non – Phổ thông)",
+      "icon": "🎒",
+      "sections": [
+        {
+          "id": "demographics",
+          "label": "Thông tin cá nhân",
+          "fields": [
+            { "id": "ho_ten",        "label": "Họ và tên",              "type": "text",   "required": true },
+            { "id": "ngay_sinh",     "label": "Ngày sinh",              "type": "date",   "required": true },
+            { "id": "gioi_tinh",     "label": "Giới tính",              "type": "select", "required": true, "options": ["Nam", "Nữ"] },
+            { "id": "ma_dinh_danh", "label": "Số định danh / BHYT",    "type": "text",   "required": true },
+            { "id": "truong",        "label": "Trường học",             "type": "text",   "required": false },
+            { "id": "lop",           "label": "Lớp",                    "type": "text",   "required": false }
+          ]
+        },
+        {
+          "id": "clinical",
+          "label": "Khám lâm sàng",
+          "fields": [
+            { "id": "can_nang",     "label": "Cân nặng (kg)",          "type": "number", "required": true, "validation": { "min": 5, "max": 120 } },
+            { "id": "chieu_cao",    "label": "Chiều cao (cm)",         "type": "number", "required": true, "validation": { "min": 70, "max": 200 } },
+            { "id": "bmi",          "label": "BMI (tự tính)",          "type": "computed", "required": false, "formula": "can_nang / (chieu_cao/100)^2" },
+            { "id": "thi_luc_p",    "label": "Thị lực mắt phải",      "type": "text",   "required": false },
+            { "id": "thi_luc_t",    "label": "Thị lực mắt trái",      "type": "text",   "required": false },
+            { "id": "rang_mieng",   "label": "Răng miệng",             "type": "select", "required": false, "options": ["Bình thường", "Sâu răng", "Viêm lợi", "Khác"] },
+            { "id": "cot_song",     "label": "Cột sống",               "type": "select", "required": false, "options": ["Bình thường", "Cong vẹo", "Cần theo dõi"] }
+          ]
+        },
+        {
+          "id": "conclusion",
+          "label": "Kết luận",
+          "fields": [
+            { "id": "phan_loai_sk", "label": "Phân loại sức khỏe",     "type": "select", "required": true, "options": ["Loại I", "Loại II", "Loại III", "Loại IV"] },
+            { "id": "ket_luan",     "label": "Kết luận của bác sĩ",    "type": "textarea","required": true },
+            { "id": "bac_si",       "label": "Bác sĩ phụ trách",       "type": "text",   "required": true },
+            { "id": "ngay_kham",    "label": "Ngày khám",              "type": "date",   "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pregnant",
+      "label": "Phụ nữ mang thai",
+      "icon": "🤰",
+      "sections": [
+        {
+          "id": "demographics",
+          "label": "Thông tin cá nhân",
+          "fields": [
+            { "id": "ho_ten",        "label": "Họ và tên",              "type": "text",   "required": true },
+            { "id": "ngay_sinh",     "label": "Ngày sinh",              "type": "date",   "required": true },
+            { "id": "ma_dinh_danh", "label": "Số định danh / BHYT",    "type": "text",   "required": true },
+            { "id": "dia_chi",      "label": "Địa chỉ thường trú",     "type": "text",   "required": false }
+          ]
+        },
+        {
+          "id": "clinical",
+          "label": "Khám thai",
+          "fields": [
+            { "id": "tuan_thai",    "label": "Tuổi thai (tuần)",       "type": "number", "required": true, "validation": { "min": 1, "max": 42 } },
+            { "id": "huyet_ap",     "label": "Huyết áp (mmHg)",        "type": "text",   "required": true },
+            { "id": "can_nang",     "label": "Cân nặng (kg)",          "type": "number", "required": true },
+            { "id": "be_cao_tu_cung","label": "Bề cao tử cung (cm)",    "type": "number", "required": false },
+            { "id": "tim_thai",     "label": "Tim thai",               "type": "text",   "required": false }
+          ]
+        },
+        {
+          "id": "conclusion",
+          "label": "Kết luận",
+          "fields": [
+            { "id": "ket_luan",     "label": "Kết luận & Hẹn khám",     "type": "textarea","required": true },
+            { "id": "bac_si",       "label": "Bác sĩ phụ trách",       "type": "text",   "required": true },
+            { "id": "ngay_kham",    "label": "Ngày khám",              "type": "date",   "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "worker",
+      "label": "Người lao động (có HĐLĐ)",
+      "icon": "👷",
+      "sections": [
+        {
+          "id": "demographics",
+          "label": "Thông tin cá nhân",
+          "fields": [
+            { "id": "ho_ten",        "label": "Họ và tên",              "type": "text",   "required": true },
+            { "id": "ngay_sinh",     "label": "Ngày sinh",              "type": "date",   "required": true },
+            { "id": "gioi_tinh",     "label": "Giới tính",              "type": "select", "required": true, "options": ["Nam", "Nữ"] },
+            { "id": "ma_dinh_danh", "label": "Số định danh / BHYT",    "type": "text",   "required": true },
+            { "id": "don_vi",        "label": "Đơn vị / Doanh nghiệp", "type": "text",   "required": false }
+          ]
+        },
+        {
+          "id": "clinical",
+          "label": "Khám lâm sàng",
+          "fields": [
+            { "id": "huyet_ap",     "label": "Huyết áp (mmHg)",        "type": "text",   "required": true },
+            { "id": "can_nang",     "label": "Cân nặng (kg)",          "type": "number", "required": true },
+            { "id": "chieu_cao",    "label": "Chiều cao (cm)",         "type": "number", "required": true },
+            { "id": "benh_nghe_nghiep", "label": "Bệnh nghề nghiệp",   "type": "textarea","required": false }
+          ]
+        },
+        {
+          "id": "conclusion",
+          "label": "Kết luận",
+          "fields": [
+            { "id": "phan_loai_sk", "label": "Phân loại sức khỏe",     "type": "select", "required": true, "options": ["Loại I", "Loại II", "Loại III", "Loại IV", "Loại V"] },
+            { "id": "bac_si",       "label": "Bác sĩ phụ trách",       "type": "text",   "required": true },
+            { "id": "ngay_kham",    "label": "Ngày khám",              "type": "date",   "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "general",
+      "label": "Khám tổng quát",
+      "icon": "🏥",
+      "sections": [
+        {
+          "id": "demographics",
+          "label": "Thông tin cá nhân",
+          "fields": [
+            { "id": "ho_ten",        "label": "Họ và tên",              "type": "text",   "required": true },
+            { "id": "ngay_sinh",     "label": "Ngày sinh",              "type": "date",   "required": true },
+            { "id": "gioi_tinh",     "label": "Giới tính",              "type": "select", "required": true, "options": ["Nam", "Nữ"] },
+            { "id": "ma_dinh_danh", "label": "Số định danh / BHYT",    "type": "text",   "required": true }
+          ]
+        },
+        {
+          "id": "clinical",
+          "label": "Khám lâm sàng",
+          "fields": [
+            { "id": "huyet_ap",     "label": "Huyết áp (mmHg)",        "type": "text",   "required": true },
+            { "id": "mach",         "label": "Mạch (lần/phút)",        "type": "number", "required": false },
+            { "id": "can_nang",     "label": "Cân nặng (kg)",          "type": "number", "required": false },
+            { "id": "chieu_cao",    "label": "Chiều cao (cm)",         "type": "number", "required": false },
+            { "id": "ghi_chu",      "label": "Ghi chú sức khỏe",       "type": "textarea","required": false }
+          ]
+        },
+        {
+          "id": "conclusion",
+          "label": "Kết luận",
+          "fields": [
+            { "id": "ket_luan",     "label": "Kết luận tổng quát",     "type": "textarea","required": true },
+            { "id": "bac_si",       "label": "Bác sĩ phụ trách",       "type": "text",   "required": true },
+            { "id": "ngay_kham",    "label": "Ngày khám",              "type": "date",   "required": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

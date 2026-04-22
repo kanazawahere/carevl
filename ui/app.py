@@ -1,0 +1,207 @@
+from __future__ import annotations
+
+import datetime
+import threading
+from typing import Any, Callable, Dict, Optional
+import customtkinter as ctk
+
+from modules import auth
+from modules import config_loader
+from modules import paths
+
+
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        
+        paths.ensure_directories()
+        
+        self.title("CareVL - Khám sức khỏe Vĩnh Long")
+        self.geometry("900x700")
+        
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("blue")
+        
+        self.username: Optional[str] = None
+        self.current_screen: Optional[ctk.CTkFrame] = None
+        
+        self._setup_ui()
+        self._check_auth()
+
+    def _setup_ui(self):
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        
+        self.container = ctk.CTkFrame(self, fg_color="transparent")
+        self.container.grid(row=0, column=0, sticky="nsew")
+
+    def _check_auth(self):
+        result = auth.check_existing_token()
+        
+        if result["ok"]:
+            self.username = result.get("username")
+            self._show_screen_list()
+        else:
+            self._show_login()
+
+    def _show_login(self):
+        self._clear_screen()
+        
+        login_frame = ctk.CTkFrame(self.container, fg_color="transparent")
+        login_frame.pack(expand=True)
+        
+        title = ctk.CTkLabel(
+            login_frame,
+            text="CareVL",
+            font=ctk.CTkFont(size=32, weight="bold")
+        )
+        title.pack(pady=(0, 10))
+        
+        subtitle = ctk.CTkLabel(
+            login_frame,
+            text="Khám sức khỏe định kỳ - Vĩnh Long",
+            font=ctk.CTkFont(size=14)
+        )
+        subtitle.pack(pady=(0, 40))
+        
+        login_btn = ctk.CTkButton(
+            login_frame,
+            text="Đăng nhập bằng GitHub",
+            command=self._on_login_click,
+            width=200,
+            height=40
+        )
+        login_btn.pack(pady=10)
+        
+        self.status_label = ctk.CTkLabel(login_frame, text="")
+        self.status_label.pack(pady=20)
+        
+        self.code_label = ctk.CTkLabel(login_frame, text="", font=ctk.CTkFont(size=24, weight="bold"))
+        self.code_label.pack(pady=10)
+
+    def _on_login_click(self):
+        self.status_label.configure(text="Đang khởi tạo xác thực...")
+        self.update()
+        
+        flow = auth.start_device_flow()
+        
+        if not flow["ok"]:
+            self.status_label.configure(text=f"Lỗi: {flow.get('message', '')}")
+            return
+        
+        user_code = flow.get("user_code", "")
+        device_code = flow.get("device_code", "")
+        interval = flow.get("interval", 5)
+        
+        self.code_label.configure(text=f"Mã xác thực: {user_code}")
+        self.status_label.configure(text="Vào github.com/login/device nhập mã trên, sau đó quay lại đây.")
+        
+        thread = threading.Thread(
+            target=self._do_login_poll,
+            args=(device_code, interval),
+            daemon=True
+        )
+        thread.start()
+
+    def _do_login_poll(self, device_code: str, interval: int):
+        result = auth.poll_for_token(device_code, interval)
+        self.after(0, self._handle_login_result, result)
+
+    def _handle_login_result(self, result: Dict[str, Any]):
+        if result["ok"]:
+            self.username = result.get("username")
+            self._show_screen_list()
+        else:
+            self.status_label.configure(text=f"Lỗi: {result.get('message', '')}")
+
+    def _show_screen_list(self):
+        self._clear_screen()
+        
+        from ui import screen_list
+        
+        def on_create_record():
+            self._show_screen_form(None, datetime.datetime.now().strftime("%d-%m-%Y"), None)
+        
+        def on_view_record(record_id: str, date_str: str):
+            records = []
+            from modules import crud
+            try:
+                records = crud.read_day(date_str)
+            except Exception:
+                pass
+            
+            record = next((r for r in records if r.get("id") == record_id), None)
+            package_id = record.get("package_id") if record else None
+            
+            self._show_screen_form(record_id, date_str, package_id)
+        
+        def on_sync():
+            self._show_sync_screen()
+        
+        screen = screen_list.render_list_screen(
+            self.container,
+            username=self.username or "",
+            on_create_record=on_create_record,
+            on_view_record=on_view_record,
+            on_sync=on_sync
+        )
+        screen.pack(fill="both", expand=True)
+        self.current_screen = screen
+
+    def _show_screen_form(self, record_id: Optional[str], date_str: str, package_id: Optional[str]):
+        self._clear_screen()
+        
+        from ui import screen_form
+        
+        def on_back():
+            self._show_screen_list()
+        
+        def on_saved():
+            self._show_screen_list()
+        
+        if not package_id:
+            template = config_loader.load_template_form()
+            packages = template.get("packages", [])
+            if packages:
+                package_id = packages[0].get("id", "nct")
+        
+        screen = screen_form.render_form_screen(
+            self.container,
+            record_id=record_id,
+            date_str=date_str,
+            package_id=package_id,
+            username=self.username or "",
+            on_back=on_back,
+            on_saved=on_saved
+        )
+        screen.pack(fill="both", expand=True)
+        self.current_screen = screen
+
+    def _show_sync_screen(self):
+        self._clear_screen()
+        
+        from ui import screen_sync
+        
+        def on_back():
+            self._show_screen_list()
+        
+        screen = screen_sync.render_sync_screen(
+            self.container,
+            on_back=on_back
+        )
+        screen.pack(fill="both", expand=True)
+        self.current_screen = screen
+
+    def _clear_screen(self):
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        self.current_screen = None
+
+
+def main():
+    app = App()
+    app.mainloop()
+
+
+if __name__ == "__main__":
+    main()
