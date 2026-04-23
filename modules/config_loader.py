@@ -63,3 +63,11 @@ def load_app_config() -> Dict[str, Any]:
             return json.load(f)
     except Exception:
         return {"data_repo": "DigitalVersion/vinhlong-health-record", "org": "DigitalVersion"}
+
+
+def load_admin_usernames() -> list[str]:
+    config = load_app_config()
+    usernames = config.get("admin_usernames", [])
+    if not isinstance(usernames, list):
+        return []
+    return [str(item).strip() for item in usernames if str(item).strip()]

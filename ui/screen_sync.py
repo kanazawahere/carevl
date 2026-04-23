@@ -7,18 +7,26 @@ import customtkinter as ctk
 from modules import auth
 from modules import sync as sync_module
 
+PRIMARY_BLUE = "#0071E3"
+PRIMARY_BLUE_HOVER = "#005BB5"
+
 
 class ScreenSync(ctk.CTkFrame):
     def __init__(
         self,
         master,
+        username: str,
+        branch_name: str,
+        branch_locked: bool,
         on_back: Callable[[], None],
         **kwargs
     ):
         super().__init__(master, **kwargs)
         
         self.on_back = on_back
-        self.username = auth.get_current_user() or ""
+        self.username = username or auth.get_current_user() or ""
+        self.branch_name = branch_name
+        self.branch_locked = branch_locked
         
         self._setup_ui()
         self._update_status()
@@ -65,8 +73,10 @@ class ScreenSync(ctk.CTkFrame):
             action_frame,
             text="↑ Gửi lên (Push)",
             command=self._on_push,
-            hover_color="#1f6aa5",
-            fg_color="#2fa4e7"
+            hover_color=PRIMARY_BLUE_HOVER,
+            fg_color=PRIMARY_BLUE,
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=15, weight="bold"),
         )
         self.push_btn.pack(fill="x", pady=5)
         
@@ -74,8 +84,10 @@ class ScreenSync(ctk.CTkFrame):
             action_frame,
             text="↓ Nhận về (Pull)",
             command=self._on_pull,
-            hover_color="#1f6aa5",
-            fg_color="#2fa4e7"
+            hover_color=PRIMARY_BLUE_HOVER,
+            fg_color=PRIMARY_BLUE,
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=15, weight="bold"),
         )
         self.pull_btn.pack(fill="x", pady=5)
         
@@ -97,7 +109,10 @@ class ScreenSync(ctk.CTkFrame):
             self.status_value.configure(text="Chưa đăng nhập")
             return
         
-        status = sync_module.get_sync_status(self.username)
+        if self.branch_locked:
+            status = sync_module.get_sync_status(branch_name=self.branch_name)
+        else:
+            status = sync_module.get_sync_status(self.username)
         status_text = status.get("status", "unknown")
         
         display_map = {
@@ -123,15 +138,20 @@ class ScreenSync(ctk.CTkFrame):
         thread.start()
 
     def _push_task(self):
-        result = sync_module.git_push(self.username)
+        if self.branch_locked:
+            result = sync_module.git_push(branch_name=self.branch_name)
+        else:
+            result = sync_module.git_push(self.username)
         self.after(0, self._handle_push_result, result)
 
     def _handle_push_result(self, result: Dict[str, Any]):
         self.progress_bar.stop()
-        self.push_btn.configure(state="normal", text="↑ Gửi lên (Push)", fg_color="#2fa4e7")
+        self.push_btn.configure(state="normal", text="↑ Gửi lên (Push)", fg_color=PRIMARY_BLUE)
         self.pull_btn.configure(state="normal")
         
         if result["ok"]:
+            from modules import crud
+            crud.mark_all_synced()
             self._show_success(result.get("message", "Đã gửi thành công."))
             self._update_status()
             self._add_log(f"Push: {result.get('message')}")
@@ -153,12 +173,15 @@ class ScreenSync(ctk.CTkFrame):
         thread.start()
 
     def _pull_task(self):
-        result = sync_module.git_pull(self.username)
+        if self.branch_locked:
+            result = sync_module.git_pull(branch_name=self.branch_name)
+        else:
+            result = sync_module.git_pull(self.username)
         self.after(0, self._handle_pull_result, result)
 
     def _handle_pull_result(self, result: Dict[str, Any]):
         self.progress_bar.stop()
-        self.pull_btn.configure(state="normal", text="↓ Nhận về (Pull)", fg_color="#2fa4e7")
+        self.pull_btn.configure(state="normal", text="↓ Nhận về (Pull)", fg_color=PRIMARY_BLUE)
         self.push_btn.configure(state="normal")
         
         if result["ok"]:
@@ -206,6 +229,15 @@ class ScreenSync(ctk.CTkFrame):
 
 def render_sync_screen(
     master,
+    username: str,
+    branch_name: str,
+    branch_locked: bool,
     on_back: Callable[[], None]
 ) -> ScreenSync:
-    return ScreenSync(master, on_back=on_back)
+    return ScreenSync(
+        master,
+        username=username,
+        branch_name=branch_name,
+        branch_locked=branch_locked,
+        on_back=on_back,
+    )

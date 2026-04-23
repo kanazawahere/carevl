@@ -1,4 +1,5 @@
 {
   "data_repo": "DigitalVersion/vinhlong-health-record",
-  "org": "DigitalVersion"
+  "org": "DigitalVersion",
+  "admin_usernames": []
 }

@@ -103,6 +103,17 @@ def _branch_name(username: str) -> str:
     return f"user/{username}"
 
 
+def _resolve_target_branch(
+    username: Optional[str] = None,
+    branch_name: Optional[str] = None,
+) -> str:
+    if branch_name:
+        return branch_name
+    if username:
+        return _branch_name(username)
+    return ""
+
+
 def _is_not_git_repo(result: Dict[str, Any]) -> bool:
     stderr = (result.get("stderr") or "").lower()
     return "not a git repository" in stderr
@@ -140,6 +151,12 @@ def clear_index_lock(project_root: Optional[str] = None) -> None:
 
 def _ensure_local_branch(username: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
     branch = _branch_name(username)
+    return ensure_local_branch(branch, project_root=project_root)
+
+
+def ensure_local_branch(branch: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
+    if not branch:
+        return _result(False, "Thiếu tên nhánh.", status=OFFLINE)
 
     current = _run_git_command(
         ["rev-parse", "--abbrev-ref", "HEAD"],
@@ -158,7 +175,14 @@ def _ensure_local_branch(username: str, *, project_root: Optional[str] = None) -
     if exists["ok"]:
         checkout = _run_git_command(["checkout", branch], project_root=project_root)
     else:
-        checkout = _run_git_command(["checkout", "-b", branch], project_root=project_root)
+        remote_ref = _run_git_command(
+            ["show-ref", "--verify", "--quiet", f"refs/remotes/origin/{branch}"],
+            project_root=project_root,
+        )
+        if remote_ref["ok"]:
+            checkout = _run_git_command(["checkout", "-b", branch, f"origin/{branch}"], project_root=project_root)
+        else:
+            checkout = _run_git_command(["checkout", "-b", branch], project_root=project_root)
 
     if not checkout["ok"]:
         checkout["message"] = f"Không thể chuyển sang nhánh {branch}."
@@ -167,8 +191,23 @@ def _ensure_local_branch(username: str, *, project_root: Optional[str] = None) -
     return _result(True, f"Đã chuyển sang nhánh {branch}.", stdout=branch)
 
 
-def git_add_commit(filepath: str, message: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
+def git_add_commit(
+    filepath: str,
+    message: str,
+    *,
+    username: Optional[str] = None,
+    branch_name: Optional[str] = None,
+    project_root: Optional[str] = None,
+) -> Dict[str, Any]:
     clear_index_lock(project_root)
+
+    target_branch = _resolve_target_branch(username, branch_name)
+    if target_branch:
+        branch_result = ensure_local_branch(target_branch, project_root=project_root)
+        if not branch_result["ok"]:
+            branch_result["message"] = "Không thể chuyển sang nhánh người dùng trước khi commit."
+            branch_result["status"] = OFFLINE
+            return branch_result
 
     add_result = _run_git_command(["add", filepath], project_root=project_root)
     if not add_result["ok"]:
@@ -198,16 +237,24 @@ def git_add_commit(filepath: str, message: str, *, project_root: Optional[str] =
     return commit_result
 
 
-def git_push(username: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
+def git_push(
+    username: Optional[str] = None,
+    *,
+    branch_name: Optional[str] = None,
+    project_root: Optional[str] = None,
+) -> Dict[str, Any]:
     clear_index_lock(project_root)
 
-    branch_result = _ensure_local_branch(username, project_root=project_root)
+    branch = _resolve_target_branch(username, branch_name)
+    if not branch:
+        return _result(False, "Thiếu nhánh để push.", status=OFFLINE)
+
+    branch_result = ensure_local_branch(branch, project_root=project_root)
     if not branch_result["ok"]:
         branch_result["message"] = "Không thể chuẩn bị nhánh người dùng để push."
         branch_result["status"] = OFFLINE
         return branch_result
 
-    branch = _branch_name(username)
     push_result = _run_git_command(["push", "-u", "origin", branch], project_root=project_root)
     if push_result["ok"]:
         push_result["message"] = "Đã gửi dữ liệu về HQ."
@@ -223,10 +270,18 @@ def git_push(username: str, *, project_root: Optional[str] = None) -> Dict[str, 
     return push_result
 
 
-def git_pull(username: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
+def git_pull(
+    username: Optional[str] = None,
+    *,
+    branch_name: Optional[str] = None,
+    project_root: Optional[str] = None,
+) -> Dict[str, Any]:
     clear_index_lock(project_root)
 
-    branch = _branch_name(username)
+    branch = _resolve_target_branch(username, branch_name)
+    if not branch:
+        return _result(False, "Thiếu nhánh để pull.", status=OFFLINE)
+
     fetch_result = _run_git_command(["fetch", "origin", branch], project_root=project_root)
     if not fetch_result["ok"]:
         if _is_network_error(fetch_result):
@@ -280,8 +335,16 @@ def git_pull(username: str, *, project_root: Optional[str] = None) -> Dict[str, 
     return merge_result
 
 
-def get_sync_status(username: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
-    branch = _branch_name(username)
+def get_sync_status(
+    username: Optional[str] = None,
+    *,
+    branch_name: Optional[str] = None,
+    project_root: Optional[str] = None,
+) -> Dict[str, Any]:
+    branch = _resolve_target_branch(username, branch_name)
+    if not branch:
+        return _result(False, "Thiếu nhánh để kiểm tra trạng thái đồng bộ.", status=OFFLINE)
+
     head = _run_git_command(["rev-parse", "HEAD"], project_root=project_root)
     if not head["ok"]:
         message = "Không xác định được trạng thái đồng bộ."
@@ -319,6 +382,29 @@ def get_sync_status(username: str, *, project_root: Optional[str] = None) -> Dic
         stderr=remote["stdout"],
         status=PENDING_PUSH,
     )
+
+
+def has_uncommitted_changes(*, project_root: Optional[str] = None) -> bool:
+    result = _run_git_command(["status", "--porcelain"], project_root=project_root)
+    if not result["ok"]:
+        return True
+    return bool((result.get("stdout") or "").strip())
+
+
+def switch_branch(branch_name: str, *, project_root: Optional[str] = None) -> Dict[str, Any]:
+    if not branch_name:
+        return _result(False, "Thiếu tên nhánh cần chuyển.", status=OFFLINE)
+
+    if has_uncommitted_changes(project_root=project_root):
+        return _result(
+            False,
+            "Có thay đổi chưa commit hoặc file mới chưa theo dõi. Hãy lưu/commit xong trước khi chuyển trạm.",
+            status=PENDING_PUSH,
+        )
+
+    clear_index_lock(project_root)
+    _run_git_command(["fetch", "origin", branch_name], project_root=project_root)
+    return ensure_local_branch(branch_name, project_root=project_root)
 
 
 def get_recent_commits(*, project_root: Optional[str] = None, limit: int = 10) -> List[Dict[str, str]]:
@@ -399,6 +485,48 @@ def get_station_info(branch_name: Optional[str] = None, *, project_root: Optiona
         pass
     
     return default
+
+
+def get_all_stations(*, project_root: Optional[str] = None) -> List[Dict[str, str]]:
+    stations: List[Dict[str, str]] = []
+    default_branch = get_current_branch(project_root=project_root)
+
+    try:
+        stations_path = Path(paths.get_writable_path("config/stations.json"))
+        if stations_path.exists():
+            with open(stations_path, "r", encoding="utf-8") as f:
+                raw_stations = json.load(f)
+                for branch_name, entry in raw_stations.items():
+                    if isinstance(entry, str):
+                        stations.append(
+                            {
+                                "branch_name": branch_name,
+                                "title": entry,
+                                "station_id": "",
+                                "commune_code": "",
+                            }
+                        )
+                    elif isinstance(entry, dict):
+                        stations.append(
+                            {
+                                "branch_name": branch_name,
+                                "title": entry.get("title", "CareVL"),
+                                "station_id": entry.get("station_id", ""),
+                                "commune_code": entry.get("commune_code", ""),
+                            }
+                        )
+    except Exception:
+        return []
+
+    def sort_key(item: Dict[str, str]) -> tuple[int, str]:
+        branch_name = item.get("branch_name", "")
+        if branch_name == "main":
+            return (0, branch_name)
+        if branch_name == default_branch:
+            return (1, branch_name)
+        return (2, item.get("title", branch_name))
+
+    return sorted(stations, key=sort_key)
 
 
 def get_station_title(branch_name: Optional[str] = None, *, project_root: Optional[str] = None) -> str:

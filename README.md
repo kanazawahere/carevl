@@ -300,13 +300,21 @@ Cấu hình gói khám trong `config/template_form.json`.
 
 ## License
 
-MIT License - xem file `LICENSE` để biết thêm chi tiết.
+GNU GPL v3.0 - xem file `LICENSE` để biết thêm chi tiết.
 
 ## Liên hệ
 
 - **GitHub**: https://github.com/carevl-org/carevl-software
 - **Issues**: https://github.com/carevl-org/carevl-software/issues
 - **Email**: support@carevl.org (to be configured)
+
+---
+
+## Tác giả
+
+**Nguyễn Minh Phát**, MSc Medical Sciences  
+GitHub: [kanazawahere](https://github.com/kanazawahere)  
+Email: kanazawahere@gmail.com
 
 ## Acknowledgments
 

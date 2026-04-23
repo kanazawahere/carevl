@@ -9,6 +9,9 @@ from modules import auth
 from modules import config_loader
 from modules import paths
 
+PRIMARY_BLUE = "#0071E3"
+PRIMARY_BLUE_HOVER = "#005BB5"
+
 
 class App(ctk.CTk):
     def __init__(self):
@@ -20,10 +23,12 @@ class App(ctk.CTk):
         self.geometry("1000x700")
         self.minsize(800, 600)
         
-        ctk.set_appearance_mode("dark")
+        ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
         
         self.username: Optional[str] = None
+        self.is_admin: bool = False
+        self.active_branch: str = "unknown"
         self.current_screen: Optional[ctk.CTkFrame] = None
         
         self._setup_ui()
@@ -46,9 +51,22 @@ class App(ctk.CTk):
         
         if result["ok"]:
             self.username = result.get("username")
+            self._refresh_user_context()
             self._show_screen_list()
         else:
             self._show_login()
+
+    def _refresh_user_context(self):
+        self.active_branch = self._get_active_branch()
+        admin_usernames = config_loader.load_admin_usernames()
+        self.is_admin = bool(self.username and self.username in admin_usernames)
+        if self.active_branch == "main":
+            self.is_admin = True
+
+    def _get_active_branch(self) -> str:
+        from modules import sync
+        branch_name = sync.get_current_branch()
+        return branch_name or "unknown"
 
     def _show_login(self):
         self._clear_screen()
@@ -75,7 +93,11 @@ class App(ctk.CTk):
             text="Đăng nhập bằng GitHub",
             command=self._on_login_click,
             width=200,
-            height=40
+            height=40,
+            fg_color=PRIMARY_BLUE,
+            hover_color=PRIMARY_BLUE_HOVER,
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=15, weight="bold"),
         )
         login_btn.pack(pady=10)
         
@@ -136,6 +158,7 @@ class App(ctk.CTk):
                 "username": self.username,
             }
             auth._save_user_config(config)
+            self._refresh_user_context()
             
             self._show_screen_list()
         else:
@@ -165,17 +188,23 @@ class App(ctk.CTk):
         
         def on_sync():
             self._show_sync_screen()
-        
+
         def on_logout():
             self._on_logout()
+
+        def on_switch_branch(branch_name: str):
+            self._handle_branch_switch(branch_name)
         
         screen = screen_list.render_list_screen(
             self.container,
             username=self.username or "",
+            current_branch=self.active_branch,
+            is_admin=self.is_admin,
             on_create_record=on_create_record,
             on_view_record=on_view_record,
             on_sync=on_sync,
-            on_logout=on_logout
+            on_logout=on_logout,
+            on_switch_branch=on_switch_branch,
         )
         screen.pack(fill="both", expand=True)
         self.current_screen = screen
@@ -203,6 +232,8 @@ class App(ctk.CTk):
             date_str=date_str,
             package_id=package_id,
             username=self.username or "",
+            branch_name=self.active_branch,
+            branch_locked=self.is_admin,
             on_back=on_back,
             on_saved=on_saved
         )
@@ -219,10 +250,26 @@ class App(ctk.CTk):
         
         screen = screen_sync.render_sync_screen(
             self.container,
+            username=self.username or "",
+            branch_name=self.active_branch,
+            branch_locked=self.is_admin,
             on_back=on_back
         )
         screen.pack(fill="both", expand=True)
         self.current_screen = screen
+
+    def _handle_branch_switch(self, branch_name: str):
+        from modules import sync
+
+        result = sync.switch_branch(branch_name)
+        if result.get("ok"):
+            self.active_branch = branch_name
+            self.is_admin = True
+            self._show_screen_list()
+            return
+
+        if self.current_screen and hasattr(self.current_screen, "show_error"):
+            self.current_screen.show_error(result.get("message", "Không thể chuyển trạm."))
 
     def _clear_screen(self):
         for widget in self.container.winfo_children():

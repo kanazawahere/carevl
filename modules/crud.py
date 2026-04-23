@@ -181,3 +181,25 @@ def mark_records_synced(date_str: str, record_ids: List[str]) -> None:
             
     if modified:
         _atomic_write(filepath, records)
+
+
+def mark_all_synced() -> None:
+    if not os.path.exists(DATA_ROOT):
+        return
+
+    for root, _, files in os.walk(DATA_ROOT):
+        for filename in files:
+            if not filename.endswith(".json") or filename.endswith(".tmp"):
+                continue
+
+            filepath = os.path.join(root, filename)
+            records = _read_json_array(filepath)
+            modified = False
+
+            for record in records:
+                if not record.get("synced", False):
+                    record["synced"] = True
+                    modified = True
+
+            if modified:
+                _atomic_write(filepath, records)

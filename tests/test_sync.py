@@ -75,6 +75,21 @@ def test_git_push_creates_and_pushes_user_branch(git_repo: dict[str, Path]) -> N
     assert "refs/heads/user/alice" in remote_heads
 
 
+def test_git_add_commit_switches_to_user_branch_before_commit(git_repo: dict[str, Path]) -> None:
+    local = git_repo["local"]
+    (local / "branch-safe.txt").write_text("payload\n", encoding="utf-8")
+
+    result = sync.git_add_commit(
+        "branch-safe.txt",
+        "feat: branch safe",
+        username="alice",
+        project_root=str(local),
+    )
+
+    assert result["ok"] is True
+    assert _git(["rev-parse", "--abbrev-ref", "HEAD"], local).stdout.strip() == "user/alice"
+
+
 def test_get_sync_status_returns_pending_when_head_differs(git_repo: dict[str, Path]) -> None:
     local = git_repo["local"]
     (local / "pending.txt").write_text("pending\n", encoding="utf-8")
@@ -124,6 +139,37 @@ def test_git_pull_fetches_remote_branch_updates(tmp_path: Path) -> None:
 
     assert result["ok"] is True
     assert (local / "remote_only.txt").exists()
+
+
+def test_switch_branch_checks_out_remote_branch_when_available(tmp_path: Path) -> None:
+    remote = tmp_path / "remote.git"
+    local = tmp_path / "local"
+    peer = tmp_path / "peer"
+
+    _git(["init", "--bare", str(remote)], tmp_path)
+    _git(["clone", str(remote), str(local)], tmp_path)
+    _git(["clone", str(remote), str(peer)], tmp_path)
+
+    for repo in (local, peer):
+        _git(["config", "user.name", "CareVL Tester"], repo)
+        _git(["config", "user.email", "tester@example.com"], repo)
+
+    (local / "seed.txt").write_text("seed\n", encoding="utf-8")
+    _git(["add", "seed.txt"], local)
+    _git(["commit", "-m", "chore: seed"], local)
+    _git(["push", "-u", "origin", "master"], local)
+
+    _git(["checkout", "-b", "user/station-a"], peer)
+    (peer / "branch.txt").write_text("branch data\n", encoding="utf-8")
+    _git(["add", "branch.txt"], peer)
+    _git(["commit", "-m", "feat: branch data"], peer)
+    _git(["push", "-u", "origin", "user/station-a"], peer)
+
+    result = sync.switch_branch("user/station-a", project_root=str(local))
+
+    assert result["ok"] is True
+    assert _git(["rev-parse", "--abbrev-ref", "HEAD"], local).stdout.strip() == "user/station-a"
+    assert (local / "branch.txt").exists()
 
 
 def test_get_recent_commits_returns_structured_entries(git_repo: dict[str, Path]) -> None:

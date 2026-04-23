@@ -9,6 +9,9 @@ from modules import crud
 from modules import form_engine
 from modules import validator
 
+PRIMARY_BLUE = "#0071E3"
+PRIMARY_BLUE_HOVER = "#005BB5"
+
 
 class ScreenForm(ctk.CTkFrame):
     def __init__(
@@ -18,6 +21,8 @@ class ScreenForm(ctk.CTkFrame):
         date_str: str,
         package_id: Optional[str],
         username: str,
+        branch_name: str,
+        branch_locked: bool,
         on_back: Callable[[], None],
         on_saved: Callable[[], None],
         **kwargs
@@ -28,6 +33,8 @@ class ScreenForm(ctk.CTkFrame):
         self.date_str = date_str
         self.package_id = package_id or "nct"
         self.username = username
+        self.branch_name = branch_name
+        self.branch_locked = branch_locked
         self.on_back = on_back
         self.on_saved = on_saved
         
@@ -67,8 +74,10 @@ class ScreenForm(ctk.CTkFrame):
             text="← Quay lại",
             command=self._on_back_click,
             width=100,
-            hover_color="#1f6aa5",
-            fg_color="#2fa4e7"
+            hover_color=PRIMARY_BLUE_HOVER,
+            fg_color=PRIMARY_BLUE,
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=14, weight="bold"),
         )
         back_btn.grid(row=0, column=0, padx=5)
         
@@ -127,8 +136,10 @@ class ScreenForm(ctk.CTkFrame):
             footer_frame,
             text="💾 Lưu hồ sơ",
             command=self._on_save,
-            hover_color="#1f6aa5",
-            fg_color="#2fa4e7"
+            hover_color=PRIMARY_BLUE_HOVER,
+            fg_color=PRIMARY_BLUE,
+            text_color="#FFFFFF",
+            font=ctk.CTkFont(size=15, weight="bold"),
         )
         self.save_btn.grid(row=0, column=1, sticky="e", padx=5)
         
@@ -185,13 +196,9 @@ class ScreenForm(ctk.CTkFrame):
             pass
     
     def _rebuild_form(self):
-        """Rebuild the form with new package."""
-        # Clear existing form
         for widget in self.winfo_children():
-            if isinstance(widget, ctk.CTkScrollableFrame):
-                widget.destroy()
-        
-        # Rebuild UI
+            widget.destroy()
+
         self._setup_ui()
         self.is_dirty = True
 
@@ -229,6 +236,7 @@ class ScreenForm(ctk.CTkFrame):
         from modules import sync
         
         timestamp = datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y")
+        sync_kwargs = {"branch_name": self.branch_name} if self.branch_locked else {"username": self.username}
         
         if self.record_id:
             crud.update(self.record_id, self.date_str, data)
@@ -236,14 +244,14 @@ class ScreenForm(ctk.CTkFrame):
             if record:
                 ho_ten = self._get_field_value(data, "demographics", "ho_ten") or "unknown"
                 message = f"feat: cập nhật hồ sơ {ho_ten} [{timestamp}] by {self.username}"
-                sync.git_add_commit(crud._get_path(self.date_str), message)
+                sync.git_add_commit(crud._get_path(self.date_str), message, **sync_kwargs)
         else:
             new_record = crud.create(data, self.package_id, self.username, self.date_str)
             self.record_id = new_record.get("id")
             
             ho_ten = self._get_field_value(data, "demographics", "ho_ten") or "unknown"
             message = f"feat: lưu hồ sơ {ho_ten} [{timestamp}] by {self.username}"
-            sync.git_add_commit(crud._get_path(self.date_str), message)
+            sync.git_add_commit(crud._get_path(self.date_str), message, **sync_kwargs)
         
         self.is_dirty = False
         self._show_success("Đã lưu ✓ | Chưa gửi về HQ")
@@ -266,7 +274,8 @@ class ScreenForm(ctk.CTkFrame):
         if confirm and confirm.strip().lower() == "xoa":
             crud.delete(self.record_id, self.date_str)
             message = f"feat: xóa hồ sơ [{datetime.datetime.now().strftime('%H:%M:%S %d-%m-%Y')}] by {self.username}"
-            sync.git_add_commit(crud._get_path(self.date_str), message)
+            sync_kwargs = {"branch_name": self.branch_name} if self.branch_locked else {"username": self.username}
+            sync.git_add_commit(crud._get_path(self.date_str), message, **sync_kwargs)
             
             if self.on_back:
                 self.on_back()
@@ -347,6 +356,8 @@ def render_form_screen(
     date_str: str,
     package_id: Optional[str],
     username: str,
+    branch_name: str,
+    branch_locked: bool,
     on_back: Callable[[], None],
     on_saved: Callable[[], None]
 ) -> ScreenForm:
@@ -356,6 +367,8 @@ def render_form_screen(
         date_str=date_str,
         package_id=package_id,
         username=username,
+        branch_name=branch_name,
+        branch_locked=branch_locked,
         on_back=on_back,
         on_saved=on_saved
     )

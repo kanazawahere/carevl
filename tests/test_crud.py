@@ -112,3 +112,15 @@ def test_atomic_write_validity(clean_data):
         # Verify valid JSON
         data = json.loads(raw_content)
         assert data[0]["data"]["unicode_test"] == "Vĩnh Long ❤️"
+
+
+def test_mark_all_synced_marks_every_pending_record(clean_data):
+    crud.create({"v": 1}, "p1", "a1", "22-04-2026")
+    crud.create({"v": 2}, "p1", "a1", "23-04-2026")
+
+    crud.mark_all_synced()
+
+    day_one = crud.read_day("22-04-2026")
+    day_two = crud.read_day("23-04-2026")
+    assert all(record["synced"] is True for record in day_one)
+    assert all(record["synced"] is True for record in day_two)

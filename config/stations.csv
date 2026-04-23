@@ -1,0 +1,17 @@
+title,station_id,commune_code,github_username,branch_name,active
+CareVL - HQ,HQ,,,main,true
+Trạm Y Tế Phường Cái Vồn,TYT-VL-001,86839,TRAM-Y-TE-P-CAI-VON,,true
+Trạm Y Tế Phường 1,TYT-VL-002,86840,TRAM-Y-TE-P-1,,true
+Trạm Y Tế Phường 2,TYT-VL-003,86841,TRAM-Y-TE-P-2,,true
+Trạm Y Tế Phường 3,TYT-VL-004,86842,TRAM-Y-TE-P-3,,true
+Trạm Y Tế Phường 4,TYT-VL-005,86843,TRAM-Y-TE-P-4,,true
+Trạm Y Tế Phường 5,TYT-VL-006,86844,TRAM-Y-TE-P-5,,true
+Trạm Y Tế Phường 8,TYT-VL-007,86845,TRAM-Y-TE-P-8,,true
+Trạm Y Tế Phường 9,TYT-VL-008,86846,TRAM-Y-TE-P-9,,true
+Trạm Y Tế Xã Bình Minh,TYT-VL-009,86847,TRAM-Y-TE-X-BINH-MINH,,true
+Trạm Y Tế Xã Bình Phước,TYT-VL-010,86848,TRAM-Y-TE-X-BINH-PHUOC,,true
+Trạm Y Tế Xã Bình Tân,TYT-VL-011,86849,TRAM-Y-TE-X-BINH-TAN,,true
+Trạm Y Tế Xã Hòa Ninh,TYT-VL-012,86850,TRAM-Y-TE-X-HOA-NINH,,true
+Trạm Y Tế Xã Long Bình,TYT-VL-013,86851,TRAM-Y-TE-X-LONG-BINH,,true
+Trạm Y Tế Xã Thanh Bình,TYT-VL-014,86852,TRAM-Y-TE-X-THANH-BINH,,true
+Trạm Y Tế Thị Trấn Vĩnh Long,TYT-VL-015,86853,TRAM-Y-TE-TT-VINH-LONG,,true
