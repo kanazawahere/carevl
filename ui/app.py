@@ -8,9 +8,20 @@ import customtkinter as ctk
 from modules import auth
 from modules import config_loader
 from modules import paths
-
-PRIMARY_BLUE = "#0071E3"
-PRIMARY_BLUE_HOVER = "#005BB5"
+from ui.design_tokens import (
+    BG_APP,
+    BORDER,
+    PRIMARY_BLUE,
+    PRIMARY_BLUE_HOVER,
+    SURFACE,
+    SURFACE_ALT,
+    TEXT_MUTED,
+    TEXT_PRIMARY,
+    font,
+    primary_button_style,
+    secondary_button_style,
+    destructive_button_style,
+)
 
 
 class App(ctk.CTk):
@@ -25,6 +36,7 @@ class App(ctk.CTk):
         
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
+        self.configure(fg_color=BG_APP)
         
         self.username: Optional[str] = None
         self.is_admin: bool = False
@@ -60,8 +72,6 @@ class App(ctk.CTk):
         self.active_branch = self._get_active_branch()
         admin_usernames = config_loader.load_admin_usernames()
         self.is_admin = bool(self.username and self.username in admin_usernames)
-        if self.active_branch == "main":
-            self.is_admin = True
 
     def _get_active_branch(self) -> str:
         from modules import sync
@@ -71,47 +81,74 @@ class App(ctk.CTk):
     def _show_login(self):
         self._clear_screen()
         
-        login_frame = ctk.CTkFrame(self.container, fg_color="transparent")
-        login_frame.pack(expand=True)
-        
+        wrapper = ctk.CTkFrame(self.container, fg_color="transparent")
+        wrapper.pack(expand=True, fill="both", padx=24, pady=24)
+
+        hero_card = ctk.CTkFrame(
+            wrapper,
+            fg_color=SURFACE,
+            corner_radius=22,
+            border_width=1,
+            border_color=BORDER,
+        )
+        hero_card.pack(expand=True, ipadx=10, ipady=10)
+
+        login_frame = ctk.CTkFrame(hero_card, fg_color="transparent")
+        login_frame.pack(expand=True, fill="both", padx=56, pady=52)
+
+        eyebrow = ctk.CTkLabel(
+            login_frame,
+            text="CareVL",
+            font=font(14, "semibold"),
+            text_color=PRIMARY_BLUE,
+        )
+        eyebrow.pack(pady=(0, 10))
+
         title = ctk.CTkLabel(
             login_frame,
             text="CareVL",
-            font=ctk.CTkFont(size=32, weight="bold")
+            font=font(34, "bold"),
+            text_color=TEXT_PRIMARY,
         )
         title.pack(pady=(0, 10))
         
         subtitle = ctk.CTkLabel(
             login_frame,
             text="Khám sức khỏe định kỳ - Vĩnh Long",
-            font=ctk.CTkFont(size=14)
+            font=font(16),
+            text_color=TEXT_MUTED,
         )
-        subtitle.pack(pady=(0, 40))
+        subtitle.pack(pady=(0, 12))
+
+        description = ctk.CTkLabel(
+            login_frame,
+            text="Ứng dụng nhập liệu offline-first cho trạm y tế, đồng bộ qua GitHub khi có mạng.",
+            font=font(14),
+            text_color=TEXT_MUTED,
+            wraplength=520,
+            justify="center",
+        )
+        description.pack(pady=(0, 34))
         
         login_btn = ctk.CTkButton(
             login_frame,
             text="Đăng nhập bằng GitHub",
             command=self._on_login_click,
-            width=200,
-            height=40,
-            fg_color=PRIMARY_BLUE,
-            hover_color=PRIMARY_BLUE_HOVER,
-            text_color="#FFFFFF",
-            font=ctk.CTkFont(size=15, weight="bold"),
+            **primary_button_style(width=220, height=44),
         )
         login_btn.pack(pady=10)
         
-        self.status_label = ctk.CTkLabel(login_frame, text="")
+        self.status_label = ctk.CTkLabel(login_frame, text="", font=font(13), text_color=TEXT_MUTED)
         self.status_label.pack(pady=20)
         
-        self.code_label = ctk.CTkLabel(login_frame, text="", font=ctk.CTkFont(size=24, weight="bold"))
+        self.code_label = ctk.CTkLabel(login_frame, text="", font=font(24, "bold"), text_color=TEXT_PRIMARY)
         self.code_label.pack(pady=10)
         
         self.copy_code_btn = ctk.CTkButton(
             login_frame,
             text="Copy mã",
             command=self._copy_user_code,
-            width=100
+            **secondary_button_style(width=120, height=38),
         )
         self.copy_code_btn.pack_forget()
 
@@ -284,11 +321,14 @@ class App(ctk.CTk):
         dialog.geometry("300x150")
         dialog.transient(self)
         dialog.grab_set()
+        dialog.configure(fg_color=SURFACE_ALT)
         
         label = ctk.CTkLabel(
             dialog,
             text="Bạn có chắc muốn đăng xuất?",
-            wraplength=250
+            wraplength=250,
+            font=font(14),
+            text_color=TEXT_PRIMARY,
         )
         label.pack(padx=20, pady=20)
         
@@ -308,14 +348,14 @@ class App(ctk.CTk):
             btn_frame,
             text="Đăng xuất",
             command=confirm_logout,
-            fg_color="#CC0000",
-            hover_color="#990000"
+            **destructive_button_style(width=110, height=36),
         ).pack(side="left", padx=5)
         
         ctk.CTkButton(
             btn_frame,
             text="Hủy",
-            command=cancel_logout
+            command=cancel_logout,
+            **secondary_button_style(width=90, height=36),
         ).pack(side="left", padx=5)
 
 

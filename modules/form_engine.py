@@ -3,6 +3,18 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, Optional, Tuple
 import customtkinter as ctk
+from ui.design_tokens import (
+    BORDER,
+    ERROR_BORDER,
+    INPUT_BG,
+    PRIMARY_BLUE_SOFT,
+    PRIMARY_BLUE_TEXT,
+    SURFACE,
+    SURFACE_TINT,
+    TEXT_MUTED,
+    TEXT_PRIMARY,
+    font,
+)
 
 
 class FormEngine:
@@ -16,6 +28,7 @@ class FormEngine:
         self.parent = parent
         self.field_widgets: Dict[Tuple[str, str], Dict[str, Any]] = {}
         self.section_frames: Dict[str, ctk.CTkFrame] = {}
+        self.default_border_color = BORDER
         
         self._render()
     
@@ -28,20 +41,43 @@ class FormEngine:
             section_label = section.get("label", section_id)
             
             # Create section frame
-            section_frame = ctk.CTkFrame(self.parent, fg_color="transparent")
-            section_frame.pack(fill="x", padx=10, pady=10)
+            section_frame = ctk.CTkFrame(
+                self.parent,
+                fg_color=SURFACE,
+                corner_radius=16,
+                border_width=1,
+                border_color=BORDER,
+            )
+            section_frame.pack(fill="x", padx=14, pady=10)
             section_frame.grid_columnconfigure(1, weight=1)
             
             self.section_frames[section_id] = section_frame
             
             # Section header
+            header_row = ctk.CTkFrame(section_frame, fg_color="transparent")
+            header_row.grid(row=0, column=0, columnspan=2, sticky="ew", padx=16, pady=(14, 8))
+            header_row.grid_columnconfigure(0, weight=1)
+
             header = ctk.CTkLabel(
-                section_frame,
+                header_row,
                 text=section_label,
-                font=ctk.CTkFont(size=14, weight="bold"),
-                anchor="w"
+                font=font(16, "bold"),
+                anchor="w",
+                text_color=TEXT_PRIMARY,
             )
-            header.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+            header.grid(row=0, column=0, sticky="w")
+
+            field_count = len(section.get("fields", []))
+            ctk.CTkLabel(
+                header_row,
+                text=f"{field_count} trường",
+                font=font(11, "semibold"),
+                text_color=PRIMARY_BLUE_TEXT,
+                fg_color=PRIMARY_BLUE_SOFT,
+                corner_radius=10,
+                padx=10,
+                pady=4,
+            ).grid(row=0, column=1, sticky="e")
             
             # Render fields
             fields = section.get("fields", [])
@@ -63,15 +99,15 @@ class FormEngine:
         
         # Label with required indicator
         label_text = f"{field_label} {'*' if required else ''}"
-        label = ctk.CTkLabel(parent, text=label_text, anchor="w")
-        label.grid(row=row, column=0, sticky="w", padx=(0, 10), pady=5)
+        label = ctk.CTkLabel(parent, text=label_text, anchor="w", text_color=TEXT_PRIMARY, font=font(13, "semibold"))
+        label.grid(row=row, column=0, sticky="w", padx=(16, 12), pady=7)
         
         widget_key = (section_id, field_id)
         
         # Create widget based on type
         if field_type == "text":
-            widget = ctk.CTkEntry(parent, width=300)
-            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            widget = ctk.CTkEntry(parent, width=300, height=38, fg_color=INPUT_BG, border_color=BORDER, text_color=TEXT_PRIMARY, font=font(14))
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=7)
             self.field_widgets[widget_key] = {
                 "widget": widget,
                 "type": "text",
@@ -79,8 +115,8 @@ class FormEngine:
             }
         
         elif field_type == "number":
-            widget = ctk.CTkEntry(parent, width=300)
-            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            widget = ctk.CTkEntry(parent, width=300, height=38, fg_color=INPUT_BG, border_color=BORDER, text_color=TEXT_PRIMARY, font=font(14))
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=7)
             self.field_widgets[widget_key] = {
                 "widget": widget,
                 "type": "number",
@@ -88,8 +124,8 @@ class FormEngine:
             }
         
         elif field_type == "date":
-            widget = ctk.CTkEntry(parent, width=300, placeholder_text="DD-MM-YYYY")
-            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            widget = ctk.CTkEntry(parent, width=300, height=38, placeholder_text="DD-MM-YYYY", fg_color=INPUT_BG, border_color=BORDER, text_color=TEXT_PRIMARY, font=font(14), placeholder_text_color=TEXT_MUTED)
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=7)
             self.field_widgets[widget_key] = {
                 "widget": widget,
                 "type": "date",
@@ -98,10 +134,22 @@ class FormEngine:
         
         elif field_type == "select":
             options = field.get("options", [])
-            widget = ctk.CTkComboBox(parent, values=options, width=300)
+            widget = ctk.CTkComboBox(
+                parent,
+                values=options,
+                width=300,
+                height=38,
+                fg_color=INPUT_BG,
+                border_color=BORDER,
+                button_color=SURFACE_TINT,
+                button_hover_color=PRIMARY_BLUE_SOFT,
+                text_color=TEXT_PRIMARY,
+                dropdown_font=font(14),
+                font=font(14),
+            )
             if options:
                 widget.set("")  # Start with empty selection
-            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=7)
             self.field_widgets[widget_key] = {
                 "widget": widget,
                 "type": "select",
@@ -109,8 +157,8 @@ class FormEngine:
             }
         
         elif field_type == "textarea":
-            widget = ctk.CTkTextbox(parent, width=300, height=80)
-            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            widget = ctk.CTkTextbox(parent, width=300, height=92, fg_color=INPUT_BG, border_color=BORDER, border_width=1, text_color=TEXT_PRIMARY, font=font(14))
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=7)
             self.field_widgets[widget_key] = {
                 "widget": widget,
                 "type": "textarea",
@@ -123,12 +171,14 @@ class FormEngine:
                 parent,
                 text="",
                 anchor="w",
-                fg_color=("#E0E0E0", "#2B2B2B"),
-                corner_radius=6,
+                fg_color=SURFACE_TINT,
+                text_color=PRIMARY_BLUE_TEXT,
+                corner_radius=10,
                 padx=10,
-                pady=5
+                pady=8,
+                font=font(14, "semibold"),
             )
-            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            widget.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=7)
             self.field_widgets[widget_key] = {
                 "widget": widget,
                 "type": "computed",
@@ -280,9 +330,9 @@ class FormEngine:
             
             # Apply red border to indicate error
             if widget_type in ("text", "number", "date", "select"):
-                widget.configure(border_color="red", border_width=2)
+                widget.configure(border_color=ERROR_BORDER, border_width=2)
             elif widget_type == "textarea":
-                widget.configure(border_color="red", border_width=2)
+                widget.configure(border_color=ERROR_BORDER, border_width=2)
     
     def clear_errors(self) -> None:
         """Clear all error highlights from form widgets."""
@@ -293,12 +343,12 @@ class FormEngine:
             # Reset to default border
             if widget_type in ("text", "number", "date", "select"):
                 try:
-                    widget.configure(border_color=("gray70", "gray30"), border_width=0)
+                    widget.configure(border_color=self.default_border_color, border_width=1)
                 except Exception:
                     pass
             elif widget_type == "textarea":
                 try:
-                    widget.configure(border_color=("gray70", "gray30"), border_width=0)
+                    widget.configure(border_color=self.default_border_color, border_width=1)
                 except Exception:
                     pass
 

@@ -8,6 +8,30 @@ from tksheet import Sheet
 
 from modules import crud
 from modules import sync as sync_module
+from ui.design_tokens import (
+    BG_APP,
+    BORDER,
+    BORDER_STRONG,
+    PRIMARY_BLUE,
+    PRIMARY_BLUE_SOFT,
+    PRIMARY_BLUE_TEXT,
+    SUCCESS_BG,
+    SUCCESS_TEXT,
+    SURFACE,
+    SURFACE_ALT,
+    SURFACE_STRONG,
+    TEXT_MUTED,
+    TEXT_PRIMARY,
+    TEXT_SECONDARY,
+    WARNING_BG,
+    WARNING_TEXT,
+    badge_colors,
+    destructive_button_style,
+    font,
+    primary_button_style,
+    secondary_button_style,
+)
+from ui.ui_components import add_modal_actions, add_modal_header, create_modal
 
 
 FILTER_ALL = "all"
@@ -17,12 +41,6 @@ AUTHOR_NAME = "Nguyễn Minh Phát"
 AUTHOR_TITLE = "MSc Medical Sciences"
 AUTHOR_GITHUB_URL = "https://github.com/kanazawahere"
 AUTHOR_EMAIL = "kanazawahere@gmail.com"
-PRIMARY_BLUE = "#0071E3"
-PRIMARY_BLUE_HOVER = "#005BB5"
-PRIMARY_TEXT = "#16324A"
-SECONDARY_SURFACE = "#DCEBFA"
-SECONDARY_SURFACE_HOVER = "#C8E0F6"
-SECONDARY_BORDER = "#B7D1EC"
 
 
 class ScreenList(ctk.CTkFrame):
@@ -40,6 +58,7 @@ class ScreenList(ctk.CTkFrame):
         **kwargs
     ):
         super().__init__(master, **kwargs)
+        self.configure(fg_color=BG_APP)
 
         self.username = username
         self.current_branch = current_branch
@@ -78,37 +97,69 @@ class ScreenList(ctk.CTkFrame):
         self.bind("<Configure>", lambda e: self._on_resize())
 
     def _setup_ui(self):
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(4, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
-        top_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=(10, 6))
+        top_frame.grid(row=0, column=0, sticky="ew", padx=16, pady=(14, 10))
         top_frame.grid_columnconfigure(1, weight=1)
         top_frame.grid_columnconfigure(2, weight=1)
 
         station_title = self._get_station_title_for_branch(self.current_branch)
+        title_group = ctk.CTkFrame(top_frame, fg_color="transparent")
+        title_group.grid(row=0, column=0, padx=(0, 20), sticky="w")
+
+        context_badge_text = "HQ / Admin" if self.is_admin else "Trạm y tế"
+        context_fg, context_text = badge_colors("info")
+        ctk.CTkLabel(
+            title_group,
+            text=context_badge_text,
+            fg_color=context_fg,
+            text_color=context_text,
+            corner_radius=9,
+            padx=10,
+            pady=4,
+            font=font(11, "semibold"),
+        ).pack(anchor="w")
+
         if self.is_admin and self.station_choices:
             station_values = [item.get("title", item.get("branch_name", "")) for item in self.station_choices]
             self.station_selector = ctk.CTkComboBox(
-                top_frame,
+                title_group,
                 values=station_values,
                 command=self._on_station_switch_requested,
-                width=320
+                width=340,
+                font=font(20, "bold"),
+                dropdown_font=font(18),
+                corner_radius=10,
+                border_color=BORDER_STRONG,
+                button_color=PRIMARY_BLUE_SOFT,
+                button_hover_color=SURFACE_STRONG,
+                fg_color=SURFACE,
+                text_color=TEXT_PRIMARY,
             )
             self.station_selector.set(station_title)
-            self.station_selector.grid(row=0, column=0, padx=(0, 20), sticky="w")
+            self.station_selector.pack(anchor="w", pady=(8, 0))
         else:
-            title = ctk.CTkLabel(top_frame, text=station_title, font=ctk.CTkFont(size=20, weight="bold"))
-            title.grid(row=0, column=0, padx=(0, 20), sticky="w")
+            title = ctk.CTkLabel(title_group, text=station_title, font=font(24, "bold"), text_color=TEXT_PRIMARY)
+            title.pack(anchor="w", pady=(8, 0))
 
         center_controls = ctk.CTkFrame(top_frame, fg_color="transparent")
-        center_controls.grid(row=0, column=1, sticky="ew")
+        center_controls.grid(row=0, column=1, sticky="ew", padx=(0, 12))
 
         self.month_combo = ctk.CTkComboBox(
             center_controls,
             values=self._get_available_months(),
             command=self._on_month_change,
-            width=140
+            width=150,
+            font=font(14, "semibold"),
+            dropdown_font=font(14),
+            corner_radius=10,
+            border_color=BORDER_STRONG,
+            button_color=PRIMARY_BLUE_SOFT,
+            button_hover_color=SURFACE_STRONG,
+            fg_color=SURFACE,
+            text_color=TEXT_PRIMARY,
         )
         self.month_combo.set(self.current_month_year)
         self.month_combo.pack(side="left", padx=5)
@@ -117,12 +168,7 @@ class ScreenList(ctk.CTkFrame):
             center_controls,
             text="? Hướng dẫn",
             command=self._show_help_dialog,
-            width=120,
-            fg_color=SECONDARY_SURFACE,
-            hover_color=SECONDARY_SURFACE_HOVER,
-            text_color=PRIMARY_TEXT,
-            border_width=1,
-            border_color=SECONDARY_BORDER,
+            **secondary_button_style(width=120, height=38),
         )
         self.help_btn.pack(side="left", padx=5)
 
@@ -130,56 +176,60 @@ class ScreenList(ctk.CTkFrame):
             center_controls,
             text="Đặt lại cỡ bảng",
             command=self._reset_table_zoom,
-            width=140,
-            fg_color=SECONDARY_SURFACE,
-            hover_color=SECONDARY_SURFACE_HOVER,
-            text_color=PRIMARY_TEXT,
-            border_width=1,
-            border_color=SECONDARY_BORDER,
+            **secondary_button_style(width=150, height=38),
         )
         self.reset_zoom_btn.pack(side="left", padx=5)
 
         right_controls = ctk.CTkFrame(top_frame, fg_color="transparent")
         right_controls.grid(row=0, column=2, sticky="e")
 
-        self.search_entry = ctk.CTkEntry(right_controls, placeholder_text="Tìm kiếm...", width=210)
+        self.search_entry = ctk.CTkEntry(
+            right_controls,
+            placeholder_text="Tìm kiếm hồ sơ...",
+            width=220,
+            height=38,
+            corner_radius=10,
+            fg_color=SURFACE,
+            border_color=BORDER_STRONG,
+            text_color=TEXT_PRIMARY,
+            placeholder_text_color=TEXT_MUTED,
+            font=font(14),
+        )
         self.search_entry.pack(side="left", padx=5)
         self.search_entry.bind("<KeyRelease>", lambda e: self._on_search())
 
         self.account_btn = ctk.CTkButton(
             right_controls,
-            text=f"👤 {self.username} ▾",
+            text=f"{self.username} ▾",
             command=self._toggle_account_menu,
-            width=160,
-            fg_color=SECONDARY_SURFACE,
-            hover_color=SECONDARY_SURFACE_HOVER,
-            text_color=PRIMARY_TEXT,
-            border_width=1,
-            border_color=SECONDARY_BORDER,
+            **secondary_button_style(width=160, height=38),
         )
         self.account_btn.pack(side="left", padx=(18, 0))
 
         action_frame = ctk.CTkFrame(self, fg_color="transparent")
-        action_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
+        action_frame.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 10))
         action_frame.grid_columnconfigure(1, weight=1)
 
         self.create_btn = ctk.CTkButton(
             action_frame,
             text="+ Tạo hồ sơ mới",
             command=self.on_create_record,
-            hover_color=PRIMARY_BLUE_HOVER,
-            fg_color=PRIMARY_BLUE,
-            text_color="#FFFFFF",
-            font=ctk.CTkFont(size=16, weight="bold"),
-            width=180,
-            height=42
+            **primary_button_style(width=190, height=44),
         )
         self.create_btn.grid(row=0, column=0, padx=5, sticky="w")
 
         self.filter_tabs = ctk.CTkSegmentedButton(
             action_frame,
             values=["Tất cả", "Chờ gửi", "Đã sync"],
-            command=self._on_filter_change
+            command=self._on_filter_change,
+            fg_color=PRIMARY_BLUE_SOFT,
+            selected_color=PRIMARY_BLUE,
+            selected_hover_color=PRIMARY_BLUE,
+            unselected_color=SURFACE,
+            unselected_hover_color=SURFACE_STRONG,
+            text_color=TEXT_PRIMARY,
+            corner_radius=10,
+            font=font(13, "semibold"),
         )
         self.filter_tabs.grid(row=0, column=1, padx=5)
         self.filter_tabs.set("Tất cả")
@@ -188,17 +238,28 @@ class ScreenList(ctk.CTkFrame):
             action_frame,
             text="Gửi về HQ",
             command=self.on_sync,
-            hover_color=PRIMARY_BLUE_HOVER,
-            fg_color=PRIMARY_BLUE,
-            text_color="#FFFFFF",
-            font=ctk.CTkFont(size=15, weight="bold"),
-            width=170,
-            height=42
+            **primary_button_style(width=170, height=44),
         )
         self.sync_btn.grid(row=0, column=2, sticky="e", padx=5)
 
-        self.table_container = ctk.CTkFrame(self, corner_radius=12, fg_color="#F1F7FD")
-        self.table_container.grid(row=3, column=0, sticky="nsew", padx=10, pady=(0, 8))
+        summary_frame = ctk.CTkFrame(self, fg_color="transparent")
+        summary_frame.grid(row=2, column=0, sticky="ew", padx=16, pady=(0, 12))
+        for col in range(4):
+            summary_frame.grid_columnconfigure(col, weight=1)
+
+        self.summary_total_value = self._build_summary_card(summary_frame, "Tổng hồ sơ", "0", 0)
+        self.summary_synced_value = self._build_summary_card(summary_frame, "Đã sync", "0", 1)
+        self.summary_pending_value = self._build_summary_card(summary_frame, "Chờ gửi", "0", 2)
+        self.summary_month_value = self._build_summary_card(summary_frame, "Tháng làm việc", self.current_month_year, 3)
+
+        self.table_container = ctk.CTkFrame(
+            self,
+            corner_radius=18,
+            fg_color=SURFACE,
+            border_width=1,
+            border_color=BORDER,
+        )
+        self.table_container.grid(row=4, column=0, sticky="nsew", padx=16, pady=(0, 8))
         self.table_container.grid_rowconfigure(0, weight=1)
         self.table_container.grid_columnconfigure(0, weight=1)
 
@@ -209,19 +270,28 @@ class ScreenList(ctk.CTkFrame):
         self.empty_state_title = ctk.CTkLabel(
             self.empty_state_frame,
             text="Chưa có hồ sơ phù hợp",
-            font=ctk.CTkFont(size=24, weight="bold")
+            font=font(24, "bold"),
+            text_color=TEXT_PRIMARY,
         )
         self.empty_state_title.pack(pady=(0, 8))
         self.empty_state_body = ctk.CTkLabel(
             self.empty_state_frame,
             text="Thử đổi tháng, xóa bộ lọc, hoặc bấm 'Tạo hồ sơ mới' để bắt đầu.",
             justify="center",
-            text_color="#5F7894"
+            text_color=TEXT_MUTED,
+            font=font(14),
         )
         self.empty_state_body.pack()
 
-        self.status_bar = ctk.CTkFrame(self, corner_radius=0, fg_color="#D7EAFB", height=28)
-        self.status_bar.grid(row=4, column=0, sticky="ew", padx=0, pady=(4, 0))
+        self.status_bar = ctk.CTkFrame(
+            self,
+            corner_radius=14,
+            fg_color=SURFACE,
+            height=34,
+            border_width=1,
+            border_color=BORDER,
+        )
+        self.status_bar.grid(row=5, column=0, sticky="ew", padx=0, pady=(4, 0))
         self.status_bar.grid_columnconfigure(0, weight=1)
         self.status_bar.grid_propagate(False)
 
@@ -229,44 +299,44 @@ class ScreenList(ctk.CTkFrame):
             self.status_bar,
             text="---",
             anchor="w",
-            font=ctk.CTkFont(size=12),
-            text_color="#1E4E7A",
+            font=font(12),
+            text_color=TEXT_SECONDARY,
         )
         self.status_line_label.grid(row=0, column=0, sticky="ew", padx=(12, 8), pady=4)
 
         self.status_total_badge = ctk.CTkLabel(
             self.status_bar,
             text="Tổng: 0",
-            fg_color="#3B8ED0",
+            fg_color=PRIMARY_BLUE_SOFT,
             corner_radius=10,
             padx=10,
             pady=2,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="white",
+            font=font(11, "semibold"),
+            text_color=PRIMARY_BLUE_TEXT,
         )
         self.status_total_badge.grid(row=0, column=1, padx=(0, 6), pady=3)
 
         self.status_synced_badge = ctk.CTkLabel(
             self.status_bar,
             text="Đã sync: 0",
-            fg_color="#2fa04e",
+            fg_color=SUCCESS_BG,
             corner_radius=10,
             padx=10,
             pady=2,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="white",
+            font=font(11, "semibold"),
+            text_color=SUCCESS_TEXT,
         )
         self.status_synced_badge.grid(row=0, column=2, padx=(0, 6), pady=3)
 
         self.status_pending_badge = ctk.CTkLabel(
             self.status_bar,
             text="Chờ: 0",
-            fg_color="#e67e22",
+            fg_color=WARNING_BG,
             corner_radius=10,
             padx=10,
             pady=2,
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="white",
+            font=font(11, "semibold"),
+            text_color=WARNING_TEXT,
         )
         self.status_pending_badge.grid(row=0, column=3, padx=(0, 8), pady=3)
 
@@ -274,18 +344,41 @@ class ScreenList(ctk.CTkFrame):
             self.status_bar,
             text="Tác giả",
             command=self._show_author_dialog,
-            width=90,
-            height=22,
-            corner_radius=4,
-            fg_color=SECONDARY_SURFACE,
-            hover_color=SECONDARY_SURFACE_HOVER,
-            text_color=PRIMARY_TEXT,
-            font=ctk.CTkFont(size=12),
+            **secondary_button_style(width=88, height=24),
         )
         self.status_author_btn.grid(row=0, column=4, sticky="e", padx=(0, 8), pady=3)
 
         self._update_status_banner()
         self._update_admin_controls()
+
+    def _build_summary_card(self, master, title: str, value: str, column: int) -> ctk.CTkLabel:
+        card = ctk.CTkFrame(
+            master,
+            fg_color=SURFACE,
+            corner_radius=16,
+            border_width=1,
+            border_color=BORDER,
+        )
+        card.grid(row=0, column=column, sticky="ew", padx=(0 if column == 0 else 8, 0))
+        card.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            card,
+            text=title,
+            text_color=TEXT_MUTED,
+            font=font(12, "semibold"),
+            anchor="w",
+        ).grid(row=0, column=0, sticky="ew", padx=14, pady=(12, 4))
+
+        value_label = ctk.CTkLabel(
+            card,
+            text=value,
+            text_color=TEXT_PRIMARY,
+            font=font(22, "bold"),
+            anchor="w",
+        )
+        value_label.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 12))
+        return value_label
 
     def _setup_table(self):
         self.sheet = Sheet(
@@ -300,7 +393,7 @@ class ScreenList(ctk.CTkFrame):
             header_height=self.default_header_height,
             row_height=self.default_row_height,
         )
-        self.sheet.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.sheet.grid(row=0, column=0, sticky="nsew", padx=12, pady=12)
         self.sheet.enable_bindings()
         self.sheet.bind("<ButtonRelease-1>", self._handle_sheet_click)
         self.sheet.bind("<Control-0>", lambda e: self._reset_table_zoom())
@@ -334,14 +427,8 @@ class ScreenList(ctk.CTkFrame):
         pass
 
     def _show_help_dialog(self):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Hướng dẫn sử dụng")
-        dialog.geometry("520x380")
-        dialog.transient(self)
-        dialog.grab_set()
-
-        title = ctk.CTkLabel(dialog, text="Hướng dẫn nhanh", font=ctk.CTkFont(size=22, weight="bold"))
-        title.pack(padx=20, pady=(20, 10), anchor="w")
+        dialog = create_modal(self, "Hướng dẫn sử dụng", "520x400")
+        add_modal_header(dialog, "Hướng dẫn nhanh", "Luồng chuẩn khi làm việc tại trạm là: nhập hồ sơ, kiểm tra bảng, rồi gửi về HQ khi có mạng.")
 
         body_lines = [
             "1. Bấm 'Tạo hồ sơ mới' để nhập hồ sơ khám.",
@@ -354,55 +441,54 @@ class ScreenList(ctk.CTkFrame):
         if self.is_admin:
             body_lines.append("7. Admin có thể đổi trạm ở góc trên trái. Nhánh HQ (main) chỉ để xem, không sửa trực tiếp.")
 
-        label = ctk.CTkLabel(dialog, text="\n".join(body_lines), justify="left", wraplength=470)
+        label = ctk.CTkLabel(dialog, text="\n".join(body_lines), justify="left", wraplength=470, text_color=TEXT_SECONDARY, font=font(14))
         label.pack(padx=20, pady=(0, 20), anchor="w")
 
-        tip_box = ctk.CTkFrame(dialog, fg_color="#E8EEF7")
+        tip_box = ctk.CTkFrame(dialog, fg_color=SURFACE_STRONG, corner_radius=12)
         tip_box.pack(fill="x", padx=20, pady=(0, 18))
         ctk.CTkLabel(
             tip_box,
             text="Mẹo: Có thể dùng Ctrl + scroll để phóng to/thu nhỏ bảng khi cần nhìn rõ hơn.",
             justify="left",
-            wraplength=450
+            wraplength=450,
+            text_color=TEXT_SECONDARY,
+            font=font(13),
         ).pack(padx=14, pady=12, anchor="w")
 
-        ctk.CTkButton(dialog, text="Đóng", command=dialog.destroy, width=100).pack(pady=(0, 20))
+        add_modal_actions(dialog, "Đóng", dialog.destroy)
 
     def _show_author_dialog(self):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Tác giả")
-        dialog.geometry("420x220")
-        dialog.transient(self)
-        dialog.grab_set()
-
-        ctk.CTkLabel(
-            dialog,
-            text="Tác giả",
-            font=ctk.CTkFont(size=22, weight="bold")
-        ).pack(padx=20, pady=(20, 10), anchor="w")
+        dialog = create_modal(self, "Tác giả", "420x240")
+        add_modal_header(dialog, "Tác giả", "Thông tin liên hệ ngắn gọn của người phát triển dự án.")
 
         ctk.CTkLabel(
             dialog,
             text=f"{AUTHOR_NAME}, {AUTHOR_TITLE}",
             justify="left",
-            anchor="w"
+            anchor="w",
+            text_color=TEXT_PRIMARY,
+            font=font(14),
         ).pack(fill="x", padx=20, pady=(0, 8))
 
         ctk.CTkLabel(
             dialog,
             text=f"GitHub: {AUTHOR_GITHUB_URL}",
             justify="left",
-            anchor="w"
+            anchor="w",
+            text_color=TEXT_SECONDARY,
+            font=font(14),
         ).pack(fill="x", padx=20, pady=(0, 6))
 
         ctk.CTkLabel(
             dialog,
             text=f"Email: {AUTHOR_EMAIL}",
             justify="left",
-            anchor="w"
+            anchor="w",
+            text_color=TEXT_SECONDARY,
+            font=font(14),
         ).pack(fill="x", padx=20, pady=(0, 18))
 
-        ctk.CTkButton(dialog, text="Đóng", command=dialog.destroy, width=100).pack(pady=(0, 20))
+        add_modal_actions(dialog, "Đóng", dialog.destroy)
 
     def _handle_table_zoom(self, event=None):
         self.after(30, self._auto_fit_after_zoom)
@@ -431,25 +517,23 @@ class ScreenList(ctk.CTkFrame):
         y = self.account_btn.winfo_rooty() + self.account_btn.winfo_height() + 6
         menu.geometry(f"190x110+{x}+{y}")
 
-        panel = ctk.CTkFrame(menu, corner_radius=10, fg_color="#F2F4F7")
+        panel = ctk.CTkFrame(menu, corner_radius=12, fg_color=SURFACE, border_width=1, border_color=BORDER)
         panel.pack(fill="both", expand=True)
 
         ctk.CTkLabel(
             panel,
-            text=f"Tài khoản\n{self.username}",
+            text=self.username,
             justify="left",
-            anchor="w"
+            anchor="w",
+            text_color=TEXT_PRIMARY,
+            font=font(14, "semibold"),
         ).pack(fill="x", padx=12, pady=(10, 8))
 
         ctk.CTkButton(
             panel,
             text="Đăng xuất",
             command=self._logout_from_menu,
-            fg_color="#CC0000",
-            hover_color="#990000",
-            text_color="#FFFFFF",
-            font=ctk.CTkFont(size=13, weight="bold"),
-            height=34
+            **destructive_button_style(height=34),
         ).pack(fill="x", padx=12, pady=(0, 10))
 
         menu.bind("<FocusOut>", lambda e: self._close_account_menu())
@@ -594,20 +678,24 @@ class ScreenList(ctk.CTkFrame):
         synced = sum(1 for r in self.all_records if r.get("synced", False))
         pending = total - synced
 
+        self.summary_total_value.configure(text=str(total))
+        self.summary_synced_value.configure(text=str(synced))
+        self.summary_pending_value.configure(text=str(pending))
+        self.summary_month_value.configure(text=self.current_month_year)
         self.status_total_badge.configure(text=f"Tổng: {total}")
         self.status_synced_badge.configure(text=f"Đã sync: {synced}")
         self.status_pending_badge.configure(text=f"Chờ: {pending}")
 
     def _update_sync_button(self):
         if self._is_protected_branch():
-            self.sync_btn.configure(text="📤 Nhánh HQ (khóa)", state="disabled")
+            self.sync_btn.configure(text="Nhánh HQ (khóa)", state="disabled", fg_color=SURFACE_STRONG, text_color=TEXT_MUTED)
             return
 
         pending = sum(1 for r in self.all_records if not r.get("synced", False))
         if pending > 0:
-            self.sync_btn.configure(text=f"Gửi về HQ ({pending})", state="normal")
+            self.sync_btn.configure(text=f"Gửi về HQ ({pending})", state="normal", fg_color=PRIMARY_BLUE, text_color="#FFFFFF")
         else:
-            self.sync_btn.configure(text="Gửi về HQ", state="normal")
+            self.sync_btn.configure(text="Gửi về HQ", state="normal", fg_color=PRIMARY_BLUE, text_color="#FFFFFF")
 
     def _on_row_click(self, record: Dict[str, Any]):
         if not record:
@@ -628,14 +716,9 @@ class ScreenList(ctk.CTkFrame):
         return section.get(field_id, "")
 
     def show_error(self, message: str) -> None:
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Thông báo")
-        dialog.geometry("360x160")
-        dialog.transient(self)
-        dialog.grab_set()
-
-        ctk.CTkLabel(dialog, text=message, wraplength=300, justify="left").pack(padx=20, pady=20)
-        ctk.CTkButton(dialog, text="Đóng", command=dialog.destroy).pack(pady=(0, 20))
+        dialog = create_modal(self, "Thông báo", "380x180")
+        add_modal_header(dialog, "Không thể thực hiện thao tác", message)
+        add_modal_actions(dialog, "Đóng", dialog.destroy)
 
     def destroy(self):
         self._close_account_menu()
@@ -668,21 +751,12 @@ class ScreenList(ctk.CTkFrame):
                 self.station_selector.set(self._get_station_title_for_branch(self.current_branch))
             return
 
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Xác nhận chuyển trạm")
-        dialog.geometry("420x170")
-        dialog.transient(self)
-        dialog.grab_set()
-
-        ctk.CTkLabel(
+        dialog = create_modal(self, "Xác nhận chuyển trạm", "430x190")
+        add_modal_header(
             dialog,
-            text=f"Chuyển sang '{selected_title}'?\nNhánh hiện tại sẽ đổi sang {target_branch}.",
-            wraplength=360,
-            justify="left",
-        ).pack(padx=20, pady=20)
-
-        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
-        btn_frame.pack(pady=(0, 16))
+            "Chuyển ngữ cảnh trạm",
+            f"Bạn sắp chuyển sang '{selected_title}'. Nhánh làm việc sẽ đổi sang {target_branch}.",
+        )
 
         def confirm():
             dialog.destroy()
@@ -693,8 +767,7 @@ class ScreenList(ctk.CTkFrame):
                 self.station_selector.set(self._get_station_title_for_branch(self.current_branch))
             dialog.destroy()
 
-        ctk.CTkButton(btn_frame, text="Chuyển", command=confirm).pack(side="left", padx=6)
-        ctk.CTkButton(btn_frame, text="Hủy", command=cancel).pack(side="left", padx=6)
+        add_modal_actions(dialog, "Chuyển", confirm, "Hủy", cancel)
 
 
 def render_list_screen(

@@ -25,6 +25,7 @@ Khong test trong thu muc nay:
 
 ## File de dung
 
+- `Launch-Admin-App.bat`
 - `Check-Stations.bat`
 - `Build-Stations-Json.bat`
 - `Export-Onboarding-Checklist.bat`
