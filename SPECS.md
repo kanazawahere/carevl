@@ -19,12 +19,14 @@ Xây dựng **CareVL** (Care Vinh Long) — ứng dụng desktop quản lý hồ
 |---|---|
 | Ngôn ngữ | Python 3.11+ |
 | Package Manager | **UV** (dev only, client không cần) |
-| UI Framework | **CustomTkinter** |
+| UI Framework | **CustomTkinter** + **tksheet** |
 | Đóng gói | PyInstaller `--onefile` → ra `carevl.exe` (bundle Python) |
 | Lưu trữ | JSON file (local, 1 file/ngày) |
 | Đồng bộ | Git CLI qua `subprocess` |
 | Xác thực | GitHub OAuth Device Flow |
 | Form config | `config/template_form.json` (OTA-updatable) |
+| OMR PDF | **ReportLab** + **qrcode** |
+| OMR Scanner | **OMRChecker** (subprocess) |
 
 **KHÔNG dùng:** SQLite, Electron, REST API tập trung, Dear PyGui, bất kỳ database server nào.
 
