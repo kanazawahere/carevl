@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from pathlib import Path
@@ -343,3 +344,74 @@ def get_recent_commits(*, project_root: Optional[str] = None, limit: int = 10) -
             }
         )
     return commits
+
+
+def get_current_branch(*, project_root: Optional[str] = None) -> str:
+    """
+    Get the current Git branch name.
+    Returns: branch name (e.g., "main", "user/TRAM-Y-TE-P-CAI-VON")
+    """
+    result = _run_git_command(
+        ["rev-parse", "--abbrev-ref", "HEAD"],
+        project_root=project_root,
+    )
+    
+    if result["ok"]:
+        return result.get("stdout", "").strip()
+    
+    return "unknown"
+
+
+def get_station_info(branch_name: Optional[str] = None, *, project_root: Optional[str] = None) -> Dict[str, str]:
+    """
+    Get station metadata for the current branch.
+    
+    Returns: {"title": ..., "station_id": ..., "commune_code": ...}
+    
+    Supports both old format (branch → "title string") and new format
+    (branch → {"title": ..., "station_id": ..., "commune_code": ...}).
+    """
+    default = {"title": "CareVL", "station_id": "", "commune_code": ""}
+    
+    # Get current branch if not provided
+    if branch_name is None:
+        branch_name = get_current_branch(project_root=project_root)
+    
+    # Load stations mapping from config
+    try:
+        stations_path = Path(paths.get_writable_path("config/stations.json"))
+        if stations_path.exists():
+            with open(stations_path, "r", encoding="utf-8") as f:
+                stations = json.load(f)
+                entry = stations.get(branch_name)
+                if entry is None:
+                    return default
+                # Support both old (string) and new (dict) format
+                if isinstance(entry, str):
+                    return {"title": entry, "station_id": "", "commune_code": ""}
+                if isinstance(entry, dict):
+                    return {
+                        "title": entry.get("title", "CareVL"),
+                        "station_id": entry.get("station_id", ""),
+                        "commune_code": entry.get("commune_code", ""),
+                    }
+    except Exception:
+        pass
+    
+    return default
+
+
+def get_station_title(branch_name: Optional[str] = None, *, project_root: Optional[str] = None) -> str:
+    """
+    Get the display title for a branch/station.
+    Backward-compatible wrapper around get_station_info().
+    
+    Examples:
+    - "main" → "CareVL - HQ"
+    - "user/TRAM-Y-TE-P-CAI-VON" → "Trạm Y Tế Phường Cái Vồn"
+    - "unknown" → "CareVL"
+    
+    Returns: Display title string
+    """
+    return get_station_info(branch_name, project_root=project_root)["title"]
+

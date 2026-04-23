@@ -1,0 +1,74 @@
+# Aggregate Workflow — CareVL Data Repository
+# This file belongs in the DATA repo (vinhlong-health-record), NOT the software repo.
+# Copy to: vinhlong-health-record/.github/workflows/aggregate.yml
+
+name: Aggregate User Branches
+
+on:
+  schedule:
+    # Run nightly at 01:00 UTC (08:00 Vietnam time)
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch all user branches
+        run: |
+          git fetch --all --prune
+          echo "=== User branches found ==="
+          git branch -r | grep 'origin/user/' | sed 's|origin/||' || echo "No user branches found"
+
+      - name: Merge user branches into main
+        run: |
+          git config user.name "CareVL Bot"
+          git config user.email "carevl-bot@noreply.github.com"
+          
+          MERGED=0
+          SKIPPED=0
+          FAILED=0
+          
+          for branch in $(git branch -r | grep 'origin/user/' | sed 's|origin/||' | xargs); do
+            echo "--- Merging $branch ---"
+            if git merge --no-edit "origin/$branch" 2>/dev/null; then
+              echo "✅ Merged $branch"
+              MERGED=$((MERGED + 1))
+            else
+              echo "⚠️ Conflict in $branch — skipping"
+              git merge --abort 2>/dev/null || true
+              FAILED=$((FAILED + 1))
+            fi
+          done
+          
+          echo "=== Summary ==="
+          echo "Merged: $MERGED | Skipped: $SKIPPED | Failed: $FAILED"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Export anonymized CSV
+        run: |
+          python scripts/export_csv.py
+
+      - name: Commit and push
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: aggregate user branches + export CSV [$(date -u +%Y-%m-%d)]"
+            git push origin main
+          fi

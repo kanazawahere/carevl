@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Any, Callable, List
+from typing import Any, Callable, Dict, List
 import customtkinter as ctk
 
 from modules import auth
@@ -55,20 +55,27 @@ class ScreenSync(ctk.CTkFrame):
         self.status_value = ctk.CTkLabel(status_frame, text="Kiểm tra...", font=ctk.CTkFont(weight="bold"))
         self.status_value.grid(row=0, column=1, padx=10, pady=10, sticky="w")
         
+        self.progress_bar = ctk.CTkProgressBar(status_frame, orientation="horizontal", mode="indeterminate")
+        self.progress_bar.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=(0, 10))
+        
         action_frame = ctk.CTkFrame(self, fg_color="transparent")
         action_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
         
         self.push_btn = ctk.CTkButton(
             action_frame,
             text="↑ Gửi lên (Push)",
-            command=self._on_push
+            command=self._on_push,
+            hover_color="#1f6aa5",
+            fg_color="#2fa4e7"
         )
         self.push_btn.pack(fill="x", pady=5)
         
         self.pull_btn = ctk.CTkButton(
             action_frame,
             text="↓ Nhận về (Pull)",
-            command=self._on_pull
+            command=self._on_pull,
+            hover_color="#1f6aa5",
+            fg_color="#2fa4e7"
         )
         self.pull_btn.pack(fill="x", pady=5)
         
@@ -107,8 +114,10 @@ class ScreenSync(ctk.CTkFrame):
             self._show_error("Cần đăng nhập trước.")
             return
         
-        self.push_btn.configure(state="disabled", text="Đang gửi...")
+        self.push_btn.configure(state="disabled", text="Đang gửi...", fg_color="gray")
         self.pull_btn.configure(state="disabled")
+        self.progress_bar.set(0)
+        self.progress_bar.start()
         
         thread = threading.Thread(target=self._push_task, daemon=True)
         thread.start()
@@ -118,7 +127,8 @@ class ScreenSync(ctk.CTkFrame):
         self.after(0, self._handle_push_result, result)
 
     def _handle_push_result(self, result: Dict[str, Any]):
-        self.push_btn.configure(state="normal", text="↑ Gửi lên (Push)")
+        self.progress_bar.stop()
+        self.push_btn.configure(state="normal", text="↑ Gửi lên (Push)", fg_color="#2fa4e7")
         self.pull_btn.configure(state="normal")
         
         if result["ok"]:
@@ -134,8 +144,10 @@ class ScreenSync(ctk.CTkFrame):
             self._show_error("Cần đăng nhập trước.")
             return
         
-        self.pull_btn.configure(state="disabled", text="Đang nhận...")
+        self.pull_btn.configure(state="disabled", text="Đang nhận...", fg_color="gray")
         self.push_btn.configure(state="disabled")
+        self.progress_bar.set(0)
+        self.progress_bar.start()
         
         thread = threading.Thread(target=self._pull_task, daemon=True)
         thread.start()
@@ -145,7 +157,8 @@ class ScreenSync(ctk.CTkFrame):
         self.after(0, self._handle_pull_result, result)
 
     def _handle_pull_result(self, result: Dict[str, Any]):
-        self.pull_btn.configure(state="normal", text="↓ Nhận về (Pull)")
+        self.progress_bar.stop()
+        self.pull_btn.configure(state="normal", text="↓ Nhận về (Pull)", fg_color="#2fa4e7")
         self.push_btn.configure(state="normal")
         
         if result["ok"]:

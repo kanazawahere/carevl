@@ -3,6 +3,10 @@ from __future__ import annotations
 import datetime
 from typing import Any, Callable, Dict, List, Optional
 import customtkinter as ctk
+from tksheet import Sheet
+
+from modules import crud
+from modules import sync as sync_module
 
 
 class ScreenList(ctk.CTkFrame):
@@ -13,6 +17,7 @@ class ScreenList(ctk.CTkFrame):
         on_create_record: Callable[[], None],
         on_view_record: Callable[[str, str], None],
         on_sync: Callable[[], None],
+        on_logout: Callable[[], None],
         **kwargs
     ):
         super().__init__(master, **kwargs)
@@ -21,23 +26,28 @@ class ScreenList(ctk.CTkFrame):
         self.on_create_record = on_create_record
         self.on_view_record = on_view_record
         self.on_sync = on_sync
+        self.on_logout = on_logout
         
         self.records: List[Dict[str, Any]] = []
         self.current_month_year: str = datetime.datetime.now().strftime("%m-%Y")
         
         self._setup_ui()
         self.load_records()
+        
+        self.bind("<Configure>", lambda e: self._on_resize())
 
     def _setup_ui(self):
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
         top_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         top_frame.grid_columnconfigure(1, weight=1)
-        top_frame.grid_columnconfigure(3, weight=0)
         
-        title = ctk.CTkLabel(top_frame, text="VLMD", font=ctk.CTkFont(size=20, weight="bold"))
+        # Get station title from current branch
+        station_title = sync_module.get_station_title()
+        
+        title = ctk.CTkLabel(top_frame, text=station_title, font=ctk.CTkFont(size=20, weight="bold"))
         title.grid(row=0, column=0, padx=(0, 20))
         
         self.month_combo = ctk.CTkComboBox(
@@ -52,8 +62,18 @@ class ScreenList(ctk.CTkFrame):
         self.search_entry.grid(row=0, column=2, padx=5)
         self.search_entry.bind("<KeyRelease>", lambda e: self._on_search())
         
-        user_label = ctk.CTkLabel(top_frame, text=f"🔵 {self.username}")
+        user_label = ctk.CTkLabel(top_frame, text=f"👤 {self.username}")
         user_label.grid(row=0, column=3, padx=(20, 0))
+        
+        logout_btn = ctk.CTkButton(
+            top_frame,
+            text="Đăng xuất",
+            command=self.on_logout,
+            width=80,
+            fg_color="#CC0000",
+            hover_color="#990000"
+        )
+        logout_btn.grid(row=0, column=4, padx=(10, 0))
         
         action_frame = ctk.CTkFrame(self, fg_color="transparent")
         action_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
@@ -61,36 +81,99 @@ class ScreenList(ctk.CTkFrame):
         
         create_btn = ctk.CTkButton(
             action_frame,
-            text="+ Tạo hồ sơ mới",
-            command=self.on_create_record
+            text="＋ Tạo hồ sơ mới",
+            command=self.on_create_record,
+            hover_color="#1f6aa5",
+            fg_color="#2fa4e7"
         )
         create_btn.grid(row=0, column=0, padx=5)
         
         sync_btn = ctk.CTkButton(
             action_frame,
-            text="↑ Gửi về HQ",
-            command=self.on_sync
+            text="📤 Gửi về HQ",
+            command=self.on_sync,
+            hover_color="#1f6aa5",
+            fg_color="#2fa4e7"
         )
         sync_btn.grid(row=0, column=1, sticky="e", padx=5)
         
-        table_frame = ctk.CTkFrame(self)
-        table_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=(0, 10))
-        table_frame.grid_rowconfigure(0, weight=1)
-        table_frame.grid_columnconfigure(0, weight=1)
+        stats_container = ctk.CTkFrame(self, fg_color="transparent")
+        stats_container.grid(row=3, column=0, sticky="ew", padx=10, pady=(0, 5))
         
-        # Define column widths for consistent alignment
-        self.column_widths = [40, 300, 150, 120, 80]
+        total_card = ctk.CTkFrame(stats_container, fg_color="#3B8ED0")
+        total_card.pack(side="left", padx=5, fill="both", expand=True)
+        self.total_label = ctk.CTkLabel(total_card, text="Tổng: 0", font=ctk.CTkFont(size=14, weight="bold"))
+        self.total_label.pack(padx=10, pady=10)
         
-        headers = ["#", "Họ tên", "Gói khám", "Ngày khám", "Đồng bộ"]
-        for i, (header, width) in enumerate(zip(headers, self.column_widths)):
-            label = ctk.CTkLabel(table_frame, text=header, width=width, font=ctk.CTkFont(weight="bold"), anchor="w")
-            label.grid(row=0, column=i, sticky="w", padx=5, pady=5)
-            table_frame.grid_columnconfigure(i, weight=0 if i != 1 else 1)
+        synced_card = ctk.CTkFrame(stats_container, fg_color="#2fa04e")
+        synced_card.pack(side="left", padx=5, fill="both", expand=True)
+        self.synced_label = ctk.CTkLabel(synced_card, text="Đã sync: 0", font=ctk.CTkFont(size=14, weight="bold"))
+        self.synced_label.pack(padx=10, pady=10)
         
-        self.scroll_frame = ctk.CTkScrollableFrame(table_frame, orientation="vertical")
-        self.scroll_frame.grid(row=1, column=0, columnspan=len(headers), sticky="nsew")
-        for i in range(len(headers)):
-            self.scroll_frame.grid_columnconfigure(i, weight=0 if i != 1 else 1)
+        pending_card = ctk.CTkFrame(stats_container, fg_color="#e67e22")
+        pending_card.pack(side="left", padx=5, fill="both", expand=True)
+        self.pending_label = ctk.CTkLabel(pending_card, text="Chờ: 0", font=ctk.CTkFont(size=14, weight="bold"))
+        self.pending_label.pack(padx=10, pady=10)
+        
+        self._setup_table()
+
+    def _setup_table(self):
+        self.sheet = Sheet(
+            self,
+            data=[["", "", "", "", "", ""]],
+            headers=["#", "Ho ten", "Goi kham", "Ngay kham", "Dong bo"],
+            theme="dark",
+            show_row_index=True,
+            adjustable_columns=True,
+            sortable=True,
+            search=True,
+            header_height=30,
+            row_height=30,
+        )
+        self.sheet.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
+        self.sheet.enable_bindings()
+        
+        # Wire row click handler
+        self.sheet.bind("<ButtonRelease-1>", self._handle_sheet_click)
+        
+        self.sheet.set_column_widths([40, 200, 100, 100, 80])
+    
+    def _handle_sheet_click(self, event):
+        """Handle click on sheet to open record."""
+        selected = self.sheet.get_currently_selected()
+        if not selected:
+            return
+        
+        # Get row index from selection
+        row_idx = None
+        if selected.row is not None:
+            row_idx = selected.row
+        elif selected.rows:
+            row_idx = selected.rows[0]
+        
+        if row_idx is not None and 0 <= row_idx < len(self.records):
+            self._on_row_click(self.records[row_idx])
+
+    def _on_resize(self):
+        pass
+
+    def _auto_fit_columns(self):
+        if not hasattr(self, 'sheet') or not self.sheet:
+            return
+        
+        col_widths = [40, 150, 80, 80, 60]
+        
+        for record in self.records:
+            row = self._record_to_row(0, record)
+            for i, text in enumerate(row):
+                if i < len(col_widths):
+                    text_len = len(str(text)) * 8
+                    col_widths[i] = max(col_widths[i], text_len)
+        
+        for i in range(len(col_widths)):
+            col_widths[i] = min(col_widths[i], 400)
+        
+        self.sheet.set_column_widths(col_widths)
 
     def _get_available_months(self) -> List[str]:
         now = datetime.datetime.now()
@@ -110,57 +193,62 @@ class ScreenList(ctk.CTkFrame):
         self.load_records()
 
     def load_records(self, records: Optional[List[Dict[str, Any]]] = None) -> None:
+        # Show loading state
+        self.sheet.set_sheet_data([["", "Đang tải...", "", "", ""]])
+        self.update()
+        
         if records is not None:
             self.records = records
         else:
-            from modules import crud
             query = self.search_entry.get().strip()
             self.records = crud.search(query, self.current_month_year)
         
         self._render_table()
+        self._update_stats()
 
-    def _render_table(self) -> None:
-        for widget in self.scroll_frame.winfo_children():
-            widget.destroy()
-        
+    def _render_table(self):
+        data = []
         for idx, record in enumerate(self.records):
-            data = record.get("data", {})
-            
-            package_id = record.get("package_id", "unknown")
-            created_at = record.get("created_at", "")
-            date_part = created_at.split(" ")[-1] if created_at else ""
-            
-            ho_ten = self._get_field_value(data, "demographics", "ho_ten") or "---"
-            synced = record.get("synced", False)
-            synced_badge = "🟢" if synced else "🔴"
-            
-            row_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
-            row_frame.pack(fill="x", pady=1)
-            
-            # Use same column configuration as headers
-            for i in range(5):
-                row_frame.grid_columnconfigure(i, weight=0 if i != 1 else 1)
-            
-            idx_label = ctk.CTkLabel(row_frame, text=str(idx + 1), width=self.column_widths[0])
-            idx_label.grid(row=0, column=0, padx=5, sticky="w")
-            
-            name_label = ctk.CTkLabel(row_frame, text=ho_ten, width=self.column_widths[1], anchor="w")
-            name_label.grid(row=0, column=1, padx=5, sticky="ew")
-            
-            package_label = ctk.CTkLabel(row_frame, text=package_id, width=self.column_widths[2], anchor="w")
-            package_label.grid(row=0, column=2, padx=5, sticky="w")
-            
-            date_label = ctk.CTkLabel(row_frame, text=date_part, width=self.column_widths[3], anchor="w")
-            date_label.grid(row=0, column=3, padx=5, sticky="w")
-            
-            synced_label = ctk.CTkLabel(row_frame, text=synced_badge, width=self.column_widths[4], anchor="center")
-            synced_label.grid(row=0, column=4, padx=5, sticky="w")
-            
-            # Bind events to all child widgets for row-level interaction
-            for w in row_frame.winfo_children():
-                w.bind("<Button-1>", lambda e, r=record: self._on_row_click(r))
+            data.append(self._record_to_row(idx + 1, record))
+        
+        if not data:
+            # Show empty state message
+            data = [["", "Chưa có hồ sơ nào trong tháng này", "", "", ""]]
+        
+        self.sheet.set_sheet_data(data)
+        self._auto_fit_columns()
 
-    def _on_row_click(self, record: Dict[str, Any]) -> None:
+    def _record_to_row(self, idx: int, record: Dict[str, Any]) -> List[str]:
+        data = record.get("data", {})
+        
+        package_id = record.get("package_id", "unknown")
+        created_at = record.get("created_at", "")
+        date_part = created_at.split(" ")[-1] if created_at else ""
+        
+        ho_ten = self._get_field_value(data, "demographics", "ho_ten") or "---"
+        synced = record.get("synced", False)
+        
+        # Color-coded sync status
+        if synced:
+            synced_badge = "✅ Đã sync"
+        else:
+            synced_badge = "⚠️ Chờ sync"
+        
+        return [str(idx), ho_ten, package_id, date_part, synced_badge]
+
+    def _update_stats(self):
+        total = len(self.records)
+        synced = sum(1 for r in self.records if r.get("synced", False))
+        pending = total - synced
+        
+        self.total_label.configure(text=f"Tổng: {total}")
+        self.synced_label.configure(text=f"Đã sync: {synced}")
+        self.pending_label.configure(text=f"Chờ: {pending}")
+
+    def _on_row_click(self, record: Dict[str, Any]):
+        if not record:
+            return
+        
         record_id = record.get("id", "")
         created_at = record.get("created_at", "")
         date_part = created_at.split(" ")[-1] if created_at else ""
@@ -172,7 +260,6 @@ class ScreenList(ctk.CTkFrame):
         return section.get(field_id, "")
 
     def show_error(self, message: str) -> None:
-        from modules import crud
         pass
 
 
@@ -181,12 +268,14 @@ def render_list_screen(
     username: str,
     on_create_record: Callable[[], None],
     on_view_record: Callable[[str, str], None],
-    on_sync: Callable[[], None]
+    on_sync: Callable[[], None],
+    on_logout: Callable[[], None]
 ) -> ScreenList:
     return ScreenList(
         master,
         username=username,
         on_create_record=on_create_record,
         on_view_record=on_view_record,
-        on_sync=on_sync
+        on_sync=on_sync,
+        on_logout=on_logout
     )

@@ -58,6 +58,7 @@ def _read_json_array(filepath: str) -> List[Dict[str, Any]]:
 def create(record_data: Dict[str, Any], package_id: str, author: str, date_str: Optional[str] = None) -> Dict[str, Any]:
     """
     Creates a new health record and appends it to the daily archive file.
+    Automatically injects station metadata (station_id, commune_code) from config.
     """
     if not date_str:
         date_str = datetime.datetime.now().strftime("%d-%m-%Y")
@@ -65,12 +66,25 @@ def create(record_data: Dict[str, Any], package_id: str, author: str, date_str: 
     filepath = _get_path(date_str)
     records = _read_json_array(filepath)
     
+    # Get station metadata from current branch config
+    station_id = ""
+    commune_code = ""
+    try:
+        from modules import sync as sync_module
+        station_info = sync_module.get_station_info()
+        station_id = station_info.get("station_id", "")
+        commune_code = station_info.get("commune_code", "")
+    except Exception:
+        pass
+    
     timestamp = datetime.datetime.now().strftime("%H:%M:%S.%f %d-%m-%Y")
     new_record = {
         "id": str(uuid.uuid4()),
         "created_at": timestamp,
         "updated_at": timestamp,
         "author": author,
+        "station_id": station_id,
+        "commune_code": commune_code,
         "synced": False,
         "package_id": package_id,
         "data": record_data

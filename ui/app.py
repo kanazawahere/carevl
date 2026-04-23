@@ -17,7 +17,8 @@ class App(ctk.CTk):
         paths.ensure_directories()
         
         self.title("CareVL - Khám sức khỏe Vĩnh Long")
-        self.geometry("900x700")
+        self.geometry("1000x700")
+        self.minsize(800, 600)
         
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
@@ -27,6 +28,11 @@ class App(ctk.CTk):
         
         self._setup_ui()
         self._check_auth()
+        
+        self.bind("<Configure>", self._on_resize)
+    
+    def _on_resize(self, event):
+        pass
 
     def _setup_ui(self):
         self.grid_rowconfigure(0, weight=1)
@@ -85,7 +91,7 @@ class App(ctk.CTk):
             command=self._copy_user_code,
             width=100
         )
-        self.copy_code_btn.pack(pady=5)
+        self.copy_code_btn.pack_forget()
 
     def _copy_user_code(self):
         code = self.code_label.cget("text").replace("Mã xác thực: ", "")
@@ -108,6 +114,7 @@ class App(ctk.CTk):
         
         self.code_label.configure(text=f"Mã xác thực: {user_code}")
         self.status_label.configure(text="Vào github.com/login/device nhập mã trên, sau đó quay lại đây.")
+        self.copy_code_btn.pack(pady=5)
         
         thread = threading.Thread(
             target=self._do_login_poll,
@@ -123,9 +130,17 @@ class App(ctk.CTk):
     def _handle_login_result(self, result: Dict[str, Any]):
         if result["ok"]:
             self.username = result.get("username")
+            
+            config = {
+                "access_token": result.get("access_token", ""),
+                "username": self.username,
+            }
+            auth._save_user_config(config)
+            
             self._show_screen_list()
         else:
             self.status_label.configure(text=f"Lỗi: {result.get('message', '')}")
+            self.copy_code_btn.configure(state="disabled", fg_color="gray")
 
     def _show_screen_list(self):
         self._clear_screen()
@@ -151,12 +166,16 @@ class App(ctk.CTk):
         def on_sync():
             self._show_sync_screen()
         
+        def on_logout():
+            self._on_logout()
+        
         screen = screen_list.render_list_screen(
             self.container,
             username=self.username or "",
             on_create_record=on_create_record,
             on_view_record=on_view_record,
-            on_sync=on_sync
+            on_sync=on_sync,
+            on_logout=on_logout
         )
         screen.pack(fill="both", expand=True)
         self.current_screen = screen
@@ -209,6 +228,48 @@ class App(ctk.CTk):
         for widget in self.container.winfo_children():
             widget.destroy()
         self.current_screen = None
+    
+    def _on_logout(self):
+        """Handle logout action."""
+        # Confirm logout
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Xác nhận đăng xuất")
+        dialog.geometry("300x150")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        label = ctk.CTkLabel(
+            dialog,
+            text="Bạn có chắc muốn đăng xuất?",
+            wraplength=250
+        )
+        label.pack(padx=20, pady=20)
+        
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(pady=10)
+        
+        def confirm_logout():
+            dialog.destroy()
+            auth.logout()
+            self.username = None
+            self._show_login()
+        
+        def cancel_logout():
+            dialog.destroy()
+        
+        ctk.CTkButton(
+            btn_frame,
+            text="Đăng xuất",
+            command=confirm_logout,
+            fg_color="#CC0000",
+            hover_color="#990000"
+        ).pack(side="left", padx=5)
+        
+        ctk.CTkButton(
+            btn_frame,
+            text="Hủy",
+            command=cancel_logout
+        ).pack(side="left", padx=5)
 
 
 def main():

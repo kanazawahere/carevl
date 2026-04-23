@@ -73,21 +73,50 @@ Double-click `carevl.exe` hoặc chạy `launcher.bat`
 
 ### Luồng dữ liệu
 ```
-[Trạm 1] → Clone repo → Tạo hồ sơ → Commit → Push → branch: user/nhan-vien-1
-[Trạm 2] → Clone repo → Tạo hồ sơ → Commit → Push → branch: user/nhan-vien-2
-[Trạm 3] → Clone repo → Tạo hồ sơ → Commit → Push → branch: user/nhan-vien-3
-                          ↓
-              [HQ merge] → Xem dữ liệu từ tất cả các trạm
+[Trạm 1 - user/bacsi-le]       → Clone repo → Tạo hồ sơ → Commit → Push → user/bacsi-le
+[Trạm 2 - user/bacsi-nguyen]  → Clone repo → Tạo hồ sơ → Commit → Push → user/bacsi-nguyen
+[Trạm 3 - user/bacsi-tran]    → Clone repo → Tạo hồ sơ → Commit → Push → user/bacsi-tran
+                                              ↓
+                              [HQ merge all user/* branches]
+                                              ↓
+                                    [main] → Tổng hợp tất cả
 ```
 
-### Merge cho HQ
+### Merge cho HQ (Admin)
 1. Vào https://github.com/DigitalVersion/vinhlong-health-record
-2. Click **Compare** → Chọn `main` vs `user/ten-nhan-vien`
+2. Click **Compare** → Base: `main` ← Compare: `user/bacsi-le`
 3. Xem thay đổi → **Create Pull Request** → **Merge PR**
+4. Lặp lại cho các user khác
 
 ---
 
 ## Tính năng chính
+
+### Quản lý theo Branch
+Mỗi nhân viên y tế quản lý dữ liệu trên branch riêng:
+- Branch format: `user/{username}`
+- Ví dụ: `user/bacsi-le`, `user/bacsi-nguyen`
+- Khi push, dữ liệu được commit vào branch của người đang đăng nhập
+- HQ merge các branch `user/*` vào `main` để tổng hợp
+
+### Tự động đăng nhập (Auto Login)
+- Lần đầu: Đăng nhập qua GitHub OAuth Device Flow
+- Token được lưu vào `config/user_config.json`
+- Các lần sau: Tự động kiểm tra token, vào app không cần đăng nhập lại
+- Token hết hạn hoặc invalid: Tự động yêu cầu đăng nhập lại
+
+### Dữ liệu mẫu (Sample Data)
+Ứng dụng đi kèm dữ liệu mẫu để test:
+- 4 records mẫu trong tháng 04-2026
+- Mix các gói khám: NCT, HS, General
+- Cả trạng thái sync và chưa sync
+
+### Giao diện (UI)
+- **Dark Mode**: Giao diện tối màu dễ nhìn
+- **tksheet Table**: Bảng sắp xếp được, tìm kiếm được
+- **Auto Fit Columns**: Nút tự động điều chỉnh độ rộng cột
+- **Stats Cards**: Thống kê Tổng / Đã sync / Chờ sync
+- **Progress Bar**: Hiển thị tiến trình khi đồng bộ
 
 ### Setup môi trường
 
@@ -139,34 +168,30 @@ carevl/
 ├── .gitignore             # Git ignore rules
 │
 ├── config/
-│   ├── template_form.json  # Form configuration
-│   └── user_config.json    # OAuth token (NOT committed)
+│   ├── template_form.json  # Form configuration (5 goi kham)
+│   └── user_config.json    # OAuth token - TUJ DANG commit vo .gitignore
 │
-├── data/                   # Data directory
+├── data/                   # Data theo ngay
 │   └── YYYY/MM/DD-MM-YYYY.json
 │
-├── modules/
-│   ├── auth.py            # GitHub OAuth
-│   ├── crud.py            # CRUD operations
-│   ├── sync.py            # Git sync
-│   ├── form_engine.py     # Dynamic form rendering
-│   └── validator.py       # Data validation
-│
 ├── ui/
-│   ├── app.py             # Main app
-│   ├── screen_list.py     # Record list screen
-│   ├── screen_form.py     # Record form screen
-│   └── screen_sync.py     # Sync status screen
+│   ├── app.py             # Main app with dark theme
+│   ├── screen_list.py     # Danh sach ho so (tksheet table)
+│   ├── screen_form.py     # Nhap sua ho so
+│   └── screen_sync.py   # Dong bo Git (progress bar)
 │
-└── tests/
-    └── ...                # Unit tests
-```
+└── modules/
+    ├── auth.py           # GitHub OAuth Device Flow
+    ├── crud.py           # Tao / Doc / Sua / Xoa JSON
+    ├── sync.py           # Git push/pull
+    ├── validator.py      # Kiem tra du lieu input
+    └── form_engine.py    # Render form dong
 
 ## Tech Stack
 
 - **Language**: Python 3.11+
 - **Package Manager**: UV (dev only, client không cần)
-- **UI Framework**: CustomTkinter
+- **UI Framework**: CustomTkinter + tksheet (table with sort/search)
 - **Packaging**: PyInstaller (bundles Python interpreter)
 - **Storage**: JSON files (1 file/day)
 - **Sync**: Git CLI via subprocess
@@ -204,9 +229,24 @@ Cấu hình gói khám trong `config/template_form.json`.
 
 ### Branch Strategy
 
-- Mỗi người dùng commit vào branch riêng: `user/{github_username}`
-- HQ merge định kỳ vào `main`
-- Tránh conflict khi làm việc đồng thời
+- **Mỗi user** có branch riêng: `user/{username}`
+- **Push**: Tự động push vào branch của user hiện tại
+- **Pull**: Chỉ pull từ branch của mình
+- **HQ**: Merge tất cả `user/*` branches vào `main` để tổng hợp
+
+### Auto Login
+
+```bash
+# Lan dau: Login qua GitHub (Device Flow)
+# + Nhan ma xac thuc tu GitHub
+# + Nhap ma tai github.com/login/device
+# + Xac nhan
+
+# Lan sau:
+# + Tu dong kiem tra token trong config/user_config.json
+# + Neu hop le -> vao app luon
+# + Neu het han -> yeu cau login lai
+```
 
 ### Conflict Resolution
 

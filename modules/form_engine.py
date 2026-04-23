@@ -1,236 +1,311 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
 import re
-import datetime
+from typing import Any, Dict, Optional, Tuple
+import customtkinter as ctk
 
 
 class FormEngine:
-    def __init__(self, package: Dict[str, Any], parent_frame):
+    """
+    Dynamic form rendering engine that creates form widgets based on package template.
+    Maintains widget references for value extraction and error highlighting.
+    """
+    
+    def __init__(self, package: Dict[str, Any], parent: ctk.CTkFrame):
         self.package = package
-        self.parent_frame = parent_frame
-        self.sections_frames: Dict[str, Any] = {}
-        self.field_widgets: Dict[str, Dict[str, Any]] = {}
+        self.parent = parent
+        self.field_widgets: Dict[Tuple[str, str], Dict[str, Any]] = {}
+        self.section_frames: Dict[str, ctk.CTkFrame] = {}
+        
         self._render()
-
-    def _render(self):
-        for section in self.package.get("sections", []):
-            self._render_section(section)
-
-    def _render_section(self, section: Dict[str, Any]):
-        section_id = section.get("id", "")
-        section_label = section.get("label", "")
+    
+    def _render(self) -> None:
+        """Render all sections and fields from the package template."""
+        sections = self.package.get("sections", [])
         
-        try:
-            import customtkinter as ctk
-            frame = ctk.CTkFrame(self.parent_frame, label_text=section_label)
-            frame.pack(fill="x", padx=10, pady=5)
-        except Exception:
-            return
-        
-        self.sections_frames[section_id] = frame
-        inner_frame = frame
-        try:
-            inner_frame = frame.cget("interior") if hasattr(frame, "cget") else frame
-        except Exception:
-            pass
-        
-        for field in section.get("fields", []):
-            self._render_field(field, inner_frame, section_id)
-
-    def _render_field(self, field: Dict[str, Any], parent, section_id: str):
+        for section in sections:
+            section_id = section.get("id", "")
+            section_label = section.get("label", section_id)
+            
+            # Create section frame
+            section_frame = ctk.CTkFrame(self.parent, fg_color="transparent")
+            section_frame.pack(fill="x", padx=10, pady=10)
+            section_frame.grid_columnconfigure(1, weight=1)
+            
+            self.section_frames[section_id] = section_frame
+            
+            # Section header
+            header = ctk.CTkLabel(
+                section_frame,
+                text=section_label,
+                font=ctk.CTkFont(size=14, weight="bold"),
+                anchor="w"
+            )
+            header.grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 10))
+            
+            # Render fields
+            fields = section.get("fields", [])
+            for idx, field in enumerate(fields):
+                self._render_field(section_frame, section_id, field, idx + 1)
+    
+    def _render_field(
+        self,
+        parent: ctk.CTkFrame,
+        section_id: str,
+        field: Dict[str, Any],
+        row: int
+    ) -> None:
+        """Render a single field based on its type."""
         field_id = field.get("id", "")
-        field_label = field.get("label", "")
+        field_label = field.get("label", field_id)
         field_type = field.get("type", "text")
+        required = field.get("required", False)
         
-        widgets = {"section_id": section_id, "field_id": field_id}
+        # Label with required indicator
+        label_text = f"{field_label} {'*' if required else ''}"
+        label = ctk.CTkLabel(parent, text=label_text, anchor="w")
+        label.grid(row=row, column=0, sticky="w", padx=(0, 10), pady=5)
         
-        import customtkinter as ctk
+        widget_key = (section_id, field_id)
         
-        if field_type == "text" or field_type == "number" or field_type == "date":
-            label = ctk.CTkLabel(parent, text=field_label, anchor="w")
-            label.pack(fill="x", padx=5, pady=(5, 0))
-            
-            entry = ctk.CTkEntry(parent, placeholder_text=field_label)
-            entry.pack(fill="x", padx=5, pady=2)
-            widgets["widget"] = entry
-            
-            if field_type == "date":
-                entry.configure(placeholder_text="DD-MM-YYYY")
+        # Create widget based on type
+        if field_type == "text":
+            widget = ctk.CTkEntry(parent, width=300)
+            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            self.field_widgets[widget_key] = {
+                "widget": widget,
+                "type": "text",
+                "label": label
+            }
+        
+        elif field_type == "number":
+            widget = ctk.CTkEntry(parent, width=300)
+            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            self.field_widgets[widget_key] = {
+                "widget": widget,
+                "type": "number",
+                "label": label
+            }
+        
+        elif field_type == "date":
+            widget = ctk.CTkEntry(parent, width=300, placeholder_text="DD-MM-YYYY")
+            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            self.field_widgets[widget_key] = {
+                "widget": widget,
+                "type": "date",
+                "label": label
+            }
         
         elif field_type == "select":
-            label = ctk.CTkLabel(parent, text=field_label, anchor="w")
-            label.pack(fill="x", padx=5, pady=(5, 0))
-            
             options = field.get("options", [])
-            combo = ctk.CTkComboBox(parent, values=options)
-            combo.pack(fill="x", padx=5, pady=2)
-            widgets["widget"] = combo
+            widget = ctk.CTkComboBox(parent, values=options, width=300)
+            if options:
+                widget.set("")  # Start with empty selection
+            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            self.field_widgets[widget_key] = {
+                "widget": widget,
+                "type": "select",
+                "label": label
+            }
         
         elif field_type == "textarea":
-            label = ctk.CTkLabel(parent, text=field_label, anchor="w")
-            label.pack(fill="x", padx=5, pady=(5, 0))
-            
-            textbox = ctk.CTkTextbox(parent, height=80)
-            textbox.pack(fill="x", padx=5, pady=2)
-            widgets["widget"] = textbox
+            widget = ctk.CTkTextbox(parent, width=300, height=80)
+            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            self.field_widgets[widget_key] = {
+                "widget": widget,
+                "type": "textarea",
+                "label": label
+            }
         
         elif field_type == "computed":
-            formula = field.get("formula", "")
-            widgets["formula"] = formula
-            
-            label = ctk.CTkLabel(parent, text=f"{field_label}: ---", anchor="w")
-            label.pack(fill="x", padx=5, pady=(5, 0))
-            widgets["widget"] = label
-            widgets["is_label_only"] = True
-        
-        else:
-            entry = ctk.CTkEntry(parent, placeholder_text=field_label)
-            entry.pack(fill="x", padx=5, pady=2)
-            widgets["widget"] = entry
-        
-        self.field_widgets[field_id] = widgets
-
+            # Computed fields are read-only labels
+            widget = ctk.CTkLabel(
+                parent,
+                text="",
+                anchor="w",
+                fg_color=("#E0E0E0", "#2B2B2B"),
+                corner_radius=6,
+                padx=10,
+                pady=5
+            )
+            widget.grid(row=row, column=1, sticky="ew", pady=5)
+            self.field_widgets[widget_key] = {
+                "widget": widget,
+                "type": "computed",
+                "label": label,
+                "formula": field.get("formula", ""),
+                "is_label_only": True
+            }
+    
     def get_values(self) -> Dict[str, Dict[str, Any]]:
-        values = {}
+        """
+        Extract values from all form widgets.
+        Returns: {"section_id": {"field_id": value}}
+        """
+        data: Dict[str, Dict[str, Any]] = {}
         
-        for field_id, widgets in self.field_widgets.items():
-            section_id = widgets.get("section_id", "")
+        for (section_id, field_id), widget_info in self.field_widgets.items():
+            widget = widget_info.get("widget")
+            widget_type = widget_info.get("type")
             
-            if widgets.get("is_label_only"):
-                widget = widgets.get("widget")
-                if widget:
-                    text = widget.cget("text") if hasattr(widget, "cget") else widget["text"]
-                    value = text.split(": ", 1)[-1] if ": " in text else ""
-                    if section_id not in values:
-                        values[section_id] = {}
-                    values[section_id][field_id] = value
+            if widget_type == "computed":
+                # Skip computed fields - they are derived
                 continue
             
-            widget = widgets.get("widget")
-            if not widget:
-                continue
+            value = None
             
-            # Extract value from widget based on its specific API
-            if hasattr(widget, "get") and callable(widget.get):
+            if widget_type in ("text", "number", "date"):
                 value = widget.get()
-            elif hasattr(widget, "get"): # For some CTk widgets where get might not be callable? (Defensive fallback)
-                try:
-                    value = widget.get()
-                except Exception:
-                    value = ""
-            else:
-                value = ""
+            elif widget_type == "select":
+                value = widget.get()
+            elif widget_type == "textarea":
+                value = widget.get("1.0", "end-1c")
             
-            if section_id not in values:
-                values[section_id] = {}
-            values[section_id][field_id] = value
-        
-        return values
-
-    def set_values(self, data: Dict[str, Dict[str, Any]]) -> None:
-        for field_id, widgets in self.field_widgets.items():
-            section_id = widgets.get("section_id", "")
-            
+            # Initialize section dict if needed
             if section_id not in data:
-                continue
+                data[section_id] = {}
             
-            value = data[section_id].get(field_id, "")
-            
-            if widgets.get("is_label_only"):
-                continue
-            
-            widget = widgets.get("widget")
-            if not widget:
-                continue
-            
-            widget_type = type(widget).__name__
-            
-            if widget_type == "CTkEntry":
-                widget.delete(0, "end")
-                if value:
-                    widget.insert(0, str(value))
-            
-            elif widget_type == "CTkComboBox":
-                if value:
-                    widget.set(str(value))
-            
-            elif widget_type == "CTkTextbox":
-                widget.delete("1.0", "end")
-                if value:
-                    widget.insert("1.0", str(value))
-
-    def highlight_errors(self, errors: List[Dict[str, Any]]) -> None:
-        error_fields = {err.get("field_id") for err in errors}
+            # Store value (even if empty)
+            data[section_id][field_id] = value if value else ""
         
-        for field_id, widgets in self.field_widgets.items():
-            widget = widgets.get("widget")
-            if not widget or widgets.get("is_label_only"):
+        # Compute derived fields and update display
+        self._compute_fields(data, update_display=True)
+        
+        return data
+    
+    def _compute_fields(self, data: Dict[str, Dict[str, Any]], update_display: bool = False) -> None:
+        """Compute values for computed fields based on formulas."""
+        for (section_id, field_id), widget_info in self.field_widgets.items():
+            if widget_info.get("type") != "computed":
                 continue
             
-            widget_type = type(widget).__name__
-            
-            if field_id in error_fields:
-                fg_color = "#FF5555"
-            else:
-                fg_color = "#3B8ED0"
-            
-            try:
-                if widget_type == "CTkEntry":
-                    widget.configure(border_color=fg_color)
-                elif widget_type == "CTkComboBox":
-                    widget.configure(border_color=fg_color)
-            except Exception:
-                pass
-        
-        self._update_computed_fields()
-
-    def _update_computed_fields(self) -> None:
-        current_values = self.get_values()
-        all_values = {}
-        
-        for section_data in current_values.values():
-            all_values.update(section_data)
-        
-        for field_id, widgets in self.field_widgets.items():
-            if not widgets.get("is_label_only"):
-                continue
-            
-            formula = widgets.get("formula", "")
+            formula = widget_info.get("formula", "")
             if not formula:
                 continue
             
-            computed_value = self._evaluate_formula(formula, all_values)
+            try:
+                # Simple formula evaluation for BMI: can_nang / (chieu_cao/100)^2
+                # Extract field references from formula
+                section_data = data.get(section_id, {})
+                
+                # Replace field_id references with actual values
+                eval_formula = formula
+                for other_field_id, value in section_data.items():
+                    if other_field_id in formula:
+                        try:
+                            num_value = float(value) if value else 0
+                            eval_formula = eval_formula.replace(other_field_id, str(num_value))
+                        except (ValueError, TypeError):
+                            eval_formula = eval_formula.replace(other_field_id, "0")
+                
+                # Replace ^ with ** for Python exponentiation
+                eval_formula = eval_formula.replace("^", "**")
+                
+                # Safely evaluate
+                result = eval(eval_formula, {"__builtins__": {}}, {})
+                computed_value = f"{result:.1f}" if isinstance(result, (int, float)) else str(result)
+                
+                # Store in data
+                if section_id not in data:
+                    data[section_id] = {}
+                data[section_id][field_id] = computed_value
+                
+                # Update display widget if requested
+                if update_display:
+                    widget = widget_info.get("widget")
+                    if widget and computed_value:
+                        widget.configure(text=computed_value)
+                
+            except Exception:
+                # If computation fails, leave empty
+                if section_id not in data:
+                    data[section_id] = {}
+                data[section_id][field_id] = ""
+                
+                if update_display:
+                    widget = widget_info.get("widget")
+                    if widget:
+                        widget.configure(text="")
+    
+    def set_values(self, data: Dict[str, Dict[str, Any]]) -> None:
+        """
+        Populate form widgets with data.
+        data format: {"section_id": {"field_id": value}}
+        """
+        for (section_id, field_id), widget_info in self.field_widgets.items():
+            widget = widget_info.get("widget")
+            widget_type = widget_info.get("type")
             
-            label = widgets.get("widget")
-            if label:
-                field_label = self._get_field_label(field_id)
+            section_data = data.get(section_id, {})
+            value = section_data.get(field_id, "")
+            
+            if not value:
+                continue
+            
+            try:
+                if widget_type in ("text", "number", "date"):
+                    widget.delete(0, "end")
+                    widget.insert(0, str(value))
+                elif widget_type == "select":
+                    widget.set(str(value))
+                elif widget_type == "textarea":
+                    widget.delete("1.0", "end")
+                    widget.insert("1.0", str(value))
+                elif widget_type == "computed":
+                    widget.configure(text=str(value))
+            except Exception:
+                # Skip widget if setting value fails
+                pass
+    
+    def highlight_errors(self, errors: list[Dict[str, str]]) -> None:
+        """
+        Highlight fields with validation errors.
+        errors format: [{"section_id": str, "field_id": str, "message": str}]
+        """
+        # First, clear all error highlights
+        self.clear_errors()
+        
+        # Then apply error highlights
+        for error in errors:
+            section_id = error.get("section_id", "")
+            field_id = error.get("field_id", "")
+            widget_key = (section_id, field_id)
+            
+            widget_info = self.field_widgets.get(widget_key)
+            if not widget_info:
+                continue
+            
+            widget = widget_info.get("widget")
+            widget_type = widget_info.get("type")
+            
+            # Apply red border to indicate error
+            if widget_type in ("text", "number", "date", "select"):
+                widget.configure(border_color="red", border_width=2)
+            elif widget_type == "textarea":
+                widget.configure(border_color="red", border_width=2)
+    
+    def clear_errors(self) -> None:
+        """Clear all error highlights from form widgets."""
+        for widget_info in self.field_widgets.values():
+            widget = widget_info.get("widget")
+            widget_type = widget_info.get("type")
+            
+            # Reset to default border
+            if widget_type in ("text", "number", "date", "select"):
                 try:
-                    label.configure(text=f"{field_label}: {computed_value}")
+                    widget.configure(border_color=("gray70", "gray30"), border_width=0)
+                except Exception:
+                    pass
+            elif widget_type == "textarea":
+                try:
+                    widget.configure(border_color=("gray70", "gray30"), border_width=0)
                 except Exception:
                     pass
 
-    def _evaluate_formula(self, formula: str, values: Dict[str, Any]) -> str:
-        try:
-            var_pattern = re.compile(r'[a-z_][a-z0-9_]*')
-            
-            def replace_var(match):
-                var_name = match.group(0)
-                return f"({values.get(var_name, 0)})"
-            
-            expr = var_pattern.sub(replace_var, formula)
-            result = eval(expr, {"__builtins__": {}}, {})
-            return f"{result:.1f}" if isinstance(result, float) else str(result)
-        except Exception:
-            return "---"
 
-    def _get_field_label(self, field_id: str) -> str:
-        for section in self.package.get("sections", []):
-            for field in section.get("fields", []):
-                if field.get("id") == field_id:
-                    return field.get("label", field_id)
-        return field_id
-
-
-def render_form(package: Dict[str, Any], parent_frame) -> FormEngine:
-    return FormEngine(package, parent_frame)
+def render_form(package: Dict[str, Any], parent: ctk.CTkFrame) -> FormEngine:
+    """
+    Factory function to create and render a form engine.
+    This is the main entry point used by screen_form.py
+    """
+    return FormEngine(package, parent)
