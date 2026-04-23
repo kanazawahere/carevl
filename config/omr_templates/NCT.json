@@ -1,0 +1,148 @@
+{
+  "template_name": "NCT - Nguoi cao tuoi",
+  "version": "1.0.0",
+  "layout": {
+    "page_size": {
+      "width": 210,
+      "height": 297
+    },
+    "orientation": "portrait"
+  },
+  "bubble_regions": [
+    {
+      "id": "demographics",
+      "label": "Thong tin ca nhan",
+      "rows": [
+        {
+          "field": "gioi_tinh",
+          "label": "Gioi tinh",
+          "options": ["Nam", "Nu"],
+          "x": 30,
+          "y": 225,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "ngay_sinh",
+          "label": "Ngay sinh",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 210,
+          "width": 150,
+          "height": 10
+        }
+      ]
+    },
+    {
+      "id": "clinical",
+      "label": "Kham lam sang",
+      "rows": [
+        {
+          "field": "huyet_ap_tam_thu",
+          "label": "Huyet ap tam thu",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 190,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "huyet_ap_tam_truong",
+          "label": "Huyet ap tam truong",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 175,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "nhip_tim",
+          "label": "Nhip tim",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 160,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "can_nang",
+          "label": "Can nang (kg)",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 145,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "chieu_cao",
+          "label": "Chieu cao (cm)",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 130,
+          "width": 150,
+          "height": 10
+        }
+      ]
+    },
+    {
+      "id": "laboratory",
+      "label": "Xet nghiem",
+      "rows": [
+        {
+          "field": "duong_huyet_doi",
+          "label": "Duong huyet doi",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 110,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "cholesterol",
+          "label": "Cholesterol",
+          "options": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          "x": 30,
+          "y": 95,
+          "width": 150,
+          "height": 10
+        },
+        {
+          "field": "nuoc_tieu",
+          "label": "Nuoc tieu",
+          "options": ["BT", "BT", "Bat thuong", "Chua thuc hien"],
+          "x": 30,
+          "y": 80,
+          "width": 150,
+          "height": 10
+        }
+      ]
+    },
+    {
+      "id": "conclusion",
+      "label": "Ket luan",
+      "rows": [
+        {
+          "field": "phan_loai_sk",
+          "label": "Phan loai suc khoe",
+          "options": ["Loai I", "Loai II", "Loai III", "Loai IV"],
+          "x": 30,
+          "y": 60,
+          "width": 150,
+          "height": 10
+        }
+      ]
+    }
+  ],
+  "anchor_points": [
+    {"x": 15, "y": 277, "size": 10},
+    {"x": 185, "y": 277, "size": 10},
+    {"x": 15, "y": 15, "size": 10},
+    {"x": 185, "y": 15, "size": 10}
+  ],
+  "keys": [
+    {"name": "row", "offset": 0, "len": 1},
+    {"name": "present", "offset": 1, "len": 1},
+    {"name": "absent", "offset": 2, "len": 1},
+    {"name": "nullified", "offset": 3, "len": 1}
+  ]
+}

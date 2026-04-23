@@ -41,27 +41,42 @@ carevl/
 ├── .gitignore
 │
 ├── config/
-│   ├── template_form.json     # Cấu hình form (OTA-updatable, được commit)
-│   └── user_config.json       # OAuth token — LOCAL ONLY, trong .gitignore
+│   ├── template_form.json     # Cấu hình form (OTA-updatable)
+│   ├── user_config.json       # OAuth token — LOCAL ONLY, trong .gitignore
+│   ├── omr_form_layout.json    # OMR PDF layout
+│   ├── omr_templates/        # OMRChecker templates
+│   │   ├── NCT.json
+│   │   ├── HS.json
+│   │   ├── PMT.json
+│   │   ├── NLD.json
+│   │   └── KTQ.json
+│   └── app_config.json       # App config (repo, org)
 │
 ├── data/
 │   └── {YYYY}/{MM}/{DD-MM-YYYY}.json   # 1 file/ngày, chứa array hồ sơ
 │
 ├── modules/
-│   ├── auth.py                # GitHub OAuth Device Flow
-│   ├── crud.py                # Đọc/ghi/sửa/xóa hồ sơ JSON (atomic write)
-│   ├── sync.py                # Git add/commit/push/pull qua subprocess
-│   ├── form_engine.py         # Parse template_form.json → render widgets CTk
-│   └── validator.py           # Validate dữ liệu trước khi lưu
+│   ├── __init__.py           # LAZY IMPORT (importlib)
+│   ├── auth.py              # GitHub OAuth Device Flow
+│   ├── crud.py              # Đọc/ghi/sửa/xóa hồ sơ JSON
+│   ├── sync.py              # Git add/commit/push/pull
+│   ├── paths.py             # Path utilities
+│   ├── validator.py        # Validate dữ liệu
+│   ├── config_loader.py      # Load JSON configs
+│   ├── form_engine.py      # Parse form template → render CTk
+│   ├── omr_form_gen.py     # OMR: Generate PDF
+│   ├── omr_reader.py       # OMR: Read scanned images
+│   └── omr_bridge.py      # OMR: Map → record JSON
 │
 ├── ui/
-│   ├── app.py                 # CTk App root, điều hướng giữa các screen
-│   ├── screen_list.py         # Danh sách hồ sơ
-│   ├── screen_form.py         # Nhập liệu / xem / sửa hồ sơ
-│   └── screen_sync.py         # Trạng thái Git, nút đồng bộ
+│   ├── app.py              # CTk App root, navigation
+│   ├── __init__.py
+│   ├── screen_list.py      # Danh sách hồ sơ (tksheet)
+│   ├── screen_form.py      # Nhập liệu / xem / sửa
+│   └── screen_sync.py     # Trạng thái Git
 │
-└── assets/
-    └── logo.png
+└── dist/
+    └── carevl.exe         # Built executable
 ```
 
 ---
@@ -340,4 +355,127 @@ CTkEntry(label="Họ và tên")  # hardcode = vỡ khi template thay đổi
 ---
 
 *Hết Master Prompt. Thêm vào cuối:*
-> `"Bắt đầu Sprint 1, bước 1: tạo cấu trúc thư mục và pyproject.toml với UV"`
+> `"Bắt đầu Sprint 1, bước 1: tạo cấu trúc thư mục và pyproject.toml với UV"`.
+
+---
+
+## 11. SPRINT 5 — OMR PIPELINE
+
+### 11.1 Tổng quan
+
+Bổ sung luồng nhập liệu thứ hai: **scan CCCD → in form → bệnh nhân tô bong bóng → scan hàng loạt → import tự động**.
+
+Luồng này chạy song song với luồng nhập tay, cùng đầu ra là record JSON trong `data/`.
+
+### 11.2 Tech Stack bổ sung
+
+| Thành phần | Công nghệ |
+|---|---|
+| Generate PDF | **ReportLab** |
+| Đọc QR | **pyzbar** (tích hợp trong OMRChecker) |
+| Đọc OMR | **OMRChecker** (subprocess) |
+| Image processing | OpenCV (OMRChecker dependency) |
+
+### 11.3 Cấu trúc thư mục
+
+```
+modules/
+├── omr_form_gen.py       # Generate PDF từ CCCD
+├── omr_reader.py       # OMRChecker subprocess
+└── omr_bridge.py    # Map → record JSON (crud.py format)
+
+config/
+├── omr_form_layout.json   # Layout PDF
+└── omr_templates/
+    ├── NCT.json      # OMRChecker template cho Người cao tuổi
+    ├── HS.json
+    ├── PMT.json
+    ├── NLD.json
+    └── KTQ.json
+```
+
+### 11.4 Module API
+
+**`modules/omr_form_gen.py`**
+```python
+def generate_form(cccd_data: dict, package_id: str, author: str) -> bytes:
+    """Generate PDF form với QR code và bubble regions."""
+    # cccd_data: {ho_ten, ngay_sinh, gioi_tinh, dia_chi, so_cccd}
+    # Output: PDF bytes
+
+def generate_form_to_file(cccd_data, package_id, output_path, author) -> bool:
+    """Save PDF to file."""
+```
+
+**`modules/omr_reader.py`**
+```python
+def read_batch(input_dir, output_dir, package_id) -> list[dict]:
+    """Scan batch images, return list with status/qr_data/omr_data."""
+    # status: "ok" | "qr_fail" | "omr_low_confidence"
+
+def read_batch_to_file(input_dir, output_dir, output_json, package_id) -> bool:
+    """Save results to JSON."""
+```
+
+**`modules/omr_bridge.py`**
+```python
+def map_to_record(omr_result: dict, package_id: str) -> dict:
+    """Map OMR result → CareVL record format."""
+    # Bao gom validation, section mapping
+
+def map_batch(omr_results, package_id) -> list[dict]:
+    """Map multiple results."""
+
+def save_records_from_omr(omr_results, package_id, author) -> dict:
+    """Map + validate + save via crud.create()."""
+```
+
+### 11.5 Usage (Standalone)
+
+```bash
+# Step 1: Generate PDF from CCCD
+python -m modules.omr_form_gen \
+    --cccd 001286001234 \
+    --package nct \
+    --output form_001286001234.pdf
+
+# Step 2: Scan batch
+python -m modules.omr_reader \
+    --input scans/ \
+    --output results/ \
+    --package nct \
+    --json results.json
+
+# Step 3: Map + Save
+python -m modules.omr_bridge \
+    --input results.json \
+    --package nct \
+    --save \
+    --author bacsi01
+```
+
+### 11.6 Sprint Order
+
+```
+Sprint 5A — Form Design
+  1. omr_form_layout.json (done)
+  2. omr_form_gen.py (done)
+  3. OMRChecker templates (done)
+
+Sprint 5B — Pipeline
+  4. omr_reader.py (done)
+  5. omr_bridge.py (done)
+
+Sprint 5C — Extend
+  6. Templates cho cac goi con lai (done)
+```
+
+### 11.7 Design Rules
+
+- Layout PDF: A4, portrait
+- Anchor points: 4 hình vuông đen 1cm × 1cm tại 4 góc
+- Quiet zone: 5mm trắng quanh QR và bubble regions
+- Mỗi câu hỏi: tối đa 5 lựa chọn (A–E)
+- Font: ≥ 11pt cho rõ khi photocopy
+
+> **KHÔNG thay đổi layout sau khi in form thật** — thay đổi = làm lại template

@@ -1,0 +1,19 @@
+{
+  "template_name": "NLD - Nguoi lao dong",
+  "version": "1.0.0",
+  "bubble_regions": [
+    {"id": "clinical", "rows": [
+      {"field": "huyet_ap", "y": 225},
+      {"field": "can_nang", "options": ["0-9"], "y": 210},
+      {"field": "chieu_cao", "options": ["0-9"], "y": 195},
+      {"field": "benh_nghe_nghiep", "options": ["Co", "Khong co"], "y": 180}
+    ]},
+    {"id": "conclusion", "rows": [
+      {"field": "phan_loai_sk", "options": ["Loai I", "Loai II", "Loai III", "Loai IV", "Loai V"], "y": 150}
+    ]}
+  ],
+  "anchor_points": [
+    {"x": 15, "y": 277, "size": 10}, {"x": 185, "y": 277, "size": 10},
+    {"x": 15, "y": 15, "size": 10}, {"x": 185, "y": 15, "size": 10}
+  ]
+}

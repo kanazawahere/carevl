@@ -1,0 +1,20 @@
+{
+  "template_name": "KTQ - Khao sat tong quat",
+  "version": "1.0.0",
+  "bubble_regions": [
+    {"id": "clinical", "rows": [
+      {"field": "huyet_ap", "options": ["BT", "Cao"], "y": 225},
+      {"field": "mach", "options": ["0-9"], "y": 210},
+      {"field": "can_nang", "options": ["0-9"], "y": 195},
+      {"field": "chieu_cao", "options": ["0-9"], "y": 180},
+      {"field": "ghi_chu", "y": 165}
+    ]},
+    {"id": "conclusion", "rows": [
+      {"field": "ket_luan", "y": 140}
+    ]}
+  ],
+  "anchor_points": [
+    {"x": 15, "y": 277, "size": 10}, {"x": 185, "y": 277, "size": 10},
+    {"x": 15, "y": 15, "size": 10}, {"x": 185, "y": 15, "size": 10}
+  ]
+}
