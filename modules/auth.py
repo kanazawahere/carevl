@@ -142,9 +142,12 @@ def poll_for_token(device_code: str, interval: int, *, timeout: int = DEFAULT_PO
         
         access_token = response.get("access_token")
         if access_token:
+            user_result = get_github_username(access_token)
+            username = user_result.get("username", "") if user_result.get("ok") else ""
             return {
                 "ok": True,
                 "access_token": access_token,
+                "username": username,
             }
         
         time.sleep(interval)
