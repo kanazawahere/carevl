@@ -66,6 +66,8 @@ if errorlevel 1 goto :error
 echo.
 echo [SUCCESS] main has been updated from canary and pushed to origin.
 echo.
+if /I "%CAREVL_NO_PAUSE%"=="1" exit /b 0
+pause
 exit /b 0
 
 :error
