@@ -154,6 +154,44 @@ function Ensure-Repo {
     }
 }
 
+function Ensure-DesktopShortcut {
+    param([string]$RepoPath)
+
+    $desktopPath = [Environment]::GetFolderPath("Desktop")
+    if (-not $desktopPath) {
+        Write-Step "Khong xac dinh duoc Desktop cua user hien tai, bo qua tao shortcut."
+        return
+    }
+
+    $bootstrapScript = Join-Path $RepoPath "Onboarding\Bootstrap-User.ps1"
+    if (-not (Test-Path $bootstrapScript)) {
+        Write-Step "Khong tim thay Bootstrap-User.ps1, bo qua tao shortcut."
+        return
+    }
+
+    $shortcutPath = Join-Path $desktopPath "CareVL.lnk"
+    $rootExe = Join-Path $RepoPath "carevl.exe"
+    $distExe = Join-Path $RepoPath "dist\carevl.exe"
+    $iconPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+    if (Test-Path $rootExe) {
+        $iconPath = $rootExe
+    }
+    elseif (Test-Path $distExe) {
+        $iconPath = $distExe
+    }
+
+    Write-Step "Dang tao shortcut CareVL tren Desktop cua user hien tai..."
+    $wshShell = New-Object -ComObject WScript.Shell
+    $shortcut = $wshShell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = "powershell.exe"
+    $shortcut.Arguments = "-ExecutionPolicy Bypass -File `"$bootstrapScript`" -Mode auto"
+    $shortcut.WorkingDirectory = $RepoPath
+    $shortcut.IconLocation = $iconPath
+    $shortcut.Description = "Mo CareVL theo luong onboarding"
+    $shortcut.Save()
+}
+
 function Start-RepoBootstrap {
     param(
         [string]$RepoPath,
@@ -215,5 +253,6 @@ Write-Step "Bat dau bootstrap onboarding tu GitHub."
 Ensure-Git
 Ensure-Uv
 Ensure-Repo -RemoteUrl $RepoUrl -PathValue $TargetDir
+Ensure-DesktopShortcut -RepoPath $TargetDir
 Start-RepoBootstrap -RepoPath $TargetDir -LaunchMode $Mode -DoLaunch (-not $SkipLaunch)
 Write-Step "Hoan tat."

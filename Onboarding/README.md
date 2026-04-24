@@ -65,6 +65,7 @@ Lệnh này là lệnh chuẩn duy nhất trong tài liệu. Script sẽ tự:
 - cài `Git` nếu máy chưa có
 - cài `uv` nếu máy chưa có
 - clone hoặc cập nhật repo `carevl`
+- tạo shortcut `CareVL` trên Desktop của user hiện tại
 - chuyển sang bootstrap local trong repo
 - ưu tiên mở `carevl.exe` nếu có
 - nếu chưa có exe thì tự chuẩn bị môi trường Python và mở app
