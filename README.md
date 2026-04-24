@@ -4,19 +4,37 @@
 
 ---
 
+## Tài liệu chính
+
+- `README.md`
+  - Tổng quan sản phẩm, kiến trúc vận hành, cách chạy và cấu trúc repo.
+- `AGENTS.md`
+  - Hướng dẫn cho coding agent và dev khi sửa code trong repo này.
+- `HUONG_DAN_ADMIN.md`
+  - Quy trình vận hành của Hub/Admin.
+- `QUY_CHE_VAN_HANH.md`
+  - Quy định vận hành chính thức theo mô hình Hub/Edge.
+- `PHASE2_SCHEMA_SPEC.md`
+  - Đặc tả dữ liệu SQLite phase 2 và hướng FHIR-aligned.
+- `Onboarding/README.md`
+  - Hướng dẫn onboarding theo một lệnh chuẩn từ GitHub cho người dùng Edge.
+
+---
+
 ## Bức tranh lớn
 
 **Vấn đề:**
 - Tỉnh Vĩnh Long có ~100 trạm y tế xã/phường
 - Mỗi năm khám sức khỏe định kỳ cho hàng trăm ngàn người dân
 - Nhân viên y tế làm việc ngoài thực địa, thường xuyên offline
-- HQ (Trụ sở tỉnh) cần tổng hợp dữ liệu từ các trạm
+- Hub cần tổng hợp dữ liệu từ các trạm
 
 **Giải pháp CareVL:**
 - App offline-first chạy trên laptop nhân viên
+- Dữ liệu local lưu trong SQLite tại từng máy/trạm
 - Đồng bộ qua GitHub khi có mạng
 - Mỗi nhân viên push vào branch riêng `user/{username}`
-- HQ merge từ tất cả branches để tổng hợp
+- Hub gom snapshot từ các branch rồi nạp DuckDB để tổng hợp/thống kê/dashboard
 
 ---
 
@@ -29,43 +47,38 @@
 
 ---
 
-## Cài đặt (Người dùng)
+## Cài đặt và onboarding
 
 - ✅ **Offline-first**: Hoạt động hoàn toàn không cần mạng
 - ✅ **Đồng bộ Git**: Tự động đồng bộ dữ liệu qua GitHub khi có mạng
 - ✅ **Form động**: Hỗ trợ nhiều gói khám thông qua cấu hình JSON
 - ✅ **Giao diện tiếng Việt**: 100% tiếng Việt, dark mode
-- ✅ **Single executable**: Chỉ cần 1 file `carevl.exe` (không cần cài Python)
+- ✅ **Một lệnh chuẩn**: Onboarding người dùng được chốt về một lệnh PowerShell duy nhất
 
-## Yêu cầu hệ thống
+### Yêu cầu hệ thống
 
 - **OS**: Windows 10/11
-- **Git**: 2.30+ (để đồng bộ dữ liệu)
-- **Mạng**: Không bắt buộc (chỉ cần khi đồng bộ)
-- **Python**: KHÔNG cần (đã bundle trong .exe)
+- **Quyền chạy**: mở `PowerShell` bằng `Run as Administrator`
+- **Kết nối mạng**: cần ở lần bootstrap đầu tiên để tải script, cài tool và clone repo
 
-## Cài đặt (Người dùng)
+### Lệnh chuẩn cho người dùng và tester
 
-### Bước 1: Clone repo dữ liệu
-```bash
-git clone https://github.com/DigitalVersion/vinhlong-health-record.git carevl-data
-cd carevl-data
+Mở `PowerShell` bằng `Run as Administrator`, rồi dán:
+
+```powershell
+$tmp="$env:TEMP\carevl-bootstrap-github.ps1"; Invoke-WebRequest "https://raw.githubusercontent.com/kanazawahere/carevl/main/Onboarding/Bootstrap-GitHub.ps1" -OutFile $tmp; powershell -ExecutionPolicy Bypass -File $tmp
 ```
 
-### Bước 2: Tải executable
-Vào https://github.com/kanazawahere/carevl/releases
-Tải file `carevl.exe` mới nhất, đặt vào thư mục `carevl-data/`
+Script sẽ tự:
 
-### Bước 3: Chạy
-Double-click `carevl.exe` hoặc chạy `launcher.bat`
+- cài `Git` nếu máy chưa có
+- cài `uv` nếu máy chưa có
+- clone hoặc cập nhật repo `carevl`
+- ưu tiên mở `carevl.exe` nếu đã có bản build
+- nếu chưa có exe thì tự chuẩn bị môi trường Python bằng `uv`
+- chạy app theo đúng luồng người dùng tại trạm
 
-### Bước 4: Đăng nhập
-Đăng nhập bằng tài khoản GitHub của nhân viên (đã được mời vào org DigitalVersion)
-
-### Bước 5: Mời nhân viên (Admin/Leader)
-1. Vào https://github.com/orgs/DigitalVersion/people
-2. Invite member → nhập email hoặc username GitHub của nhân viên
-3. Nhân viên accept lời mời qua email
+Tài liệu chi tiết nằm ở `Onboarding/README.md`.
 
 ---
 
@@ -77,12 +90,12 @@ Double-click `carevl.exe` hoặc chạy `launcher.bat`
 [Trạm 2 - user/bacsi-nguyen]  → Clone repo → Tạo hồ sơ → Commit → Push → user/bacsi-nguyen
 [Trạm 3 - user/bacsi-tran]    → Clone repo → Tạo hồ sơ → Commit → Push → user/bacsi-tran
                                               ↓
-                              [HQ merge all user/* branches]
+                              [Hub merge all user/* branches]
                                               ↓
                                     [main] → Tổng hợp tất cả
 ```
 
-### Merge cho HQ (Admin)
+### Merge cho Hub (Admin)
 1. Vào https://github.com/DigitalVersion/vinhlong-health-record
 2. Click **Compare** → Base: `main` ← Compare: `user/bacsi-le`
 3. Xem thay đổi → **Create Pull Request** → **Merge PR**
@@ -97,7 +110,7 @@ Mỗi nhân viên y tế quản lý dữ liệu trên branch riêng:
 - Branch format: `user/{username}`
 - Ví dụ: `user/bacsi-le`, `user/bacsi-nguyen`
 - Khi push, dữ liệu được commit vào branch của người đang đăng nhập
-- HQ merge các branch `user/*` vào `main` để tổng hợp
+- Hub merge các branch `user/*` vào `main` để tổng hợp
 
 ### Tự động đăng nhập (Auto Login)
 - Lần đầu: Đăng nhập qua GitHub OAuth Device Flow
@@ -118,7 +131,21 @@ Mỗi nhân viên y tế quản lý dữ liệu trên branch riêng:
 - **Stats Cards**: Thống kê Tổng / Đã sync / Chờ sync
 - **Progress Bar**: Hiển thị tiến trình khi đồng bộ
 
-### Setup môi trường
+### Thuật ngữ chốt
+- `Hub`
+  - Workspace trung tâm để tiếp nhận, hợp nhất, tổng hợp và đối soát dữ liệu.
+- `Edge`
+  - Điểm nhập liệu thực tế tại trạm hoặc đoàn khám.
+- `Workspace`
+  - Cách gọi thân thiện cho branch + dữ liệu local gắn với một điểm vận hành.
+
+### UI direction
+- Ưu tiên bảng dữ liệu và nhập liệu nhanh, không làm app giống dashboard marketing.
+- Giữ màu sắc và typography nhất quán qua design tokens, không thêm theme rời rạc theo từng màn hình.
+- User App tập trung nhập liệu và sync.
+- Admin App tập trung stations, aggregate và Hub analytics.
+
+### Setup môi trường cho dev
 
 ```bash
 # Clone repository
@@ -171,8 +198,8 @@ carevl/
 │   ├── template_form.json  # Form configuration (5 goi kham)
 │   └── user_config.json    # OAuth token - TUJ DANG commit vo .gitignore
 │
-├── data/                   # Data theo ngay
-│   └── YYYY/MM/DD-MM-YYYY.json
+├── data/                   # SQLite local store
+│   └── carevl_phase2.db   # Main local store
 │
 ├── ui/
 │   ├── app.py             # Main app with dark theme
@@ -182,7 +209,9 @@ carevl/
 │
 └── modules/
     ├── auth.py           # GitHub OAuth Device Flow
-    ├── crud.py           # Tao / Doc / Sua / Xoa JSON
+    ├── crud.py           # Alias runtime -> SQLite phase 2
+    ├── crud_phase2.py    # SQLite phase 2 store
+    ├── record_store.py   # Runtime storage facade
     ├── sync.py           # Git push/pull
     ├── validator.py      # Kiem tra du lieu input
     └── form_engine.py    # Render form dong
@@ -193,8 +222,9 @@ carevl/
 - **Package Manager**: UV (dev only, client không cần)
 - **UI Framework**: CustomTkinter + tksheet (table with sort/search)
 - **Packaging**: PyInstaller (bundles Python interpreter)
-- **Storage**: JSON files (1 file/day)
+- **Storage**: SQLite local (`data/carevl_phase2.db`)
 - **Sync**: Git CLI via subprocess
+- **Hub Analytics**: DuckDB tu snapshot aggregate
 - **Auth**: GitHub OAuth Device Flow
 
 ## Workflow
@@ -204,14 +234,14 @@ carevl/
 1. **Đăng nhập**: Xác thực qua GitHub OAuth
 2. **Tạo hồ sơ**: Chọn gói khám, nhập thông tin
 3. **Lưu**: Dữ liệu lưu local, tự động commit Git
-4. **Đồng bộ**: Khi có mạng, nhấn "Gửi về HQ" để push
+4. **Đồng bộ**: Khi có mạng, nhấn "Gửi về Hub" để push
 
 ### Đoàn khám lưu động
 
 1. Làm việc offline hoàn toàn
-2. Dữ liệu lưu local trong `data/`
-3. Về trạm có mạng → đồng bộ lên GitHub
-4. HQ merge dữ liệu từ các đoàn
+2. Dữ liệu lưu local trong `data/carevl_phase2.db`
+3. Về trạm có mạng → đồng bộ SQLite DB lên GitHub
+4. Hub aggregate các branch và build DuckDB để báo cáo
 
 ## Gói khám
 
@@ -232,7 +262,7 @@ Cấu hình gói khám trong `config/template_form.json`.
 - **Mỗi user** có branch riêng: `user/{username}`
 - **Push**: Tự động push vào branch của user hiện tại
 - **Pull**: Chỉ pull từ branch của mình
-- **HQ**: Merge tất cả `user/*` branches vào `main` để tổng hợp
+- **Hub**: Merge tất cả `user/*` branches vào `main` để tổng hợp
 
 ### Auto Login
 
@@ -251,7 +281,7 @@ Cấu hình gói khám trong `config/template_form.json`.
 ### Conflict Resolution
 
 - Tự động: Git merge khi không có conflict
-- Thủ công: HQ xử lý conflict nếu có
+- Thủ công: Hub xử lý conflict nếu có
 
 ## Bảo mật
 
@@ -326,3 +356,4 @@ Email: kanazawahere@gmail.com
 ---
 
 **Built with ❤️ for Vĩnh Long healthcare workers**
+
