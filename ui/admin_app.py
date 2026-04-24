@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 import customtkinter as ctk
+from modules import membership
 from ui.design_tokens import (
     BG_APP,
     BORDER,
@@ -28,7 +29,7 @@ from ui.design_tokens import (
     primary_button_style,
     secondary_button_style,
 )
-from ui.ui_components import status_badge
+from ui.ui_components import add_modal_actions, add_modal_header, create_modal, status_badge
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -168,6 +169,13 @@ class AdminApp(ctk.CTk):
             command=self._refresh_summary,
             **secondary_button_style(height=38),
         ).pack(side="left")
+
+        ctk.CTkButton(
+            top_actions,
+            text="Duyệt user",
+            command=self._open_user_registry_modal,
+            **secondary_button_style(height=38),
+        ).pack(side="left", padx=(8, 0))
 
         summary = ctk.CTkFrame(self, fg_color="transparent")
         summary.grid(row=1, column=0, sticky="ew", padx=20, pady=(0, 12))
@@ -494,6 +502,208 @@ class AdminApp(ctk.CTk):
         self.json_summary.configure(text=self._summarize_json())
         self.report_summary.configure(text=self._summarize_checklist())
         self.aggregate_summary.configure(text=self._summarize_aggregate())
+
+    def _open_user_registry_modal(self):
+        dialog = create_modal(self, "Duyệt user mới", "840x620")
+        add_modal_header(
+            dialog,
+            "Duyệt user trong app",
+            "Lưu quyền truy cập trực tiếp vào config/user_registry.json. Sau khi lưu, nhớ commit/push nhánh phù hợp để user ở máy khác nhận được quyền.",
+        )
+
+        body = ctk.CTkFrame(dialog, fg_color="transparent")
+        body.pack(fill="both", expand=True, padx=20, pady=(0, 12))
+        body.grid_columnconfigure(0, weight=1)
+        body.grid_columnconfigure(1, weight=1)
+        body.grid_rowconfigure(1, weight=1)
+
+        form = ctk.CTkFrame(body, fg_color=SURFACE, corner_radius=14, border_width=1, border_color=BORDER)
+        form.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 12))
+        form.grid_columnconfigure(1, weight=1)
+
+        username_entry = self._registry_input(form, 0, "GitHub username", "Ví dụ: bacsi-nguyen")
+        branch_entry = self._registry_input(form, 1, "Branch", "Ví dụ: user/TRAM-Y-TE-P-1")
+        title_entry = self._registry_input(form, 2, "Tiêu đề hiển thị", "Ví dụ: Trạm Y Tế Phường 1")
+
+        ctk.CTkLabel(
+            form,
+            text="Đã duyệt",
+            font=font(13, "semibold"),
+            text_color=TEXT_PRIMARY,
+            anchor="w",
+        ).grid(row=3, column=0, sticky="w", padx=(16, 12), pady=(10, 0))
+
+        approved_var = ctk.BooleanVar(value=True)
+        approved_switch = ctk.CTkSwitch(
+            form,
+            text="Cho phép vào app ngay",
+            variable=approved_var,
+            onvalue=True,
+            offvalue=False,
+        )
+        approved_switch.grid(row=3, column=1, sticky="w", pady=(10, 0))
+
+        status_label = ctk.CTkLabel(
+            form,
+            text="Chọn một entry bên dưới để nạp vào form hoặc nhập mới.",
+            font=font(12),
+            text_color=TEXT_MUTED,
+            anchor="w",
+            justify="left",
+            wraplength=700,
+        )
+        status_label.grid(row=4, column=0, columnspan=2, sticky="ew", padx=16, pady=(10, 14))
+
+        list_panel = ctk.CTkFrame(body, fg_color=SURFACE, corner_radius=14, border_width=1, border_color=BORDER)
+        list_panel.grid(row=1, column=0, sticky="nsew", padx=(0, 10))
+        list_panel.grid_rowconfigure(1, weight=1)
+        list_panel.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            list_panel,
+            text="User đã có trong registry local",
+            font=font(15, "bold"),
+            text_color=TEXT_PRIMARY,
+        ).grid(row=0, column=0, sticky="w", padx=14, pady=(14, 8))
+
+        user_list = ctk.CTkTextbox(list_panel, wrap="none")
+        user_list.grid(row=1, column=0, sticky="nsew", padx=14, pady=(0, 14))
+
+        action_panel = ctk.CTkFrame(body, fg_color=SURFACE, corner_radius=14, border_width=1, border_color=BORDER)
+        action_panel.grid(row=1, column=1, sticky="nsew")
+        action_panel.grid_columnconfigure(0, weight=1)
+
+        selected_username = {"value": ""}
+
+        def refresh_registry_list() -> None:
+            entries = membership.list_local_registry_entries()
+            user_list.configure(state="normal")
+            user_list.delete("1.0", "end")
+            if not entries:
+                user_list.insert("end", "Chưa có user nào trong registry local.\n")
+            for item in entries:
+                approved_text = "approved" if item.get("approved") else "pending"
+                user_list.insert(
+                    "end",
+                    f"{item['username']}\n  {item['branch_name']}\n  {item['title']} [{approved_text}]\n\n",
+                )
+            user_list.configure(state="disabled")
+
+        def load_selected_entry() -> None:
+            username = username_entry.get().strip()
+            if not username:
+                status_label.configure(text="Nhập GitHub username trước khi nạp entry.")
+                return
+
+            entries = {item["username"]: item for item in membership.list_local_registry_entries()}
+            entry = entries.get(username)
+            if not entry:
+                status_label.configure(text=f"Chưa tìm thấy {username} trong registry local.")
+                return
+
+            selected_username["value"] = username
+            branch_entry.delete(0, "end")
+            branch_entry.insert(0, entry.get("branch_name", ""))
+            title_entry.delete(0, "end")
+            title_entry.insert(0, entry.get("title", ""))
+            approved_var.set(bool(entry.get("approved")))
+            status_label.configure(text=f"Đã nạp {username} vào form.")
+
+        def save_entry() -> None:
+            username = username_entry.get().strip()
+            branch_name = branch_entry.get().strip()
+            title = title_entry.get().strip()
+            result = membership.upsert_local_registry_entry(
+                username=username,
+                branch_name=branch_name,
+                title=title,
+                approved=approved_var.get(),
+            )
+            status_label.configure(
+                text=result.get("message", "Không thể lưu entry."),
+                text_color=SUCCESS_TEXT if result.get("ok") else DANGER_TEXT,
+            )
+            if result.get("ok"):
+                selected_username["value"] = username
+                refresh_registry_list()
+                self._refresh_summary()
+
+        def delete_entry() -> None:
+            username = username_entry.get().strip() or selected_username["value"]
+            result = membership.delete_local_registry_entry(username)
+            status_label.configure(
+                text=result.get("message", "Không thể xóa entry."),
+                text_color=SUCCESS_TEXT if result.get("ok") else DANGER_TEXT,
+            )
+            if result.get("ok"):
+                selected_username["value"] = ""
+                username_entry.delete(0, "end")
+                branch_entry.delete(0, "end")
+                title_entry.delete(0, "end")
+                approved_var.set(True)
+                refresh_registry_list()
+                self._refresh_summary()
+
+        ctk.CTkButton(
+            action_panel,
+            text="Nạp user theo username",
+            command=load_selected_entry,
+            **secondary_button_style(height=38),
+        ).grid(row=0, column=0, sticky="ew", padx=14, pady=(14, 8))
+
+        ctk.CTkButton(
+            action_panel,
+            text="Lưu quyền truy cập",
+            command=save_entry,
+            **primary_button_style(height=40),
+        ).grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 8))
+
+        ctk.CTkButton(
+            action_panel,
+            text="Xóa user khỏi registry",
+            command=delete_entry,
+            **secondary_button_style(height=38),
+        ).grid(row=2, column=0, sticky="ew", padx=14, pady=(0, 8))
+
+        ctk.CTkButton(
+            action_panel,
+            text="Mở file user_registry.json",
+            command=lambda: self._open_path(CONFIG_DIR / "user_registry.json"),
+            **secondary_button_style(height=38),
+        ).grid(row=3, column=0, sticky="ew", padx=14, pady=(0, 8))
+
+        ctk.CTkLabel(
+            action_panel,
+            text="Mẹo: branch thường là user/<ten-tram-hoac-tai-khoan>. Nếu muốn chặn tạm thời, tắt công tắc 'Đã duyệt'.",
+            font=font(12),
+            text_color=TEXT_MUTED,
+            justify="left",
+            wraplength=300,
+        ).grid(row=4, column=0, sticky="ew", padx=14, pady=(10, 14))
+
+        refresh_registry_list()
+        add_modal_actions(dialog, "Đóng", dialog.destroy)
+
+    def _registry_input(self, master, row: int, label: str, placeholder: str) -> ctk.CTkEntry:
+        ctk.CTkLabel(
+            master,
+            text=label,
+            font=font(13, "semibold"),
+            text_color=TEXT_PRIMARY,
+            anchor="w",
+        ).grid(row=row, column=0, sticky="w", padx=(16, 12), pady=(14 if row == 0 else 10, 0))
+
+        entry = ctk.CTkEntry(
+            master,
+            placeholder_text=placeholder,
+            height=38,
+            corner_radius=10,
+            fg_color=SURFACE_STRONG,
+            border_color=BORDER_STRONG,
+            text_color=TEXT_PRIMARY,
+        )
+        entry.grid(row=row, column=1, sticky="ew", padx=(0, 16), pady=(14 if row == 0 else 10, 0))
+        return entry
 
     def _summarize_csv(self) -> str:
         csv_path = CONFIG_DIR / "stations.csv"

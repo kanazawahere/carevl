@@ -55,6 +55,75 @@ def _normalize_registry(data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     return normalized
 
 
+def _write_registry(entries: Dict[str, Dict[str, Any]]) -> None:
+    USER_REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(USER_REGISTRY_PATH, "w", encoding="utf-8") as f:
+        json.dump(entries, f, ensure_ascii=False, indent=2, sort_keys=True)
+
+
+def load_local_user_registry() -> Dict[str, Dict[str, Any]]:
+    return _normalize_registry(_read_json_file(USER_REGISTRY_PATH))
+
+
+def list_local_registry_entries() -> list[Dict[str, Any]]:
+    entries = load_local_user_registry()
+    items: list[Dict[str, Any]] = []
+    for username, entry in entries.items():
+        branch_name = str(entry.get("branch_name", "") or "").strip() or _legacy_branch_name(username)
+        items.append(
+            {
+                "username": username,
+                "approved": bool(entry.get("approved", True)),
+                "branch_name": branch_name,
+                "title": str(entry.get("title", "") or sync.get_station_title(branch_name)).strip() or branch_name,
+                "role": str(entry.get("role", "edge") or "edge").strip(),
+            }
+        )
+
+    return sorted(items, key=lambda item: item["username"].lower())
+
+
+def upsert_local_registry_entry(
+    *,
+    username: str,
+    branch_name: str,
+    title: str,
+    approved: bool = True,
+    role: str = "edge",
+) -> Dict[str, Any]:
+    clean_username = str(username or "").strip()
+    clean_branch = str(branch_name or "").strip() or _legacy_branch_name(clean_username)
+    clean_title = str(title or "").strip() or sync.get_station_title(clean_branch)
+    clean_role = str(role or "edge").strip() or "edge"
+
+    if not clean_username:
+        return {"ok": False, "message": "Thiếu GitHub username."}
+
+    registry = load_local_user_registry()
+    registry[clean_username] = {
+        "approved": bool(approved),
+        "branch_name": clean_branch,
+        "title": clean_title or clean_branch,
+        "role": clean_role,
+    }
+    _write_registry(registry)
+    return {"ok": True, "message": f"Đã lưu quyền cho {clean_username}."}
+
+
+def delete_local_registry_entry(username: str) -> Dict[str, Any]:
+    clean_username = str(username or "").strip()
+    if not clean_username:
+        return {"ok": False, "message": "Thiếu GitHub username."}
+
+    registry = load_local_user_registry()
+    if clean_username not in registry:
+        return {"ok": False, "message": f"Không tìm thấy {clean_username} trong registry."}
+
+    registry.pop(clean_username, None)
+    _write_registry(registry)
+    return {"ok": True, "message": f"Đã xóa quyền của {clean_username}."}
+
+
 def _get_remote_registry_url() -> str:
     repo = _get_software_repo()
     return f"https://raw.githubusercontent.com/{repo}/main/config/user_registry.json"
