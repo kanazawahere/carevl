@@ -50,22 +50,18 @@ Admin có thể dùng ngay bộ tool trong repo này:
 - Nguồn dữ liệu gốc: `config/stations.csv`
 - File cấu hình app đọc: `config/stations.json`
 - File cấu hình admin app: `config/app_config.json`
-- File kiểm tra danh sách trạm: `admin-check-stations.bat`
-- File kiểm tra branch nào đã có runtime DB: `admin-check-runtime-db.bat`
-- File sinh `stations.json`: `admin-build-stations.bat`
-- File xuất checklist onboard: `admin-export-onboarding.bat`
-- File gom snapshot SQLite toàn hệ thống: `admin-aggregate-data.bat`
-- File build Hub DuckDB: `admin-build-hub.bat`
+- File mở giao diện admin: `CareVL Admin.bat`
 
 Quy trình sử dụng đề xuất:
 
 1. Sửa `config/stations.csv`
-2. Chạy `admin-check-stations.bat`
-3. Chạy `admin-check-runtime-db.bat` để xem branch nào chưa có `carevl.db`
-4. Nếu hợp lệ, chạy `admin-build-stations.bat`
-5. Nếu cần bàn giao hoặc theo dõi onboarding, chạy `admin-export-onboarding.bat`
-6. Nếu cần gom snapshot dữ liệu toàn hệ thống theo ngày, chạy `admin-aggregate-data.bat`
-7. Nếu cần tổng hợp/thống kê/dashboard tại Hub, chạy `admin-build-hub.bat`
+2. Chạy `CareVL Admin.bat`
+3. Trong `Admin App`, chạy kiểm tra danh sách trạm
+4. Nếu cần, kiểm tra branch nào đã có `carevl.db`
+5. Nếu hợp lệ, build `stations.json`
+6. Nếu cần bàn giao hoặc theo dõi onboarding, xuất checklist
+7. Nếu cần gom snapshot dữ liệu toàn hệ thống theo ngày, chạy aggregate
+8. Nếu cần tổng hợp/thống kê/dashboard tại Hub, build Hub DuckDB
 
 Kết quả checklist sẽ được xuất ra:
 
@@ -290,8 +286,8 @@ Hướng xử lý:
 
 - Admin review branch trạm
 - Merge branch vào `main`
-- Chạy `admin-aggregate-data.bat`
-- Chạy `admin-build-hub.bat`
+- Mở `CareVL Admin.bat`
+- Chạy aggregate rồi build Hub DuckDB trong `Admin App`
 
 ### Tình huống 5. Conflict khi merge
 

@@ -162,7 +162,7 @@ Không dùng khu vực onboarding cho các tác vụ quản trị Hub/Admin như
 ### Lưu ý quan trọng khi onboarding
 
 - Không tự đổi branch bằng tay khi đang test luồng người dùng
-- Nếu cần test nghiệp vụ quản trị, quay ra khu vực `Admin/`
+- Nếu cần test nghiệp vụ quản trị, chạy `CareVL Admin.bat`
 - Nếu phát hiện lỗi giao diện hoặc nghiệp vụ, cần ghi rõ:
   - bước thực hiện
   - dữ liệu nhập
