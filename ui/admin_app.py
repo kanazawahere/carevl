@@ -190,10 +190,12 @@ class AdminApp(ctk.CTk):
         utility_row.grid_columnconfigure(0, weight=1)
         utility_row.grid_columnconfigure(1, weight=1)
         utility_row.grid_columnconfigure(2, weight=1)
+        utility_row.grid_columnconfigure(3, weight=1)
 
         self._build_quick_link(utility_row, "Mở JSON", "Kiểm tra metadata branch đang dùng", lambda: self._open_path(CONFIG_DIR / "stations.json"), 0)
         self._build_quick_link(utility_row, "Mở Checklist", "Rà nhanh trạng thái onboarding", lambda: self._open_path(REPORTS_DIR / "onboarding_checklist.md"), 1)
         self._build_quick_link(utility_row, "Mở Hub", "Đi tới thư mục reports/hub", lambda: self._open_path(REPORTS_DIR / "hub"), 2)
+        self._build_quick_link(utility_row, "Mở User Registry", "Duyệt user mới bằng config/user_registry.json", lambda: self._open_path(CONFIG_DIR / "user_registry.json"), 3)
 
         content = ctk.CTkFrame(self, fg_color="transparent")
         content.grid(row=3, column=0, sticky="nsew", padx=20, pady=(0, 16))

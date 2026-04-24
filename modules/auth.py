@@ -284,3 +284,11 @@ def logout() -> Dict[str, Any]:
 def get_current_user() -> Optional[str]:
     config = _load_user_config()
     return config.get("username")
+
+
+def get_current_access_token() -> Optional[str]:
+    config = _load_user_config()
+    token = config.get("access_token")
+    if not token:
+        return None
+    return str(token)

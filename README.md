@@ -68,6 +68,10 @@
 - **Quyền chạy**: mở `PowerShell` bằng `Run as Administrator`
 - **Kết nối mạng**: cần ở lần bootstrap đầu tiên để tải script, cài tool và clone repo
 
+Mẹo mở nhanh quyền admin:
+
+- Nhấn `Win + X` → chọn `Terminal (Admin)` hoặc `Windows PowerShell (Admin)`
+
 ### Lệnh chuẩn cho người dùng và tester
 
 Mở `PowerShell` bằng `Run as Administrator`, rồi dán:
@@ -94,6 +98,29 @@ Nếu chỉ muốn chuẩn bị máy và repo mà chưa mở app ngay:
 
 ```powershell
 $tmp="$env:TEMP\carevl-bootstrap-github.ps1"; Invoke-WebRequest "https://raw.githubusercontent.com/kanazawahere/carevl/main/Onboarding/Bootstrap-GitHub.ps1" -OutFile $tmp; powershell -ExecutionPolicy Bypass -File $tmp -SkipLaunch
+```
+
+### User mới vào hệ thống như thế nào
+
+- User mới vẫn có thể cài app và đăng nhập GitHub bình thường.
+- Nếu tài khoản chưa được cấp quyền, app sẽ chưa cho vào UI nghiệp vụ ngay.
+- App sẽ hiện màn hình chờ duyệt và cho phép bấm `Gửi yêu cầu tham gia`.
+- Khi admin duyệt xong, user chỉ cần bấm `Kiểm tra lại quyền truy cập` trong app là có thể vào hệ thống.
+
+### Admin duyệt user mới ở đâu
+
+- Danh sách user được phép dùng app nằm tại `config/user_registry.json`.
+- Admin có thể mở nhanh file này từ `CareVL Admin`.
+- Mỗi entry tối thiểu nên có:
+
+```json
+{
+  "github-username": {
+    "approved": true,
+    "branch_name": "user/TEN-TRAM-HOAC-TAI-KHOAN",
+    "title": "Tên trạm hoặc đơn vị"
+  }
+}
 ```
 
 ### Phạm vi onboarding
@@ -258,7 +285,8 @@ carevl/
 │
 ├── config/
 │   ├── template_form.json  # Form configuration (5 goi kham)
-│   └── user_config.json    # OAuth token - TUJ DANG commit vo .gitignore
+│   ├── user_config.json    # OAuth token - TUJ DANG commit vo .gitignore
+│   └── user_registry.json  # Danh sách user được duyệt vào hệ thống
 │
 ├── data/                   # SQLite local store
 │   └── carevl.db          # Main local store

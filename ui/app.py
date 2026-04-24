@@ -7,16 +7,22 @@ import customtkinter as ctk
 
 from modules import auth
 from modules import config_loader
+from modules import membership
 from modules import paths
 from ui.design_tokens import (
     BG_APP,
     BORDER,
+    DANGER_BG,
+    DANGER_TEXT,
     PRIMARY_BLUE,
     PRIMARY_BLUE_HOVER,
     SURFACE,
     SURFACE_ALT,
+    SUCCESS_BG,
+    SUCCESS_TEXT,
     TEXT_MUTED,
     TEXT_PRIMARY,
+    TEXT_SECONDARY,
     font,
     primary_button_style,
     secondary_button_style,
@@ -42,7 +48,9 @@ class App(ctk.CTk):
         
         self.username: Optional[str] = None
         self.is_admin: bool = False
+        self.branch_locked: bool = False
         self.active_branch: str = "unknown"
+        self.membership_info: Dict[str, Any] = {}
         self.current_screen: Optional[ctk.CTkFrame] = None
         self.current_shell: Optional[AppShell] = None
         
@@ -74,14 +82,37 @@ class App(ctk.CTk):
         if result["ok"]:
             self.username = result.get("username")
             self._refresh_user_context()
-            self._show_screen_list()
+            if self.membership_info.get("approved"):
+                self._show_screen_list()
+            else:
+                self._show_join_request()
         else:
             self._show_login()
 
     def _refresh_user_context(self):
-        self.active_branch = self._get_active_branch()
-        admin_usernames = config_loader.load_admin_usernames()
-        self.is_admin = bool(self.username and self.username in admin_usernames)
+        self.membership_info = membership.resolve_user_access(self.username or "")
+        self.is_admin = bool(self.membership_info.get("is_admin"))
+        self.branch_locked = bool(self.membership_info.get("branch_locked"))
+
+        if not self.membership_info.get("approved"):
+            self.active_branch = "pending-approval"
+            return
+
+        if self.is_admin:
+            self.active_branch = self._get_active_branch()
+            return
+
+        assigned_branch = str(self.membership_info.get("branch_name", "") or "").strip()
+        if not assigned_branch:
+            assigned_branch = f"user/{self.username}"
+
+        from modules import sync
+
+        switch_result = sync.ensure_local_branch(assigned_branch)
+        if switch_result.get("ok"):
+            self.active_branch = assigned_branch
+        else:
+            self.active_branch = assigned_branch
 
     def _get_active_branch(self) -> str:
         from modules import sync
@@ -162,6 +193,207 @@ class App(ctk.CTk):
         )
         self.copy_code_btn.pack_forget()
 
+    def _show_join_request(self):
+        self._clear_screen()
+
+        wrapper = ctk.CTkFrame(self.container, fg_color="transparent")
+        wrapper.pack(expand=True, fill="both", padx=24, pady=24)
+
+        card = ctk.CTkFrame(
+            wrapper,
+            fg_color=SURFACE,
+            corner_radius=22,
+            border_width=1,
+            border_color=BORDER,
+        )
+        card.pack(expand=True, fill="both")
+        card.grid_columnconfigure(0, weight=1)
+        card.grid_rowconfigure(2, weight=1)
+
+        header = ctk.CTkFrame(card, fg_color="transparent")
+        header.grid(row=0, column=0, sticky="ew", padx=28, pady=(26, 12))
+
+        ctk.CTkLabel(
+            header,
+            text="Tài khoản chưa được cấp quyền",
+            font=font(28, "bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            header,
+            text=(
+                "Bạn đã đăng nhập GitHub thành công, nhưng tài khoản này chưa có trong danh sách được phép dùng CareVL. "
+                "Bạn có thể gửi yêu cầu tham gia ngay trong app và chờ admin duyệt."
+            ),
+            font=font(14),
+            text_color=TEXT_SECONDARY,
+            wraplength=860,
+            justify="left",
+        ).pack(anchor="w", pady=(8, 0))
+
+        badge_row = ctk.CTkFrame(card, fg_color="transparent")
+        badge_row.grid(row=1, column=0, sticky="ew", padx=28, pady=(0, 10))
+        ctk.CTkLabel(
+            badge_row,
+            text=f"GitHub: {self.username or 'unknown'}",
+            fg_color=DANGER_BG,
+            text_color=DANGER_TEXT,
+            corner_radius=10,
+            padx=12,
+            pady=6,
+            font=font(12, "semibold"),
+        ).pack(side="left")
+
+        body = ctk.CTkScrollableFrame(card, fg_color="transparent")
+        body.grid(row=2, column=0, sticky="nsew", padx=24, pady=(0, 14))
+        body.grid_columnconfigure(0, weight=1)
+
+        tips = ctk.CTkFrame(body, fg_color=SURFACE_ALT, corner_radius=14, border_width=1, border_color=BORDER)
+        tips.grid(row=0, column=0, sticky="ew", padx=4, pady=(0, 14))
+        ctk.CTkLabel(
+            tips,
+            text="Thông tin gửi cho admin",
+            font=font(15, "bold"),
+            text_color=TEXT_PRIMARY,
+        ).pack(anchor="w", padx=16, pady=(14, 6))
+        ctk.CTkLabel(
+            tips,
+            text=(
+                "Admin sẽ dùng GitHub username của bạn để duyệt quyền. Hãy điền thêm họ tên, đơn vị và số điện thoại để admin biết chính xác đang duyệt cho ai."
+            ),
+            font=font(13),
+            text_color=TEXT_SECONDARY,
+            justify="left",
+            wraplength=820,
+        ).pack(anchor="w", padx=16, pady=(0, 14))
+
+        form = ctk.CTkFrame(body, fg_color="transparent")
+        form.grid(row=1, column=0, sticky="ew", padx=4, pady=(0, 10))
+        form.grid_columnconfigure(1, weight=1)
+
+        self.join_full_name = self._create_join_input(form, 0, "Họ và tên", "Ví dụ: Nguyễn Văn A")
+        self.join_org = self._create_join_input(form, 1, "Đơn vị / trạm", "Ví dụ: Trạm Y Tế Phường 1")
+        self.join_phone = self._create_join_input(form, 2, "Số điện thoại", "Ví dụ: 09xxxxxxxx")
+
+        ctk.CTkLabel(
+            form,
+            text="Ghi chú thêm",
+            font=font(13, "semibold"),
+            text_color=TEXT_PRIMARY,
+            anchor="w",
+        ).grid(row=3, column=0, sticky="nw", padx=(0, 12), pady=(10, 0))
+
+        self.join_note = ctk.CTkTextbox(form, height=120)
+        self.join_note.grid(row=3, column=1, sticky="ew", pady=(10, 0))
+
+        action_row = ctk.CTkFrame(body, fg_color="transparent")
+        action_row.grid(row=2, column=0, sticky="ew", padx=4, pady=(6, 0))
+        action_row.grid_columnconfigure(2, weight=1)
+
+        self.join_send_btn = ctk.CTkButton(
+            action_row,
+            text="Gửi yêu cầu tham gia",
+            command=self._on_send_join_request,
+            **primary_button_style(width=190, height=40),
+        )
+        self.join_send_btn.grid(row=0, column=0, sticky="w", padx=(0, 8))
+
+        ctk.CTkButton(
+            action_row,
+            text="Kiểm tra lại quyền truy cập",
+            command=self._on_recheck_membership,
+            **secondary_button_style(width=200, height=40),
+        ).grid(row=0, column=1, sticky="w", padx=(0, 8))
+
+        ctk.CTkButton(
+            action_row,
+            text="Đăng xuất",
+            command=self._logout_to_login,
+            **destructive_button_style(width=120, height=40),
+        ).grid(row=0, column=3, sticky="e")
+
+        self.join_status_label = ctk.CTkLabel(
+            body,
+            text="Chưa gửi yêu cầu tham gia.",
+            font=font(13),
+            text_color=TEXT_MUTED,
+            wraplength=860,
+            justify="left",
+            anchor="w",
+        )
+        self.join_status_label.grid(row=3, column=0, sticky="ew", padx=4, pady=(14, 18))
+
+    def _create_join_input(self, master, row: int, label: str, placeholder: str) -> ctk.CTkEntry:
+        ctk.CTkLabel(
+            master,
+            text=label,
+            font=font(13, "semibold"),
+            text_color=TEXT_PRIMARY,
+            anchor="w",
+        ).grid(row=row, column=0, sticky="w", padx=(0, 12), pady=(10 if row else 0, 0))
+
+        entry = ctk.CTkEntry(
+            master,
+            placeholder_text=placeholder,
+            height=40,
+            corner_radius=10,
+            fg_color=SURFACE_ALT,
+            border_color=BORDER,
+            text_color=TEXT_PRIMARY,
+        )
+        entry.grid(row=row, column=1, sticky="ew", pady=(10 if row else 0, 0))
+        return entry
+
+    def _on_send_join_request(self):
+        if not self.username:
+            self.join_status_label.configure(text="Không xác định được tài khoản GitHub hiện tại.")
+            return
+
+        self.join_send_btn.configure(state="disabled", text="Đang gửi...")
+        self.join_status_label.configure(text="Đang gửi yêu cầu tham gia tới admin...")
+        threading.Thread(target=self._send_join_request_task, daemon=True).start()
+
+    def _send_join_request_task(self):
+        result = membership.submit_join_request(
+            username=self.username or "",
+            full_name=self.join_full_name.get().strip(),
+            organization=self.join_org.get().strip(),
+            phone=self.join_phone.get().strip(),
+            note=self.join_note.get("1.0", "end").strip(),
+        )
+        self.after(0, self._handle_join_request_result, result)
+
+    def _handle_join_request_result(self, result: Dict[str, Any]):
+        self.join_send_btn.configure(state="normal", text="Gửi yêu cầu tham gia")
+        message = str(result.get("message", "Không thể gửi yêu cầu tham gia."))
+        if result.get("issue_url"):
+            message = f"{message}\n{result['issue_url']}"
+
+        self.join_status_label.configure(
+            text=message,
+            text_color=SUCCESS_TEXT if result.get("ok") else DANGER_TEXT,
+        )
+
+    def _on_recheck_membership(self):
+        self._refresh_user_context()
+        if self.membership_info.get("approved"):
+            self._show_screen_list()
+            return
+        self.join_status_label.configure(
+            text="Tài khoản vẫn chưa được duyệt. Nếu admin vừa cấp quyền, hãy thử lại sau vài giây.",
+            text_color=TEXT_MUTED,
+        )
+
+    def _logout_to_login(self):
+        auth.logout()
+        self.username = None
+        self.is_admin = False
+        self.branch_locked = False
+        self.active_branch = "unknown"
+        self.membership_info = {}
+        self._show_login()
+
     def _copy_user_code(self):
         code = self.code_label.cget("text").replace("Mã xác thực: ", "")
         self.clipboard_clear()
@@ -206,8 +438,11 @@ class App(ctk.CTk):
             }
             auth._save_user_config(config)
             self._refresh_user_context()
-            
-            self._show_screen_list()
+
+            if self.membership_info.get("approved"):
+                self._show_screen_list()
+            else:
+                self._show_join_request()
         else:
             self.status_label.configure(text=f"Lỗi: {result.get('message', '')}")
             self.copy_code_btn.configure(state="disabled", fg_color="gray")
@@ -288,7 +523,7 @@ class App(ctk.CTk):
             package_id=package_id,
             username=self.username or "",
             branch_name=self.active_branch,
-            branch_locked=self.is_admin,
+            branch_locked=self.branch_locked,
             on_back=on_back,
             on_saved=on_saved,
             embedded_shell=True,
@@ -310,7 +545,7 @@ class App(ctk.CTk):
             shell.content_frame,
             username=self.username or "",
             branch_name=self.active_branch,
-            branch_locked=self.is_admin,
+            branch_locked=self.branch_locked,
             on_back=on_back,
             embedded_shell=True,
         )
@@ -430,6 +665,10 @@ class App(ctk.CTk):
             dialog.destroy()
             auth.logout()
             self.username = None
+            self.is_admin = False
+            self.branch_locked = False
+            self.active_branch = "unknown"
+            self.membership_info = {}
             self._show_login()
         
         def cancel_logout():
