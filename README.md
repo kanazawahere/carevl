@@ -78,6 +78,8 @@ Script sẽ tự:
 - nếu chưa có exe thì tự chuẩn bị môi trường Python bằng `uv`
 - chạy app theo đúng luồng người dùng tại trạm
 
+Script ưu tiên dùng `winget` nếu máy có sẵn. Nếu máy không có `winget`, script sẽ fallback sang nguồn cài đặt chính thức cho `Git` và `uv`.
+
 Tài liệu chi tiết nằm ở `Onboarding/README.md`.
 
 ---

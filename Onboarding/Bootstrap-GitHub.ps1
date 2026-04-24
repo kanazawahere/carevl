@@ -8,6 +8,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 function Write-Step {
     param([string]$Message)
@@ -34,8 +35,9 @@ function Add-PathIfExists {
 
 function Ensure-Winget {
     if (-not (Test-Command "winget")) {
-        throw "Khong tim thay winget. May nay can co App Installer de tu dong cai Git va uv."
+        return $false
     }
+    return $true
 }
 
 function Install-WithWinget {
@@ -50,13 +52,44 @@ function Install-WithWinget {
     }
 }
 
+function Install-GitWithoutWinget {
+    $apiUrl = "https://api.github.com/repos/git-for-windows/git/releases/latest"
+    Write-Step "Khong co winget, dang tai Git tu GitHub release chinh thuc..."
+    $release = Invoke-RestMethod -Uri $apiUrl -Headers @{ "User-Agent" = "CareVL-Bootstrap" }
+    $asset = $release.assets | Where-Object { $_.name -match '^Git-.*-64-bit\.exe$' } | Select-Object -First 1
+    if (-not $asset) {
+        throw "Khong tim thay file cai Git x64 trong release moi nhat."
+    }
+
+    $installerPath = Join-Path $env:TEMP $asset.name
+    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $installerPath
+
+    $arguments = '/VERYSILENT /NORESTART /NOCANCEL /SP- /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /COMPONENTS="icons,ext\reg\shellhere,assoc,assoc_sh"'
+    $process = Start-Process -FilePath $installerPath -ArgumentList $arguments -Wait -PassThru
+    if ($process.ExitCode -ne 0) {
+        throw "Cai Git that bai voi ma loi $($process.ExitCode)."
+    }
+}
+
+function Install-UvWithoutWinget {
+    Write-Step "Khong co winget, dang cai uv bang installer PowerShell chinh thuc..."
+    & powershell -ExecutionPolicy Bypass -NoProfile -Command "irm https://astral.sh/uv/install.ps1 | iex"
+    if (-not $?) {
+        throw "Cai uv that bai."
+    }
+}
+
 function Ensure-Git {
     if (Test-Command "git") {
         return
     }
 
-    Ensure-Winget
-    Install-WithWinget -Id "Git.Git" -Name "Git"
+    if (Ensure-Winget) {
+        Install-WithWinget -Id "Git.Git" -Name "Git"
+    }
+    else {
+        Install-GitWithoutWinget
+    }
     Add-PathIfExists "C:\Program Files\Git\cmd"
     Add-PathIfExists "$env:LOCALAPPDATA\Programs\Git\cmd"
 
@@ -70,8 +103,12 @@ function Ensure-Uv {
         return
     }
 
-    Ensure-Winget
-    Install-WithWinget -Id "AstralSoftware.UV" -Name "uv"
+    if (Ensure-Winget) {
+        Install-WithWinget -Id "AstralSoftware.UV" -Name "uv"
+    }
+    else {
+        Install-UvWithoutWinget
+    }
     Add-PathIfExists "$env:USERPROFILE\.local\bin"
     Add-PathIfExists "$env:LOCALAPPDATA\Programs\uv\bin"
 

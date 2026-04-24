@@ -69,6 +69,11 @@ Lệnh này là lệnh chuẩn duy nhất trong tài liệu. Script sẽ tự:
 - ưu tiên mở `carevl.exe` nếu có
 - nếu chưa có exe thì tự chuẩn bị môi trường Python và mở app
 
+Script sẽ ưu tiên dùng `winget` nếu máy có sẵn. Nếu máy không có `winget`, script sẽ tự fallback sang nguồn chính thức:
+
+- `Git for Windows` từ GitHub release chính thức
+- `uv` từ installer PowerShell chính thức của Astral
+
 Nếu chỉ muốn chuẩn bị máy và repo mà chưa mở app ngay:
 
 ```powershell
