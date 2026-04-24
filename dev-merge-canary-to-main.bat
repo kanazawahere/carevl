@@ -31,6 +31,16 @@ if defined DIRTY (
     exit /b 1
 )
 
+echo [WARN] This will fast-forward merge canary into main and push main to origin.
+choice /C YN /N /M "Continue? [Y/N]: "
+if errorlevel 2 (
+    echo.
+    echo [INFO] Merge cancelled by user.
+    echo.
+    pause
+    exit /b 0
+)
+
 echo [INFO] Fetching latest changes from origin...
 git fetch origin
 if errorlevel 1 goto :error
