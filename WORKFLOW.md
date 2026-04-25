@@ -20,7 +20,7 @@
 Chạy:
 
 ```bat
-dev-merge-canary-to-main.bat
+dev-hot-merge-canary-to-main.bat
 ```
 
 Script sẽ:
