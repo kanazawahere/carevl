@@ -8,13 +8,11 @@
         <h2 class="text-2xl font-bold mb-4 text-gray-800">Trạm khám - Nhập liệu</h2>
         <p class="text-gray-600 mb-6">Sử dụng camera điện thoại để quét mã vạch Sticker và mở form nhập liệu.</p>
 
-        <!-- Barcode Scanner Placeholder (Assuming integration with html5-qrcode or similar) -->
-        <div id="reader" class="mb-6 mx-auto w-full max-w-sm rounded-lg overflow-hidden border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center" style="min-h: 250px;">
-            <p class="text-gray-500 text-center px-4">Khu vực Camera (Yêu cầu quyền truy cập)</p>
-        </div>
+        <!-- Barcode Scanner Container -->
+        <div id="reader" class="mb-6 mx-auto w-full max-w-sm rounded-lg overflow-hidden" style="min-h: 250px;"></div>
 
-        <!-- HTMX Form to simulate receiving scanned sticker -->
-        <form hx-get="/contributor/scan"
+        <!-- HTMX Form to process the sticker -->
+        <form id="scan-form" hx-get="/contributor/scan"
               hx-target="#form-container"
               hx-swap="innerHTML"
               class="space-y-4 max-w-md mx-auto">
@@ -25,7 +23,7 @@
                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2 border"
                            placeholder="Hoặc nhập tay mã Sticker">
                 </div>
-                <button type="submit"
+                <button type="submit" id="submit-btn"
                         class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                     Tra cứu
                 </button>
@@ -39,8 +37,34 @@
     </div>
 </div>
 
-<!-- Inline script just to show the container when a scan happens -->
+<!-- html5-qrcode CDN -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
 <script>
+    // Initialize html5-qrcode scanner
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log(`Scan result: ${decodedText}`);
+
+        // Stop scanning after successful read to prevent rapid firing
+        html5QrcodeScanner.clear();
+
+        // Fill the input and trigger the form submission
+        document.getElementById('sticker_input').value = decodedText;
+        htmx.trigger('#scan-form', 'submit');
+    }
+
+    function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: {width: 250, height: 100} },
+        /* verbose= */ false);
+
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+    // Show the container when HTMX swaps content in
     document.body.addEventListener('htmx:afterSwap', function(evt) {
         if (evt.detail.target.id === 'form-container') {
             document.getElementById('form-container').classList.remove('hidden');
