@@ -11,7 +11,11 @@ Các quyết định hiện tại của hệ thống.
 - [02. SQLite Security & Snapshots](AGENTS/ACTIVE/02_SQLite_Security.md)
 - [03. Web UI & HTMX Interaction](AGENTS/ACTIVE/03_Web_UI_HTMX.md)
 - [04. Development Guidelines & Troubleshooting](AGENTS/ACTIVE/04_Development_Guidelines.md)
-- [07. Active Sync Proposal: Chủ động đóng gói dữ liệu sạch (Sprint 4)](AGENTS/ACTIVE/07_active_sync_proposal.md)
+- [07. Active Sync Protocol: The Encrypted SQLite Blob](AGENTS/ACTIVE/07_active_sync_protocol.md)
+- [08. Hướng dẫn Admin](AGENTS/ACTIVE/08_Huong_Dan_Admin.md)
+- [09. Phase 2 Schema Spec](AGENTS/ACTIVE/09_Phase2_Schema_Spec.md)
+- [10. Quy chế vận hành](AGENTS/ACTIVE/10_Quy_Che_Van_Hanh.md)
+- [11. Workflow](AGENTS/ACTIVE/11_Workflow.md)
 
 ---
 
