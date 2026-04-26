@@ -5,6 +5,7 @@ from pydantic import ConfigDict
 class Settings(BaseSettings):
     SITE_ID: str = "TRAM_TEST_01"
     GITHUB_TOKEN: str = ""
+    GITHUB_REPO: str = "owner/carevl-repo" # Expected format: "owner/repo"
     ENCRYPTION_KEY: str = "your-32-byte-encryption-key-here" # 32 bytes for AES-256
 
     # Custom UUIDv5 Namespace for CareVL
