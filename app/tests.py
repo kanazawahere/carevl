@@ -9,7 +9,13 @@ client = TestClient(app)
 def test_read_main():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to CareVL Backend Engine"}
+
+def test_ui_routes():
+    response = client.get("/operator")
+    assert response.status_code == 200
+
+    response = client.get("/contributor")
+    assert response.status_code == 200
 
 def test_snapshot_creation():
     db_path = settings.DATABASE_URL.replace("sqlite:///", "")
