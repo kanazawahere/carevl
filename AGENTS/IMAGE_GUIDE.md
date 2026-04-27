@@ -1,66 +1,37 @@
-# Cẩm nang Thiết kế Hình ảnh (Image Generation Bible)
+# Hướng Dẫn Hình Ảnh Mockup (Image Guide)
 
-Đây là tài liệu hướng dẫn tiêu chuẩn cho AI/Agent về cách tự động chụp ảnh màn hình (Mockup) trong quá trình phát triển dự án CareVL.
+Tài liệu này quy định cách thức tạo và lưu trữ hình ảnh giao diện (Mockup) cho hệ thống CareVL.
 
-## Nguyên tắc cốt lõi
-Không sử dụng công cụ tạo ảnh bằng AI (như DALL-E) để vẽ giao diện người dùng. Mọi giao diện UI/UX phải được chụp trực tiếp từ mã nguồn HTML/Tailwind đang chạy để đảm bảo tính chân thực và chính xác 100%.
+## Quy Định Cốt Lõi
+1. **Tuyệt đối không dùng AI để tạo ảnh Mockup.** Mọi hình ảnh (đặc biệt trong thư mục `AGENTS/ASSETS/` và dùng trong `TUTORIAL.md`) phải là ảnh chụp thực tế từ giao diện UI của ứng dụng.
+2. **Công cụ duy nhất:** Phải sử dụng **Playwright** để viết script tự động truy cập vào các trang (routes), điều chỉnh kích thước màn hình (Desktop/Mobile) và chụp ảnh (Screenshots).
+3. **Định dạng:** Ảnh phải được lưu dưới định dạng `.png` với chất lượng cao.
 
-## Công cụ sử dụng
-- **Playwright (Python)**: Công cụ tự động hóa trình duyệt.
-- Lệnh thực thi: `python scripts/verify_ui.py` (hoặc tên script tương tự).
+## Script Chụp Ảnh Mẫu (Playwright Python)
+Dưới đây là một ví dụ script `scripts/take_screenshots.py` để chụp ảnh màn hình các trang giao diện (chỉ chạy khi server đã hoạt động ở `http://localhost:8000`).
 
-## Quy trình chuẩn (4 Bước)
-
-### 1. Chuẩn bị Môi trường
-Luôn đảm bảo Server FastAPI đang chạy ngầm trước khi chụp ảnh:
-```bash
-kill $(lsof -t -i :8000) 2>/dev/null || true
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
-```
-
-### 2. Viết Script Playwright
-Tạo một file `.py` (thường lưu ở thư mục `/home/jules/verification/` hoặc `scripts/`).
-
-*Mẫu code cơ bản:*
 ```python
 from playwright.sync_api import sync_playwright
 
-def generate_mockups():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+def run(playwright):
+    browser = playwright.chromium.launch(headless=True)
+    page = browser.new_page()
 
-        # Cấu hình kích thước Desktop
-        page.set_viewport_size({"width": 1280, "height": 800})
+    # Kích thước màn hình Windows tiêu chuẩn
+    page.set_viewport_size({"width": 1280, "height": 720})
 
-        # Mở trang cần chụp
-        page.goto("http://localhost:8000/login")
+    # Chụp màn hình trang Login / GitHub Auth
+    page.goto("http://localhost:8000/login")
+    page.screenshot(path="AGENTS/ASSETS/01_github_auth.png")
 
-        # LUÔN chờ một element cụ thể để đảm bảo trang đã load xong
-        page.wait_for_selector("text=Kết nối GitHub")
+    # ... Chụp các màn hình khác ...
 
-        # Tương tác (nếu cần: click, điền form...)
+    browser.close()
 
-        # Chụp ảnh và lưu vào đúng thư mục AGENTS/ASSETS
-        page.screenshot(path="AGENTS/ASSETS/ten_hinh_anh.png")
-
-        browser.close()
-
-if __name__ == "__main__":
-    generate_mockups()
+with sync_playwright() as playwright:
+    run(playwright)
 ```
 
-### 3. Kích thước Viewport chuẩn
-- **Desktop (Admin / Trưởng trạm):** `{"width": 1280, "height": 800}`
-- **Mobile (Bác sĩ / Cập nhật kết quả):** `{"width": 375, "height": 667}` (iPhone SE) hoặc `{"width": 414, "height": 896}` (iPhone 11/XR).
-
-### 4. Quy ước Đặt tên và Lưu trữ
-- Mọi file ảnh mockup phải được lưu vào thư mục `AGENTS/ASSETS/`.
-- Định dạng tên file: Có tính mô tả cao, dùng chữ thường và dấu gạch dưới `_`.
-  - Ví dụ: `01_mockup_github_auth.png`, `sidebar_mobile_open.png`.
-- Không ghi đè các ảnh cũ nếu chúng đại diện cho các phiên bản giao diện khác nhau, trừ khi được yêu cầu.
-
-## Khắc phục lỗi thường gặp
-- **Lỗi Timeout:** Đảm bảo `page.goto()` trỏ đúng port (thường là 8000) và Server Uvicorn không bị crash.
-- **Lỗi Selector không tìm thấy:** Mạng/Trình duyệt chạy quá nhanh, trang chưa kịp render. Hãy dùng `page.wait_for_selector("css_hoặc_text")` thay vì `time.sleep()`.
-- **Thiếu hiệu ứng Alpine.js/HTMX:** Với các UI động cần tương tác, hãy giả lập `page.click("button")` và thêm `page.wait_for_timeout(500)` để chờ Animation chuyển động xong trước khi gọi hàm `.screenshot()`.
+## Danh Sách Ảnh Cần Chụp
+Tham khảo mục `Danh sách ảnh Mockup` trong từng file `.md` tại `AGENTS/FEATURES/`.
+Mỗi tính năng mới khi hoàn thành UI đều phải được cập nhật ảnh bằng Playwright.
