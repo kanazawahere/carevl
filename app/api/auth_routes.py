@@ -25,11 +25,11 @@ def _get_fernet_from_pin(pin: str, salt: bytes) -> Fernet:
 
 @router.get("/login", response_class=HTMLResponse)
 def get_login_page(request: Request):
-    return templates.TemplateResponse(request=request, name="auth/github_auth.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="auth/github_auth.html", context={"request": request, "hide_sidebar": True})
 
 @router.get("/setup/repo", response_class=HTMLResponse)
 def get_repo_setup(request: Request):
-    return templates.TemplateResponse(request=request, name="auth/repo_config.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="auth/repo_config.html", context={"request": request, "hide_sidebar": True})
 
 @router.post("/setup/repo")
 def post_repo_setup(repo_url: str = Form(...)):
@@ -38,7 +38,7 @@ def post_repo_setup(repo_url: str = Form(...)):
 
 @router.get("/setup/permission", response_class=HTMLResponse)
 def get_permission_gate(request: Request):
-    return templates.TemplateResponse(request=request, name="auth/permission_gate.html", context={"request": request, "username": "kanazawahere"})
+    return templates.TemplateResponse(request=request, name="auth/permission_gate.html", context={"request": request, "username": "kanazawahere", "hide_sidebar": True})
 
 @router.post("/setup/permission/check")
 def check_permission():
@@ -47,7 +47,7 @@ def check_permission():
 
 @router.get("/setup/data", response_class=HTMLResponse)
 def get_data_setup(request: Request):
-    return templates.TemplateResponse(request=request, name="auth/data_setup.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="auth/data_setup.html", context={"request": request, "hide_sidebar": True})
 
 @router.post("/setup/data/init")
 def post_data_init():
@@ -60,7 +60,7 @@ def post_data_restore(private_key: str = Form(...)):
 
 @router.get("/setup/pin", response_class=HTMLResponse)
 def get_pin_setup(request: Request):
-    return templates.TemplateResponse(request=request, name="auth/pin_setup.html", context={"request": request})
+    return templates.TemplateResponse(request=request, name="auth/pin_setup.html", context={"request": request, "hide_sidebar": True})
 
 @router.post("/setup/pin")
 def post_pin_setup(pin: str = Form(...), db: Session = Depends(get_db)):

@@ -65,14 +65,18 @@ Các chức năng liên quan:
 *   **3. Hồ sơ bệnh nhân:** Ghi nhận Huyết áp, Nhịp tim, Nhiệt độ trực tiếp vào hồ sơ.
 
 ### 3. Persona C: Cập nhật Kết quả (Nhập liệu)
-**Vai trò:** Nhân viên phòng Lab cập nhật các xét nghiệm trả chậm.
-**Thao tác:** Chọn mục **5. Cập nhật kết quả**.
+**Vai trò:** Nhân viên phòng Lab cập nhật các xét nghiệm trả chậm và quản lý dữ liệu tổng hợp.
+Các chức năng liên quan:
+*   **4. Nhập liệu (Aggregate):** Dành cho việc nhập các số liệu thống kê tổng hợp (VD: MeasureReport) không gắn liền với một bệnh nhân cụ thể.
+*   **5. Cập nhật kết quả:** Cập nhật kết quả xét nghiệm, chẩn đoán hình ảnh trả chậm (VD: DiagnosticReport) dựa trên mã vạch/CCCD.
 *(Giao diện Sidebar - Mục Cập nhật kết quả)*
 ![Sidebar - Results Update](AGENTS/ASSETS/05_results_update.png)
 
 ### 4. Persona D: Trưởng Trạm / Quản lý (Admin)
-**Vai trò:** Quản lý số liệu, xuất báo cáo và đồng bộ dữ liệu về Hub.
-**Thao tác Đồng bộ:** Chọn mục **7. Xuất dữ liệu Hub**.
-Quyền tối thượng: Hub Admin là người duy nhất giữ Private Key để giải mã dữ liệu snapshot được gửi lên từ các Edge.
-*(Giao diện Admin Backups)*
-![Active Sync Complete](AGENTS/ASSETS/07_hub_sync.png)
+**Vai trò:** Quản lý số liệu, xuất báo cáo, đồng bộ dữ liệu về Hub và thiết lập hệ thống.
+Các chức năng liên quan:
+*   **6. Báo cáo:** Xem và xuất các báo cáo thống kê tình hình khám chữa bệnh tại trạm, báo cáo dịch tễ học hằng ngày/tuần.
+*   **7. Xuất dữ liệu Hub:** Đóng gói, mã hoá an toàn dữ liệu nội bộ SQLite thành Snapshot và gửi lên GitHub Releases. *(Giao diện Admin Backups)* ![Active Sync Complete](AGENTS/ASSETS/07_hub_sync.png)
+*   **8. Liên thông (Audit):** Kiểm tra trạng thái liên thông dữ liệu lên các hệ thống y tế quốc gia, xem nhật ký đồng bộ và lỗi phát sinh.
+*   **9. Cài đặt trạm:** Cấu hình các thông số cơ bản của trạm (Tên trạm, Mã định danh SITE_ID, thay đổi mã PIN).
+*   **10. Giới thiệu:** Thông tin về phiên bản phần mềm CareVL, bản quyền và hướng dẫn hỗ trợ kỹ thuật.

@@ -41,24 +41,6 @@ Các quyết định hiện tại của hệ thống.
 - [10. Quy chế vận hành](AGENTS/ACTIVE/10_Quy_Che_Van_Hanh.md)
 - [11. Workflow](AGENTS/ACTIVE/11_Workflow.md)
 - [12. UI/UX Data Flow: Intake to Delayed Results](AGENTS/ACTIVE/12_ui_ux_flow.md)
-- [13. AWARE-SAVE Protocol: Visual Dirty State Management](AGENTS/ACTIVE/13_Aware_Save_Protocol.md)
-- [14. Bootstrap Infrastructure: One-Liner Setup](AGENTS/ACTIVE/14_Bootstrap_Infrastructure.md)
-- [15. Hub Aggregation: DuckDB Analytics Pipeline](AGENTS/ACTIVE/15_Hub_Aggregation.md)
-
-## 🏥 FEATURES LEDGER (10 Chức năng Sidebar)
-- [Sidebar UI Architecture](AGENTS/FEATURES/sidebar_ui.md)
-- [1. Tiếp nhận mới](AGENTS/FEATURES/1_tiep_nhan_moi.md)
-- [2. Lượt khám](AGENTS/FEATURES/2_luot_kham.md)
-- [3. Hồ sơ bệnh nhân](AGENTS/FEATURES/3_ho_so_benh_nhan.md)
-- [4. Nhập liệu (Aggregate)](AGENTS/FEATURES/4_nhap_lieu_aggregate.md)
-- [5. Cập nhật kết quả](AGENTS/FEATURES/5_cap_nhat_ket_qua.md)
-- [6. Báo cáo](AGENTS/FEATURES/6_bao_cao.md)
-- [7. Xuất dữ liệu Hub](AGENTS/FEATURES/7_xuat_du_lieu_hub.md)
-- [8. Liên thông (Audit)](AGENTS/FEATURES/8_lien_thong_audit.md)
-- [9. Cài đặt trạm](AGENTS/FEATURES/9_cai_dat_tram.md)
-- [10. Giới thiệu](AGENTS/FEATURES/10_gioi_thieu.md)
-- [Auth Gateway](AGENTS/FEATURES/auth_gateway.md)
-- [QR Code Provisioning (Thẻ bài điện tử)](AGENTS/FEATURES/qr_provisioning.md)
 
 ---
 
