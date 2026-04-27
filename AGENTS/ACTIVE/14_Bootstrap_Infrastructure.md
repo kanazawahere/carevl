@@ -198,6 +198,7 @@ Write-Host "Setup completed successfully!"
 ### Lỗi Firewall
 - Cần chạy PowerShell với quyền Administrator
 - Script sẽ tự động yêu cầu elevation nếu cần
+- **Nếu script tự thoát khi mở cổng**: Script đã được fix (2026-04-28), sẽ hiển thị warning màu vàng và tiếp tục thay vì crash
 
 ## Performance
 
@@ -217,3 +218,4 @@ Write-Host "Setup completed successfully!"
 - **2026-04-27**: Kiro - Sửa lỗi tạo shortcut: Thêm fallback VBScript khi COM object thất bại
 - **2026-04-27**: Kiro - Cải thiện Idempotent: Backup .env và data/ trước khi update
 - **2026-04-27**: Kiro - Sửa file .bat: Thêm `call` trước `uv run` và `pause` ở cuối (theo best practice Windows batch)
+- **2026-04-28**: Kiro - Sửa lỗi script tự thoát khi mở cổng Firewall: Thêm try-catch vào `Configure-Firewall` để bắt lỗi và tiếp tục chạy thay vì crash

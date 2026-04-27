@@ -214,14 +214,27 @@ function Find-AvailablePort {
 function Configure-Firewall {
     param([int]$Port)
     $RuleName = "CareVL_Port_$Port"
-    if (-not (Get-NetFirewallRule -DisplayName $RuleName -ErrorAction SilentlyContinue)) {
-        Write-Step "Dang mo cong $Port tren Windows Defender Firewall..."
-        New-NetFirewallRule -DisplayName $RuleName `
-                            -Direction Inbound `
-                            -LocalPort $Port `
-                            -Protocol TCP `
-                            -Action Allow `
-                            -Profile Any | Out-Null
+    
+    try {
+        $existingRule = Get-NetFirewallRule -DisplayName $RuleName -ErrorAction SilentlyContinue
+        if ($null -eq $existingRule) {
+            Write-Step "Dang mo cong $Port tren Windows Defender Firewall..."
+            New-NetFirewallRule -DisplayName $RuleName `
+                                -Direction Inbound `
+                                -LocalPort $Port `
+                                -Protocol TCP `
+                                -Action Allow `
+                                -Profile Any -ErrorAction Stop | Out-Null
+            Write-Info "Da mo cong $Port thanh cong!"
+        } else {
+            Write-Info "Cong $Port da duoc mo truoc do."
+        }
+    }
+    catch {
+        Write-Host "CANH BAO: Khong the mo cong $Port tu dong." -ForegroundColor Yellow
+        Write-Host "Ly do: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "He thong van co the hoat dong neu Firewall da duoc cau hinh san." -ForegroundColor Yellow
+        Write-Host "Neu gap loi ket noi, hay mo cong $Port thu cong trong Windows Defender Firewall." -ForegroundColor Yellow
     }
 }
 
