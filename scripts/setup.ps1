@@ -139,13 +139,52 @@ function Ensure-Repo {
     }
 
     if (Test-Path (Join-Path $TargetDir ".git")) {
-        Write-Step "Repo da ton tai, dang reset va pull de cap nhat (Idempotent)..."
+        Write-Step "Repo da ton tai, dang cap nhat (Idempotent)..."
         Push-Location $TargetDir
         try {
+            # Backup .env nếu có (để không mất config)
+            $envFile = Join-Path $TargetDir ".env"
+            $envBackup = Join-Path $env:TEMP "carevl_env_backup.txt"
+            if (Test-Path $envFile) {
+                Copy-Item $envFile $envBackup -Force
+                Write-Info "Da backup file .env"
+            }
+
+            # Backup data/ nếu có (để không mất dữ liệu)
+            $dataDir = Join-Path $TargetDir "data"
+            $dataBackup = Join-Path $env:TEMP "carevl_data_backup"
+            if (Test-Path $dataDir) {
+                if (Test-Path $dataBackup) {
+                    Remove-Item $dataBackup -Recurse -Force
+                }
+                Copy-Item $dataDir $dataBackup -Recurse -Force
+                Write-Info "Da backup thu muc data/"
+            }
+
+            # Reset và pull code mới
             & git fetch origin
             & git reset --hard origin/$Branch
             & git checkout $Branch
             & git pull origin $Branch
+
+            # Restore .env
+            if (Test-Path $envBackup) {
+                Copy-Item $envBackup $envFile -Force
+                Remove-Item $envBackup -Force
+                Write-Info "Da restore file .env"
+            }
+
+            # Restore data/
+            if (Test-Path $dataBackup) {
+                if (Test-Path $dataDir) {
+                    Remove-Item $dataDir -Recurse -Force
+                }
+                Copy-Item $dataBackup $dataDir -Recurse -Force
+                Remove-Item $dataBackup -Recurse -Force
+                Write-Info "Da restore thu muc data/"
+            }
+
+            Write-Info "Cap nhat thanh cong! Co the chay lai script bao nhieu lan cung duoc."
         }
         finally {
             Pop-Location

@@ -53,9 +53,13 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; iwr -useb https://raw.githubus
 
 #### 4. Idempotent Behavior
 Script có thể chạy nhiều lần mà không gây lỗi:
-- Nếu đã có folder: `git reset --hard` và `git pull` để làm sạch
-- Nếu đã có dependencies: Skip cài đặt
-- Nếu đã có firewall rule: Skip tạo rule
+- **Nếu đã có folder**: 
+  - Backup `.env` và `data/` (để không mất config và dữ liệu)
+  - `git reset --hard` và `git pull` để cập nhật code mới
+  - Restore `.env` và `data/` về đúng vị trí
+- **Nếu đã có dependencies**: Skip cài đặt
+- **Nếu đã có firewall rule**: Skip tạo rule
+- **Kết quả**: Có thể chạy lại script bao nhiêu lần cũng được, không cần xóa thư mục
 
 ### Security Gateway Integration
 Script tích hợp với luồng Onboarding 5 bước:
@@ -139,6 +143,14 @@ Write-Host "Setup completed successfully!"
 - [01. FastAPI Core Architecture](01_FastAPI_Core.md)
 
 ## Troubleshooting
+
+### Lỗi "Đã cài rồi, muốn cài lại"
+- **Không cần xóa thư mục!** Script có Idempotent behavior
+- Chỉ cần chạy lại script, nó sẽ tự động:
+  - Backup `.env` và `data/` (config và dữ liệu)
+  - Cập nhật code mới từ GitHub
+  - Restore `.env` và `data/` về đúng vị trí
+- **An toàn**: Không mất dữ liệu, không mất config
 
 ### Lỗi "Không tạo được shortcut" hoặc "error invalid class"
 - **Nguyên nhân**: COM object WScript.Shell bị chặn hoặc không khả dụng
