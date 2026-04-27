@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Khởi tạo Dữ liệu | CareVL{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div class="p-8">
+        <div class="uppercase tracking-wide text-sm text-primary font-semibold mb-1">Bước 3: Khởi tạo Local DB</div>
+        <h2 class="block mt-1 text-lg leading-tight font-medium text-black">Nguồn dữ liệu ban đầu</h2>
+        <p class="mt-2 text-gray-500">Vui lòng chọn cách thiết lập cơ sở dữ liệu cho trạm này.</p>
+
+        <div class="mt-6 space-y-4">
+            <!-- Option A -->
+            <div class="border rounded-lg p-4 hover:border-primary cursor-pointer">
+                <h3 class="text-lg font-medium text-gray-900">A. Khởi tạo Trạm Mới</h3>
+                <p class="text-sm text-gray-500 mt-1 mb-3">Bắt đầu với một cơ sở dữ liệu trống hoàn toàn. Dùng cho trạm mới triển khai.</p>
+                <form action="/setup/data/init" method="post">
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                        Tạo DB Trống
+                    </button>
+                </form>
+            </div>
+
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                    <span class="px-2 bg-white text-sm text-gray-500">HOẶC</span>
+                </div>
+            </div>
+
+            <!-- Option B -->
+            <div class="border rounded-lg p-4 border-yellow-400 bg-yellow-50">
+                <h3 class="text-lg font-medium text-gray-900">B. Khôi phục Snapshot từ Hub</h3>
+                <p class="text-sm text-gray-700 mt-1 mb-3">Tải file <code>.db.enc</code> mới nhất từ GitHub Releases và giải mã. Cần có Private Key của Hub.</p>
+                <form action="/setup/data/restore" method="post" class="space-y-3">
+                    <div>
+                        <label for="private_key" class="block text-xs font-medium text-gray-700">Hub Encryption Key (AES-256)</label>
+                        <input type="password" name="private_key" id="private_key" class="mt-1 shadow-sm focus:ring-yellow-500 focus:border-yellow-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border" placeholder="Nhập khóa giải mã...">
+                    </div>
+                    <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none">
+                        Tải & Khôi phục Dữ liệu
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CareVL{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1d4ed8',
+                        secondary: '#475569',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-900 flex min-h-screen" x-data="{ sidebarOpen: false }">
+
+    <!-- Mobile menu button -->
+    <div class="md:hidden fixed top-0 left-0 z-50 p-4 w-full bg-primary flex items-center shadow-md">
+        <button @click="sidebarOpen = !sidebarOpen" class="text-white focus:outline-none">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path x-show="!sidebarOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path x-show="sidebarOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <span class="ml-4 text-white font-bold text-xl">CareVL</span>
+    </div>
+
+    <!-- Mobile overlay -->
+    <div x-show="sidebarOpen" class="fixed inset-0 bg-black opacity-50 z-40 md:hidden" @click="sidebarOpen = false"></div>
+
+    <!-- Sidebar -->
+    <nav :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}" class="fixed md:static inset-y-0 left-0 transform md:translate-x-0 transition duration-200 ease-in-out z-50 w-64 bg-white border-r border-gray-200 flex flex-col h-screen overflow-y-auto pt-16 md:pt-0">
+        <div class="p-4 md:block hidden bg-primary">
+            <a href="/" class="text-white font-bold text-xl flex items-center justify-center h-12">CareVL</a>
+        </div>
+
+        <div class="flex-1 py-4 space-y-6">
+
+            <!-- Group 1: TIẾP NHẬN -->
+            <div x-data="{ open: true }" class="px-3">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700">
+                    <span>Tiếp nhận</span>
+                    <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div x-show="open" class="mt-2 space-y-1">
+                    <a href="/intake" class="{% if request.url.path == '/intake' or request.url.path == '/operator' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        1. Tiếp nhận mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- Group 2: LÂM SÀNG -->
+            <div x-data="{ open: true }" class="px-3">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700">
+                    <span>Lâm sàng</span>
+                    <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div x-show="open" class="mt-2 space-y-1">
+                    <a href="/queue" class="{% if request.url.path == '/queue' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        2. Lượt khám
+                    </a>
+                    <a href="/patient-record" class="{% if request.url.path == '/patient-record' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        3. Hồ sơ bệnh nhân
+                    </a>
+                </div>
+            </div>
+
+            <!-- Group 3: NHẬP LIỆU -->
+            <div x-data="{ open: true }" class="px-3">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700">
+                    <span>Nhập liệu</span>
+                    <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div x-show="open" class="mt-2 space-y-1">
+                    <a href="/aggregate" class="{% if request.url.path == '/aggregate' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        4. Nhập liệu (Aggregate)
+                    </a>
+                    <a href="/results-update" class="{% if request.url.path == '/results-update' or request.url.path == '/contributor' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        5. Cập nhật kết quả
+                    </a>
+                </div>
+            </div>
+
+            <!-- Group 4: QUẢN TRỊ -->
+            <div x-data="{ open: true }" class="px-3">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700">
+                    <span>Quản trị</span>
+                    <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div x-show="open" class="mt-2 space-y-1">
+                    <a href="/reports" class="{% if request.url.path == '/reports' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        6. Báo cáo
+                    </a>
+                    <a href="/admin/backups" class="{% if request.url.path == '/admin/backups' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        7. Xuất dữ liệu Hub
+                    </a>
+                </div>
+            </div>
+
+            <!-- Group 5: HỆ THỐNG -->
+            <div x-data="{ open: true }" class="px-3">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-700">
+                    <span>Hệ thống</span>
+                    <svg :class="{'rotate-180': open}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div x-show="open" class="mt-2 space-y-1">
+                    <a href="/audit" class="{% if request.url.path == '/audit' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        8. Liên thông (Audit)
+                    </a>
+                    <a href="/settings" class="{% if request.url.path == '/settings' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        9. Cài đặt trạm
+                    </a>
+                    <a href="/about" class="{% if request.url.path == '/about' %}bg-blue-50 text-primary border-r-4 border-primary{% else %}text-gray-700 hover:bg-gray-100{% endif %} flex items-center px-3 py-2 text-sm font-medium rounded-l-md transition-colors">
+                        10. Giới thiệu
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col pt-16 md:pt-0 overflow-y-auto">
+        <main class="flex-grow w-full max-w-5xl p-4 sm:p-6 lg:p-8">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+            <div class="px-4 sm:px-6 lg:px-8 flex justify-center">
+                <p class="text-sm text-gray-500">© 2026 Care Vinh Long. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

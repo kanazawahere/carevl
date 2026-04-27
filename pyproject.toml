@@ -13,6 +13,18 @@ dependencies = [
     "Pillow>=10.0.0",
     "duckdb>=1.2.2",
     "openpyxl>=3.1.5",
+    "fastapi>=0.136.1",
+    "uvicorn>=0.46.0",
+    "cryptography>=47.0.0",
+    "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0.49",
+    "pydantic>=2.13.3",
+    "pydantic-settings>=2.14.0",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "python-multipart>=0.0.26",
+    "playwright>=1.58.0",
+    "apscheduler>=3.11.2",
 ]
 
 [dependency-groups]

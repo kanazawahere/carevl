@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Cấu hình Repository | CareVL{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div class="p-8">
+        <div class="uppercase tracking-wide text-sm text-primary font-semibold mb-1">Bước 2: Cấu hình Dữ liệu</div>
+        <h2 class="block mt-1 text-lg leading-tight font-medium text-black">Kết nối Kho lưu trữ (Repository)</h2>
+        <p class="mt-2 text-gray-500">Nhập đường dẫn kho chứa dữ liệu CareVL của dự án/địa phương bạn.</p>
+
+        <form action="/setup/repo" method="post" class="mt-6">
+            <div>
+                <label for="repo_url" class="block text-sm font-medium text-gray-700">Repository URL / Name</label>
+                <div class="mt-1">
+                    <input type="text" name="repo_url" id="repo_url" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md p-2 border" placeholder="VD: DigitalVersion/carevl-data" value="DigitalVersion/carevl-data">
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none">
+                    Lưu & Kiểm tra quyền
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,0 @@
-record_id,station_id,commune_code,package_id,exam_date,created_at,ho_ten_hash,tuoi,bac_si,bmi,can_nang,chieu_cao,cholesterol,cot_song,duong_huyet_doi,ghi_chu,ghi_chu_ls,gioi_tinh,huyet_ap,huyet_ap_tam_thu,huyet_ap_tam_truong,ket_luan,lop,mach,nhip_tim,nuoc_tieu,phan_loai_sk,rang_mieng,thi_luc_p,thi_luc_t,tien_su_benh,truong
-rec-004,,,nct,22-04-2026,08:00:00.000000 22-04-2026,5932a4efaefa,65,Bs. Nguyen Van H,24.1,58,155,,,,,,Nu,,135,85,Can theo doi huyet ap dinh ky,,,70,,Loai II,,,,,
-rec-001,,,nct,23-04-2026,09:30:15.123456 23-04-2026,d25b1da6b433,61,Bs. Tran Van B,23.9,65,165,5.5,,7.2,,Suc khoe on dinh,Nam,,140,90,"Suc khoe on dinh, tieu duong kiem soat tot",,,75,Binh thuong,Loai II,,,,"Tieu duong type 2, 5 nam",
-rec-002,,,hs,23-04-2026,10:15:22.654321 23-04-2026,04f3dff430d6,10,Bs. Tran Van B,19.4,28,120,,Binh thuong,,,,Nu,,,,"Suc khoe tot, phat trien binh thuong",Lop 3A,,,,Loai I,Binh thuong,10/10,10/10,,Tieu hoc Tan Binh
-rec-003,,,general,23-04-2026,11:00:10.111111 23-04-2026,68ee66f04b90,35,Bs. Tran Van B,,70,175,,,,Kham dinh ky,,Nam,120/80,,,"Suc khoe tot, khong co van de bat thuong",,72,,,,,,,,

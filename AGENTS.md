@@ -1,225 +1,43 @@
-# AGENTS.md — Hướng Dẫn Phát Triển CareVL
+# Continuous Memory Vault — Bản đồ Kiến trúc CareVL
 
-> **Quan trọng: Đọc file này trước khi sửa bất kỳ phần nào trong repo.**
+> **Quy tắc chung**: Hệ thống tài liệu này hoạt động như một bộ nhớ vĩnh cửu. Không được sửa file cũ nếu đã thay đổi thiết kế cốt lõi. Hãy tạo file mới trong `ACTIVE` và dời file cũ sang `ARCHIVE`. Tất cả tài liệu phải tuân thủ chuẩn [ADR (Architecture Decision Record)](https://adr.github.io/).
 
----
-
-## Tổng quan dự án
-
-**CareVL** (Care Vinh Long) là ứng dụng desktop quản lý hồ sơ khám sức khỏe cho tỉnh Vĩnh Long.
-
-- **Stack**: Python 3.11+, CustomTkinter, SQLite local, Git sync, DuckDB cho Hub
-- **Nền tảng**: Windows, offline-first
-- **Xác thực**: GitHub OAuth Device Flow
+## ⚙️ Feature Syncing Protocol (Bắt buộc)
+**Mọi thay đổi về Feature đều phải được phản ánh vào tài liệu.**
+Ở bước Finalize (trước khi gọi công cụ `submit`), Agent bắt buộc phải thực hiện quy trình sau:
+1. Dùng `git diff --name-only` để quét các thay đổi file.
+2. Tìm kiếm file `.md` tương ứng trong thư mục `AGENTS/FEATURES/` (ví dụ: `auth.md`, `sync.md`). Nếu chưa có, tạo mới.
+3. Cập nhật chi tiết nội dung: Trạng thái (Status), Các Endpoints liên quan, và Logic nghiệp vụ vừa thay đổi.
 
 ---
 
-## Quy ước branch
-
-- `main` là nhánh chính, luôn ưu tiên giữ ở trạng thái ổn định để sử dụng thật.
-- `canary` là nhánh phát triển tích lũy hằng ngày giữa mình và agent.
-- Tính năng mới, refactor, sửa lỗi không khẩn cấp: làm trên `canary`.
-- Khi đã test ổn trên `canary`, mới gộp vào `main`.
-- Nếu có hotfix cần sửa trực tiếp trên `main`, phải gộp ngược lại sang `canary` sớm để tránh lệch nhánh.
+## 📚 Standard Operating Procedures (SOP) & Resources
+- [Cẩm nang Thiết kế Hình ảnh (Image Generation Bible)](AGENTS/IMAGE_GUIDE.md)
 
 ---
 
-## Những lỗi cần tránh
+## 🟢 ACTIVE (Tính năng & Kiến trúc đang chạy)
+Các quyết định hiện tại của hệ thống.
 
-### 1. Không dùng `cd` trong lệnh shell
-
-```powershell
-# Sai
-cd somedir && command
-
-# Đúng
-command args
-```
-
-Hãy dùng `workdir` của tool thay vì đổi thư mục trong lệnh.
-
-### 2. Không dùng `&&` trong PowerShell
-
-```powershell
-# Sai
-cmd1 && cmd2
-
-# Đúng
-cmd1; if ($?) { cmd2 }
-```
-
-### 3. Không hardcode import làm vỡ lazy import
-
-- Các module OMR có thể cần `reportlab`, `qrcode`, nên phải giữ cơ chế lazy import.
-- Khi thêm dependency, chạy `uv sync`.
-- Luôn test import bằng `uv run python -c "from modules import X"`.
-
-### 4. Không giả định `python` có trong `PATH`
-
-- Dùng `uv run python`
-- Hoặc `.venv\Scripts\python.exe`
-
-### 5. Cẩn thận với encoding và ký tự
-
-- Tất cả file text phải dùng UTF-8
-- Văn bản tiếng Việt phải dùng dấu chuẩn
-- Không dùng smart quotes
-- Không chèn `{}` nếu không có chủ đích trong code
+- [01. FastAPI Core Architecture](AGENTS/ACTIVE/01_FastAPI_Core.md)
+- [02. SQLite Security & Snapshots](AGENTS/ACTIVE/02_SQLite_Security.md)
+- [03. Web UI & HTMX Interaction](AGENTS/ACTIVE/03_Web_UI_HTMX.md)
+- [04. Development Guidelines & Troubleshooting](AGENTS/ACTIVE/04_Development_Guidelines.md)
+- [07. Active Sync Protocol: The Encrypted SQLite Blob](AGENTS/ACTIVE/07_active_sync_protocol.md)
+- [08. Hướng dẫn Admin](AGENTS/ACTIVE/08_Huong_Dan_Admin.md)
+- [09. Phase 2 Schema Spec](AGENTS/ACTIVE/09_Phase2_Schema_Spec.md)
+- [10. Quy chế vận hành](AGENTS/ACTIVE/10_Quy_Che_Van_Hanh.md)
+- [11. Workflow](AGENTS/ACTIVE/11_Workflow.md)
+- [12. UI/UX Data Flow: Intake to Delayed Results](AGENTS/ACTIVE/12_ui_ux_flow.md)
 
 ---
 
-## Cấu trúc chính
+## 🗄️ ARCHIVE (Lịch sử & Tính năng đã thay thế)
+Các quyết định đã bị thay thế hoặc bỏ đi, được lưu lại để giải thích "tại sao không dùng cách này".
 
-```text
-carevl/
-├── main.py
-├── launcher.bat
-├── pyproject.toml
-├── .gitignore
-├── config/
-├── data/
-│   └── carevl.db
-├── modules/
-├── ui/
-└── dist/
-```
-
-### `config/`
-
-- `template_form.json`: cấu hình form động
-- `user_config.json`: token OAuth, không được commit
-- `omr_form_layout.json`: layout OMR
-- `omr_templates/`: template OMR theo gói khám
-
-### `data/`
-
-- `carevl.db`: SQLite local dùng cho runtime
-
-### `modules/`
-
-- `__init__.py`: lazy import, không được làm hỏng
-- `auth.py`: đăng nhập GitHub
-- `crud.py`: facade runtime
-- `crud_phase2.py`: CRUD SQLite phase 2
-- `record_store.py`: storage facade
-- `sync.py`: Git push/pull
-- `validator.py`: validate dữ liệu
-- `form_engine.py`: render form động
-- `omr_*`: pipeline OMR
-
-### `ui/`
-
-- `app.py`: app chính
-- `screen_list.py`: danh sách hồ sơ
-- `screen_form.py`: nhập và sửa hồ sơ
-- `screen_sync.py`: đồng bộ
+- [05. Legacy CustomTkinter App](AGENTS/ARCHIVE/05_Legacy_Tkinter_App.md)
+- [06. Legacy OMR Pipeline](AGENTS/ARCHIVE/06_Legacy_OMR_Pipeline.md)
 
 ---
 
-## File quan trọng
-
-### `modules/__init__.py`
-
-File này dùng `importlib` để lazy-load module. Không được đổi sang kiểu import trực tiếp làm vỡ hành vi runtime.
-
-### `config/user_config.json`
-
-Chứa token OAuth. Phải nằm trong `.gitignore`. Không commit.
-
----
-
-## Khi thêm dependency
-
-1. Cập nhật `pyproject.toml`
-2. Chạy `uv sync`
-3. Test import bằng `uv run python -c "import ten_goi; print('OK')"`
-
----
-
-## Cách test cơ bản
-
-```powershell
-# Chạy app
-uv run python main.py
-
-# Kiểm tra backend lưu trữ hiện tại
-uv run python -c "from modules import record_store; print(record_store.get_storage_path())"
-
-# Kiểm tra import module
-uv run python -c "from modules import crud; print('OK')"
-
-# Kiểm tra lệnh OMR
-uv run python -m modules.omr_form_gen --help
-```
-
----
-
-## Build executable
-
-```powershell
-uv run pyinstaller --onefile --windowed --name carevl main.py
-```
-
-Output ở `dist/carevl.exe`.
-
----
-
-## Quy ước code
-
-- Giữ lazy import
-- Dùng UTF-8 cho toàn bộ file text
-- Ưu tiên tiếng Việt có dấu trong tài liệu và UI
-- Không thêm comment thừa nếu code đã rõ
-
----
-
-## Pipeline OMR
-
-Các module OMR chạy độc lập, chưa tích hợp thành menu chính trong app:
-
-```powershell
-# Tạo PDF từ CCCD
-python -m modules.omr_form_gen --cccd 001286001234 --package nct --output form.pdf
-
-# Đọc batch scan
-python -m modules.omr_reader --input scans/ --output results/ --package nct --json results.json
-
-# Map và lưu
-python -m modules.omr_bridge --input results.json --package nct --save --author bacsi01
-```
-
----
-
-## Lệnh hay dùng
-
-| Tác vụ | Lệnh |
-|---|---|
-| Chạy app | `uv run python main.py` |
-| Đồng bộ dependency | `uv sync` |
-| Test import | `uv run python -c "from modules import X"` |
-| Build exe | `uv run pyinstaller --onefile --windowed --name carevl main.py` |
-| OMR gen | `uv run python -m modules.omr_form_gen --help` |
-| OMR read | `uv run python -m modules.omr_reader --help` |
-
----
-
-## Xử lý sự cố
-
-### Thiếu `reportlab`
-
-- Chạy `uv sync`
-- Nếu cần, xóa `.venv` rồi sync lại
-
-### Lỗi import
-
-- Dùng `uv run python`, không dùng `python` trần
-- Kiểm tra lại lazy import trong `modules/__init__.py`
-
-### Lỗi encoding JSON
-
-- Dùng `encoding="utf-8"`
-- Dùng `ensure_ascii=False` khi ghi JSON
-
----
-
-*Cập nhật gần nhất: 2026-04-24*
+*Cập nhật lần cuối: 2026-04-26*
