@@ -24,18 +24,6 @@ Các quyết định hiện tại của hệ thống.
 - [03. Web UI & HTMX Interaction](AGENTS/ACTIVE/03_Web_UI_HTMX.md)
 - [04. Development Guidelines & Troubleshooting](AGENTS/ACTIVE/04_Development_Guidelines.md)
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](AGENTS/ACTIVE/07_active_sync_protocol.md)
-
-## 🏥 FEATURES LEDGER (10 Chức năng Sidebar)
-- [1. Tiếp nhận mới](AGENTS/FEATURES/1_tiep_nhan_moi.md)
-- [2. Lượt khám](AGENTS/FEATURES/2_luot_kham.md)
-- [3. Hồ sơ bệnh nhân](AGENTS/FEATURES/3_ho_so_benh_nhan.md)
-- [4. Nhập liệu (Aggregate)](AGENTS/FEATURES/4_nhap_lieu_aggregate.md)
-- [5. Cập nhật kết quả](AGENTS/FEATURES/5_cap_nhat_ket_qua.md)
-- [6. Báo cáo](AGENTS/FEATURES/6_bao_cao.md)
-- [7. Xuất dữ liệu Hub](AGENTS/FEATURES/7_xuat_du_lieu_hub.md)
-- [8. Liên thông (Audit)](AGENTS/FEATURES/8_lien_thong_audit.md)
-- [9. Cài đặt trạm](AGENTS/FEATURES/9_cai_dat_tram.md)
-- [10. Giới thiệu](AGENTS/FEATURES/10_gioi_thieu.md)
 - [08. Hướng dẫn Admin](AGENTS/ACTIVE/08_Huong_Dan_Admin.md)
 - [09. Phase 2 Schema Spec](AGENTS/ACTIVE/09_Phase2_Schema_Spec.md)
 - [10. Quy chế vận hành](AGENTS/ACTIVE/10_Quy_Che_Van_Hanh.md)
@@ -44,6 +32,8 @@ Các quyết định hiện tại của hệ thống.
 - [13. AWARE-SAVE Protocol: Visual Dirty State Management](AGENTS/ACTIVE/13_Aware_Save_Protocol.md)
 - [14. Bootstrap Infrastructure: One-Liner Setup](AGENTS/ACTIVE/14_Bootstrap_Infrastructure.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](AGENTS/ACTIVE/15_Hub_Aggregation.md)
+
+---
 
 ## 🏥 FEATURES LEDGER (10 Chức năng Sidebar)
 - [Sidebar UI Architecture](AGENTS/FEATURES/sidebar_ui.md)
