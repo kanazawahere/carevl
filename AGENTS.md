@@ -32,6 +32,7 @@ Các quyết định hiện tại của hệ thống.
 - [13. AWARE-SAVE Protocol: Visual Dirty State Management](AGENTS/ACTIVE/13_Aware_Save_Protocol.md)
 - [14. Bootstrap Infrastructure: One-Liner Setup](AGENTS/ACTIVE/14_Bootstrap_Infrastructure.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](AGENTS/ACTIVE/15_Hub_Aggregation.md)
+- [16. Testing Guidelines](AGENTS/ACTIVE/16_Testing_Guidelines.md)
 
 ---
 
