@@ -2,18 +2,6 @@
 
 > **Quy tắc chung**: Hệ thống tài liệu này hoạt động như một bộ nhớ vĩnh cửu. Không được sửa file cũ nếu đã thay đổi thiết kế cốt lõi. Hãy tạo file mới trong `ACTIVE` và dời file cũ sang `ARCHIVE`. Tất cả tài liệu phải tuân thủ chuẩn [ADR (Architecture Decision Record)](https://adr.github.io/).
 
-## ⚙️ Feature Syncing Protocol (Bắt buộc)
-**Mọi thay đổi về Feature đều phải được phản ánh vào tài liệu.**
-Ở bước Finalize (trước khi gọi công cụ `submit`), Agent bắt buộc phải thực hiện quy trình sau:
-1. Dùng `git diff --name-only` để quét các thay đổi file.
-2. Tìm kiếm file `.md` tương ứng trong thư mục `AGENTS/FEATURES/` (ví dụ: `auth.md`, `sync.md`). Nếu chưa có, tạo mới.
-3. Cập nhật chi tiết nội dung: Trạng thái (Status), Các Endpoints liên quan, và Logic nghiệp vụ vừa thay đổi.
-
----
-
-## 📚 Standard Operating Procedures (SOP) & Resources
-- [Cẩm nang Thiết kế Hình ảnh (Image Generation Bible)](AGENTS/IMAGE_GUIDE.md)
-
 ---
 
 ## 🟢 ACTIVE (Tính năng & Kiến trúc đang chạy)
