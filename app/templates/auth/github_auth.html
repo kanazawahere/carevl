@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Xác thực GitHub | CareVL{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div class="p-8">
+        <div class="uppercase tracking-wide text-sm text-primary font-semibold mb-1">Bước 1: Kết nối GitHub</div>
+        <h2 class="block mt-1 text-lg leading-tight font-medium text-black">Xác thực thiết bị</h2>
+        <p class="mt-2 text-gray-500">Vui lòng truy cập đường dẫn dưới đây trên điện thoại hoặc máy tính của bạn và nhập mã xác thực.</p>
+
+        <div class="mt-6 bg-gray-100 rounded-lg p-6 text-center">
+            <p class="text-sm text-gray-600 mb-2">Truy cập:</p>
+            <a href="https://github.com/login/device" target="_blank" class="text-blue-600 font-medium hover:underline text-lg block mb-4">github.com/login/device</a>
+            <p class="text-sm text-gray-600 mb-2">Nhập mã (Device Code):</p>
+            <div class="text-4xl font-mono font-bold tracking-widest text-gray-800">ABCD-1234</div>
+        </div>
+
+        <div class="mt-8">
+            <a href="/setup/repo" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none">
+                Đã xác thực xong, Tiếp tục
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

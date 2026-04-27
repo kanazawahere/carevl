@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Thiết lập Mã PIN | CareVL{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+    <div class="p-8">
+        <div class="uppercase tracking-wide text-sm text-primary font-semibold mb-1">Bước 4: Bảo mật Local</div>
+        <h2 class="block mt-1 text-lg leading-tight font-medium text-black">Thiết lập Mã PIN Đăng nhập</h2>
+        <p class="mt-2 text-gray-500">Mã PIN này được dùng để đăng nhập nhanh (kể cả khi Offline) và để mã hóa Access Token trên máy tính này.</p>
+
+        <form action="/setup/pin" method="post" class="mt-6">
+            <div>
+                <label for="pin" class="block text-sm font-medium text-gray-700">Mã PIN (6 chữ số)</label>
+                <div class="mt-1">
+                    <input type="password" name="pin" id="pin" pattern="\d{6}" maxlength="6" required class="text-center text-2xl tracking-widest shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md p-3 border" placeholder="••••••">
+                </div>
+                <p class="mt-1 text-xs text-red-500">Tuyệt đối không quên mã PIN này!</p>
+            </div>
+
+            <div class="mt-8">
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-blue-700 focus:outline-none">
+                    Hoàn Tất & Vào Ứng Dụng
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

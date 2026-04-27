@@ -37,7 +37,7 @@ curl -LsSf https://raw.githubusercontent.com/DigitalVersion/vinhlong-health-reco
 Kiến trúc tài liệu của dự án được tối giản hóa thành 3 file cốt lõi:
 
 1. **`README.md`**: (File này) Cổng thông tin kỹ thuật, Tech Stack và lệnh cài đặt.
-2. **[`TUTORIAL.md`](TUTORIAL.md)**: Sách hướng dẫn trực quan dành cho người dùng cuối (Bác sĩ, Điều dưỡng, Trạm trưởng) dựa trên 4 Personas.
+2. **[`TUTORIAL.md`](TUTORIAL.md)**: Sách hướng dẫn trực quan (Có hình ảnh Mockup) từ bước Mở App -> Đăng nhập -> Tác nghiệp dành cho 4 Personas.
 3. **[`AGENTS.md`](AGENTS.md)**: Bản đồ quy ước kiến trúc (ADR) và Continuous Memory Vault dành cho Developer / AI.
 
 ---

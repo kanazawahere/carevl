@@ -187,7 +187,15 @@ function Start-UvicornServer {
         }
 
         Write-Step "Khoi dong he thong FastAPI..."
-        & uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+        $process = Start-Process -FilePath "uv" -ArgumentList "run uvicorn app.main:app --host 0.0.0.0 --port 8000" -PassThru -WindowStyle Hidden
+
+        Write-Step "Dang cho Server khoi dong..."
+        Start-Sleep -Seconds 3
+
+        Write-Step "Mo trinh duyet den giao dien dang nhap..."
+        Start-Process "http://localhost:8000/login"
+
+        Write-Step "May chu dang chay ngam (PID: $($process.Id)). Cai dat hoan tat!"
     }
     finally {
         Pop-Location

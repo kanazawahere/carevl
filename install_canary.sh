@@ -27,9 +27,24 @@ if [ ! -f .env ]; then
     echo "Đã tạo file cấu hình .env mẫu. Bạn có thể cập nhật cấu hình SITE_ID và TOKEN sau."
 fi
 
-# 5. Cài đặt dependencies và chạy
+# 5. Cài đặt dependencies
 echo "Đang đồng bộ môi trường..."
 uv sync
 
-echo "Cài đặt thành công! Đang khởi động hệ thống..."
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
+# 6. Khởi động Server & Mở trình duyệt
+echo "Đang khởi động hệ thống..."
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 > /tmp/carevl_uvicorn.log 2>&1 &
+SERVER_PID=$!
+
+echo "Đang mở giao diện Cài đặt ban đầu..."
+sleep 3
+if command -v xdg-open > /dev/null; then
+    xdg-open http://localhost:8000/login
+elif command -v open > /dev/null; then
+    open http://localhost:8000/login
+else
+    echo "Vui lòng mở trình duyệt và truy cập: http://localhost:8000/login"
+fi
+
+echo "Cài đặt thành công! Nhấn Ctrl+C để thoát máy chủ."
+wait $SERVER_PID

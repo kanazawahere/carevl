@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse
 from app.api.endpoints import router as api_router
 from app.api.ui_routes import router as ui_router
 from app.api.admin_routes import router as admin_router
+from app.api.auth_routes import router as auth_router
 from app.core.database import engine, Base
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -36,7 +37,8 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.include_router(api_router)
 app.include_router(ui_router)
 app.include_router(admin_router)
+app.include_router(auth_router)
 
 @app.get("/")
 def read_root():
-    return RedirectResponse(url="/operator")
+    return RedirectResponse(url="/login")
