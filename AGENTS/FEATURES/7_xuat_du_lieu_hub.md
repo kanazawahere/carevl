@@ -13,7 +13,7 @@
 - **Resources:** Không ánh xạ trực tiếp FHIR (liên quan đến toàn bộ DB SQLite).
 
 ## Persona Impact
-- **Persona D (Admin):** Tương tác chính.
+- **Persona D (Trưởng trạm):** Tương tác chính.
 
 ## Danh sách ảnh Mockup
 - `07_hub_sync.png`: Màn hình quản lý đồng bộ và snapshot.

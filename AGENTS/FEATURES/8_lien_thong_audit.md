@@ -13,7 +13,7 @@
 - **Resources:** `AuditEvent`.
 
 ## Persona Impact
-- **Persona D (Admin):** Tương tác chính.
+- **Persona D (Trưởng trạm):** Tương tác chính.
 
 ## Danh sách ảnh Mockup
 - `08_audit_logs.png`: Màn hình xem lịch sử thay đổi hệ thống.

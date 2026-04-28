@@ -29,11 +29,11 @@ Hệ thống sử dụng GitHub để đồng bộ và phân quyền.
 Nhập đường dẫn kho dữ liệu (Repository) mà Hub/Trung tâm đã tạo cho bạn (VD: `DigitalVersion/carevl-data`).
 ![Repo Config](AGENTS/ASSETS/02_mockup_repo_config.png)
 
-### Bước 3: Cấp quyền Ghi (Dành cho Admin)
+### Bước 3: Cấp quyền Ghi (Dành cho Trưởng trạm)
 Nếu tài khoản của bạn chưa được cấp quyền Ghi (Write) vào Repository trên:
 1. Màn hình sẽ hiện cảnh báo **Chưa Có Quyền Ghi!**.
 2. Đưa **Mã QR** trên màn hình cho Trưởng trạm hoặc Admin Hub quét để mời bạn tham gia nhóm làm việc.
-3. Chấp nhận lời mời qua email, sau đó bấm nút "Tôi đã được Admin cấp quyền".
+3. Chấp nhận lời mời qua email, sau đó bấm nút "Tôi đã được cấp quyền".
 ![Permission Gate](AGENTS/ASSETS/03_mockup_permission_gate.png)
 
 ### Bước 4: Khởi tạo Dữ liệu (Khu vực Cài đặt Nguy hiểm)
@@ -63,7 +63,7 @@ Sơ đồ dưới đây minh họa toàn bộ luồng hoạt động của hệ 
 - **Persona A (màu vàng):** Tiếp nhận bệnh nhân, phát Sticker ID
 - **Persona B (màu xanh):** Bác sĩ khám và nhập sinh hiệu
 - **Persona C (màu hồng):** Nhập kết quả xét nghiệm trễ (Lab, X-ray)
-- **Persona D (màu tím nhạt):** Admin quản lý báo cáo, xuất dữ liệu
+- **Persona D (màu tím nhạt):** Trưởng trạm quản lý báo cáo, xuất dữ liệu
 
 ---
 
@@ -87,11 +87,12 @@ Các chức năng liên quan:
 *(Giao diện Sidebar - Mục Cập nhật kết quả)*
 ![Sidebar - Results Update](AGENTS/ASSETS/sidebar_placeholder.png)
 
-### 4. Persona D: Trưởng Trạm / Quản lý (Admin)
+### 4. Persona D: Trưởng Trạm
+
 **Vai trò:** Quản lý số liệu, xuất báo cáo, đồng bộ dữ liệu về Hub và thiết lập hệ thống.
 Các chức năng liên quan:
 *   **6. Báo cáo:** Xem và xuất các báo cáo thống kê tình hình khám chữa bệnh tại trạm, báo cáo dịch tễ học hằng ngày/tuần.
-*   **7. Xuất dữ liệu Hub:** Đóng gói, mã hoá an toàn dữ liệu nội bộ SQLite thành Snapshot và gửi lên GitHub Releases. *(Giao diện Admin Backups)* ![Active Sync Complete](AGENTS/ASSETS/sync_complete.png)
+*   **7. Xuất dữ liệu Hub:** Đóng gói, mã hoá an toàn dữ liệu nội bộ SQLite thành Snapshot và gửi lên GitHub Releases. *(Giao diện Backups)* ![Active Sync Complete](AGENTS/ASSETS/sync_complete.png)
 *   **8. Liên thông (Audit):** Kiểm tra trạng thái liên thông dữ liệu lên các hệ thống y tế quốc gia, xem nhật ký đồng bộ và lỗi phát sinh.
 *   **9. Cài đặt trạm:** Cấu hình các thông số cơ bản của trạm (Tên trạm, Mã định danh SITE_ID, thay đổi mã PIN).
 *   **10. Giới thiệu:** Thông tin về phiên bản phần mềm CareVL, bản quyền và hướng dẫn hỗ trợ kỹ thuật.

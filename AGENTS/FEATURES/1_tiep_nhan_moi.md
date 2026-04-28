@@ -17,7 +17,7 @@
 ## Persona Impact
 - **Persona A (Tiếp nhận):** Tương tác chính, thực hiện cấp phát tem.
 - **Persona B (Lâm sàng):** Bệnh nhân sau khi tiếp nhận sẽ xuất hiện trong danh sách hàng đợi của Bác sĩ.
-- **Persona C (Nhập liệu) & D (Admin):** Không tham gia trực tiếp.
+- **Persona C (Nhập liệu) & D (Trưởng trạm):** Không tham gia trực tiếp.
 
 ## Danh sách ảnh Mockup
 - `01_intake_screen.png`: Màn hình quét CCCD và mã vạch (Chụp bằng Playwright trên Windows).

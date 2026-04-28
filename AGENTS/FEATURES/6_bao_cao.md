@@ -12,7 +12,7 @@
 - **Resources:** Tổng hợp từ nhiều nguồn (`Encounter`, `Observation`, `MeasureReport`).
 
 ## Persona Impact
-- **Persona D (Admin):** Tương tác chính.
+- **Persona D (Trưởng trạm):** Tương tác chính.
 
 ## Danh sách ảnh Mockup
 - `06_reports_dashboard.png`: Màn hình Dashboard Báo cáo thống kê.

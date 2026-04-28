@@ -12,7 +12,7 @@
 - **Resources:** Không (System level).
 
 ## Persona Impact
-- **Persona D (Admin):** Tương tác chính.
+- **Persona D (Trưởng trạm):** Tương tác chính.
 
 ## Danh sách ảnh Mockup
 - `09_station_settings.png`: Màn hình cấu hình hệ thống trạm.

@@ -9,7 +9,7 @@
 Quy trình 5 bước để kích hoạt máy trạm (Gateway) lần đầu:
 1. Xác thực thiết bị bằng GitHub Device Flow.
 2. Cấu hình URL của Repository đích để lưu trữ dữ liệu.
-3. Kiểm tra quyền Ghi (Write) của người dùng; nếu chưa có, sinh mã QR chứa link invite cho Admin quét.
+3. Kiểm tra quyền Ghi (Write) của người dùng; nếu chưa có, sinh mã QR chứa link invite cho Trưởng trạm hoặc Admin Hub quét.
 4. Lựa chọn khởi tạo Database trống hoặc Khôi phục Database Snapshot bằng Private Key của Hub.
 5. Thiết lập mã PIN 6 số để mã hóa token phục vụ quá trình sử dụng Offline.
 
