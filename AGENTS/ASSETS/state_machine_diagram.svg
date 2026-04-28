@@ -1,0 +1,179 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Definitions -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+    </marker>
+    <filter id="shadow">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-size="24" font-weight="bold" fill="#1e293b">
+    CareVL State Machine - Quy trình Khám sức khỏe
+  </text>
+
+  <!-- Gateway Setup States (Top Row) -->
+  <g id="gateway-setup">
+    <rect x="50" y="70" width="1100" height="120" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" rx="8"/>
+    <text x="70" y="95" font-size="14" font-weight="bold" fill="#475569">Gateway Setup (Lần đầu)</text>
+    
+    <!-- State 1: GitHub Auth -->
+    <rect x="70" y="110" width="140" height="60" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="140" y="135" text-anchor="middle" fill="white" font-size="12" font-weight="bold">1. GitHub Auth</text>
+    <text x="140" y="150" text-anchor="middle" fill="white" font-size="10">(Device Flow)</text>
+    
+    <!-- Arrow -->
+    <line x1="210" y1="140" x2="250" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- State 2: Repo Config -->
+    <rect x="250" y="110" width="140" height="60" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="320" y="135" text-anchor="middle" fill="white" font-size="12" font-weight="bold">2. Repo Config</text>
+    <text x="320" y="150" text-anchor="middle" fill="white" font-size="10">(URL đích)</text>
+    
+    <!-- Arrow -->
+    <line x1="390" y1="140" x2="430" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- State 3: Permission Gate -->
+    <rect x="430" y="110" width="140" height="60" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="500" y="135" text-anchor="middle" fill="white" font-size="12" font-weight="bold">3. Permission</text>
+    <text x="500" y="150" text-anchor="middle" fill="white" font-size="10">(QR Invite)</text>
+    
+    <!-- Arrow -->
+    <line x1="570" y1="140" x2="610" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- State 4: Data Setup -->
+    <rect x="610" y="110" width="140" height="60" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="680" y="135" text-anchor="middle" fill="white" font-size="12" font-weight="bold">4. Data Setup</text>
+    <text x="680" y="150" text-anchor="middle" fill="white" font-size="10">(New/Restore)</text>
+    
+    <!-- Arrow -->
+    <line x1="750" y1="140" x2="790" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- State 5: PIN Setup -->
+    <rect x="790" y="110" width="140" height="60" fill="#8b5cf6" stroke="#7c3aed" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="860" y="135" text-anchor="middle" fill="white" font-size="12" font-weight="bold">5. PIN Setup</text>
+    <text x="860" y="150" text-anchor="middle" fill="white" font-size="10">(6 số)</text>
+    
+    <!-- Arrow to Ready -->
+    <line x1="930" y1="140" x2="1000" y2="140" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- Ready State -->
+    <ellipse cx="1050" cy="140" rx="60" ry="30" fill="#10b981" stroke="#059669" stroke-width="2" filter="url(#shadow)"/>
+    <text x="1050" y="145" text-anchor="middle" fill="white" font-size="12" font-weight="bold">READY</text>
+  </g>
+
+  <!-- Main Workflow States -->
+  
+  <!-- Persona A: Tiếp nhận -->
+  <g id="persona-a">
+    <rect x="50" y="250" width="300" height="150" fill="#fef3c7" stroke="#fbbf24" stroke-width="2" rx="8"/>
+    <text x="70" y="275" font-size="14" font-weight="bold" fill="#92400e">Persona A: Tiếp nhận (Operator)</text>
+    
+    <rect x="70" y="290" width="260" height="90" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="200" y="315" text-anchor="middle" fill="white" font-size="14" font-weight="bold">1. Tiếp nhận mới</text>
+    <text x="200" y="335" text-anchor="middle" fill="white" font-size="11">• Quét CCCD</text>
+    <text x="200" y="350" text-anchor="middle" fill="white" font-size="11">• Tạo UUIDv5 (Encounter)</text>
+    <text x="200" y="365" text-anchor="middle" fill="white" font-size="11">• Phát Sticker ID</text>
+  </g>
+
+  <!-- Arrow to Persona B -->
+  <line x1="200" y1="400" x2="200" y2="450" stroke="#64748b" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="220" y="430" font-size="11" fill="#475569">Bệnh nhân vào hàng đợi</text>
+
+  <!-- Persona B: Lâm sàng -->
+  <g id="persona-b">
+    <rect x="50" y="450" width="300" height="200" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" rx="8"/>
+    <text x="70" y="475" font-size="14" font-weight="bold" fill="#1e40af">Persona B: Lâm sàng (Clinician)</text>
+    
+    <!-- State 2: Lượt khám -->
+    <rect x="70" y="490" width="260" height="60" fill="#3b82f6" stroke="#2563eb" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="200" y="515" text-anchor="middle" fill="white" font-size="14" font-weight="bold">2. Lượt khám</text>
+    <text x="200" y="535" text-anchor="middle" fill="white" font-size="11">Xem hàng đợi, chọn BN</text>
+    
+    <!-- Arrow down -->
+    <line x1="200" y1="550" x2="200" y2="570" stroke="#1e40af" stroke-width="2" marker-end="url(#arrowhead)"/>
+    
+    <!-- State 3: Hồ sơ BN -->
+    <rect x="70" y="570" width="260" height="60" fill="#3b82f6" stroke="#2563eb" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="200" y="595" text-anchor="middle" fill="white" font-size="14" font-weight="bold">3. Hồ sơ bệnh nhân</text>
+    <text x="200" y="615" text-anchor="middle" fill="white" font-size="11">Nhập sinh hiệu, lịch sử</text>
+  </g>
+
+  <!-- Arrow to Persona C (delayed) -->
+  <path d="M 350 600 L 450 600 L 450 520 L 520 520" stroke="#64748b" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#arrowhead)" fill="none"/>
+  <text x="380" y="590" font-size="11" fill="#475569">Kết quả trễ</text>
+  <text x="380" y="605" font-size="11" fill="#475569">(Lab, X-ray)</text>
+
+  <!-- Persona C: Nhập liệu -->
+  <g id="persona-c">
+    <rect x="520" y="450" width="300" height="150" fill="#fce7f3" stroke="#ec4899" stroke-width="2" rx="8"/>
+    <text x="540" y="475" font-size="14" font-weight="bold" fill="#9f1239">Persona C: Nhập liệu (Lab Tech)</text>
+    
+    <rect x="540" y="490" width="260" height="90" fill="#ec4899" stroke="#db2777" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="670" y="515" text-anchor="middle" fill="white" font-size="14" font-weight="bold">5. Cập nhật kết quả</text>
+    <text x="670" y="535" text-anchor="middle" fill="white" font-size="11">• Quét Sticker ID</text>
+    <text x="670" y="550" text-anchor="middle" fill="white" font-size="11">• Nhập DiagnosticReport</text>
+    <text x="670" y="565" text-anchor="middle" fill="white" font-size="11">• Link về Encounter</text>
+  </g>
+
+  <!-- Persona D: Admin/Reports (Right side) -->
+  <g id="persona-d">
+    <rect x="870" y="250" width="280" height="400" fill="#f3e8ff" stroke="#a855f7" stroke-width="2" rx="8"/>
+    <text x="890" y="275" font-size="14" font-weight="bold" fill="#6b21a8">Persona D: Admin/Reports</text>
+    
+    <!-- State 4: Aggregate -->
+    <rect x="890" y="290" width="240" height="50" fill="#a855f7" stroke="#9333ea" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="1010" y="320" text-anchor="middle" fill="white" font-size="12" font-weight="bold">4. Nhập liệu (Aggregate)</text>
+    
+    <!-- State 6: Reports -->
+    <rect x="890" y="360" width="240" height="50" fill="#a855f7" stroke="#9333ea" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="1010" y="390" text-anchor="middle" fill="white" font-size="12" font-weight="bold">6. Báo cáo</text>
+    
+    <!-- State 7: Export Hub -->
+    <rect x="890" y="430" width="240" height="50" fill="#a855f7" stroke="#9333ea" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="1010" y="460" text-anchor="middle" fill="white" font-size="12" font-weight="bold">7. Xuất dữ liệu Hub</text>
+    
+    <!-- State 8: Audit -->
+    <rect x="890" y="500" width="240" height="50" fill="#a855f7" stroke="#9333ea" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="1010" y="530" text-anchor="middle" fill="white" font-size="12" font-weight="bold">8. Liên thông (Audit)</text>
+    
+    <!-- State 9: Settings -->
+    <rect x="890" y="570" width="240" height="50" fill="#a855f7" stroke="#9333ea" stroke-width="2" rx="5" filter="url(#shadow)"/>
+    <text x="1010" y="600" text-anchor="middle" fill="white" font-size="12" font-weight="bold">9. Cài đặt trạm</text>
+  </g>
+
+  <!-- Data flow arrows -->
+  <path d="M 350 335 L 870 335" stroke="#64748b" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowhead)" fill="none"/>
+  <text x="580" y="325" text-anchor="middle" font-size="10" fill="#475569">Dữ liệu → Reports/Export</text>
+  
+  <path d="M 820 535 L 870 535" stroke="#64748b" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrowhead)" fill="none"/>
+
+  <!-- Legend -->
+  <g id="legend">
+    <rect x="50" y="690" width="1100" height="90" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" rx="5"/>
+    <text x="70" y="715" font-size="14" font-weight="bold" fill="#1e293b">Chú thích:</text>
+    
+    <rect x="70" y="725" width="15" height="15" fill="#8b5cf6" stroke="#7c3aed" stroke-width="1"/>
+    <text x="95" y="737" font-size="11" fill="#475569">Gateway Setup (1 lần)</text>
+    
+    <rect x="250" y="725" width="15" height="15" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+    <text x="275" y="737" font-size="11" fill="#475569">Persona A: Tiếp nhận</text>
+    
+    <rect x="430" y="725" width="15" height="15" fill="#3b82f6" stroke="#2563eb" stroke-width="1"/>
+    <text x="455" y="737" font-size="11" fill="#475569">Persona B: Lâm sàng</text>
+    
+    <rect x="610" y="725" width="15" height="15" fill="#ec4899" stroke="#db2777" stroke-width="1"/>
+    <text x="635" y="737" font-size="11" fill="#475569">Persona C: Nhập liệu</text>
+    
+    <rect x="790" y="725" width="15" height="15" fill="#a855f7" stroke="#9333ea" stroke-width="1"/>
+    <text x="815" y="737" font-size="11" fill="#475569">Persona D: Admin/Reports</text>
+    
+    <line x1="70" y1="755" x2="100" y2="755" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+    <text x="110" y="760" font-size="11" fill="#475569">Luồng chính</text>
+    
+    <line x1="250" y1="755" x2="280" y2="755" stroke="#64748b" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+    <text x="290" y="760" font-size="11" fill="#475569">Luồng trễ/bất đồng bộ</text>
+  </g>
+</svg>
