@@ -46,16 +46,20 @@ Ap dung chuan **Verified State Machine** cho cac feature quan trong (auth, sync,
   - AC gap tests (expected fail hoac pending)
 
 ### Mermaid convention
-Dung `stateDiagram-v2` va annotate contracts ngay tren transition:
+Dung `stateDiagram-v2` va annotate contracts ngay tren transition.
+
+**Mac dinh dung `TD` (Transition Details) cho moi transition** de tranh loi parser va de doc:
+- `TD` la 1 dong text gom: `IN`, `OUT`, `GUARD`, `SE`
+- Tranh dung `{}`, `:`, hoac ky tu dac biet trong label transition.
 
 ```mermaid
 stateDiagram-v2
     [*] --> Idle
-    Idle --> Loading: submit()\n[IN: LoginInput]\n[SE: POST /auth/login]
-    Loading --> Authenticated: onSuccess()\n[OUT: AuthSession]\n[SE: session.write]
-    Loading --> Error: onFail()\n[OUT: AuthError]
-    Error --> Idle: retry()\n[GUARD: retryCount < 3]
-    Error --> Locked: retry()\n[GUARD: retryCount >= 3]\n[SE: lock(5m)]
+    Idle --> Loading: submit()\n[TD IN LoginInput | OUT LoadingState | GUARD email_valid | SE POST auth_login]
+    Loading --> Authenticated: onSuccess()\n[TD IN AuthResponse | OUT AuthSession | SE session_write]
+    Loading --> Error: onFail()\n[TD OUT AuthError]
+    Error --> Idle: retry()\n[TD GUARD retryCount_lt_3]
+    Error --> Locked: retry()\n[TD GUARD retryCount_gte_3 | SE lock_5m]
 ```
 
 ### Mermaid vs SVG convention

@@ -104,22 +104,22 @@ Tạo 1 mã PIN 6 số. Mã này dùng để mở khóa hệ thống hàng ngày
 ```mermaid
 stateDiagram-v2
     [*] --> InviteCodeInput
-    InviteCodeInput --> InviteValidated: submitInviteCode()\n[IN: {inviteCode:string}]\n[OUT: {stationId, stationName, repoUrl, patRef}]\n[GUARD: base64 valid + required keys]\n[SE: decode + validate]
-    InviteCodeInput --> InviteError: submitInviteCode()\n[OUT: {errorCode, message}]\n[GUARD: invalid payload]
+    InviteCodeInput --> InviteValidated: submitInviteCode()\n[TD IN inviteCode_string | OUT stationId stationName repoUrl patRef | GUARD base64_valid_and_required_keys | SE decode_and_validate]
+    InviteCodeInput --> InviteError: submitInviteCode()\n[TD OUT errorCode message | GUARD invalid_payload]
 
-    InviteValidated --> StationConfirm: confirmStation()\n[IN: {stationId, stationName, repoUrl}]\n[OUT: {confirmedStation}]
-    StationConfirm --> DataSetupChoice: next()\n[OUT: {setupMode: new|restore}]
+    InviteValidated --> StationConfirm: confirmStation()\n[TD IN stationId stationName repoUrl | OUT confirmedStation]
+    StationConfirm --> DataSetupChoice: next()\n[TD OUT setupMode_new_or_restore]
 
-    DataSetupChoice --> NewDbInit: chooseNewDb()\n[OUT: {dbInitStatus}]\n[GUARD: setupMode==new]\n[SE: init empty sqlite]
-    DataSetupChoice --> RestoreInit: chooseRestore()\n[OUT: {restorePlan, latestSnapshotMeta}]\n[GUARD: setupMode==restore]\n[SE: list Snapshot on GitHub]
-    RestoreInit --> RestoreDone: restoreSnapshot()\n[IN: {snapshotTag, encryptionKeyRef}]\n[OUT: {restoreStatus, restoredAt}]\n[GUARD: snapshot exists]\n[SE: download + decrypt + import Snapshot]
+    DataSetupChoice --> NewDbInit: chooseNewDb()\n[TD OUT dbInitStatus | GUARD setupMode_is_new | SE init_empty_sqlite]
+    DataSetupChoice --> RestoreInit: chooseRestore()\n[TD OUT restorePlan latestSnapshotMeta | GUARD setupMode_is_restore | SE list_snapshot_on_github]
+    RestoreInit --> RestoreDone: restoreSnapshot()\n[TD IN snapshotTag encryptionKeyRef | OUT restoreStatus restoredAt | GUARD snapshot_exists | SE download_decrypt_import_snapshot]
 
-    NewDbInit --> PinSetup: continue()\n[OUT: {pinSetupRequired:true}]
-    RestoreDone --> PinSetup: continue()\n[OUT: {pinSetupRequired:true}]
-    PinSetup --> Ready: savePin()\n[IN: {pin6}]\n[OUT: {pinHashRef, authReady:true}]\n[GUARD: pin format valid]\n[SE: secure store]
+    NewDbInit --> PinSetup: continue()\n[TD OUT pinSetupRequired_true]
+    RestoreDone --> PinSetup: continue()\n[TD OUT pinSetupRequired_true]
+    PinSetup --> Ready: savePin()\n[TD IN pin6 | OUT pinHashRef authReady_true | GUARD pin_format_valid | SE secure_store]
     Ready --> [*]
 
-    InviteError --> InviteCodeInput: retry()\n[OUT: {retryCount}]
+    InviteError --> InviteCodeInput: retry()\n[TD OUT retryCount]
 ```
 
 **Acceptance Criteria Mapping (Gateway Setup)**
@@ -179,12 +179,12 @@ Edge App → GitHub → Hub App (Two-App Architecture)
 ```mermaid
 stateDiagram-v2
     [*] --> EdgeDataReady
-    EdgeDataReady --> SnapshotCreated: createSnapshot()\n[IN: {stationDbPath, encryptionKeyRef}]\n[OUT: {snapshotFile, checksum, createdAt}]\n[GUARD: db readable]\n[SE: encrypt sqlite -> .db.enc]
-    SnapshotCreated --> SnapshotUploaded: uploadSnapshot()\n[IN: {snapshotFile, repoUrl, patRef}]\n[OUT: {releaseTag, assetUrl}]\n[GUARD: github auth success]\n[SE: upload to GitHub Releases]
-    SnapshotUploaded --> HubDownload: pullForHub()\n[IN: {releaseTag, stationRepoList}]\n[OUT: {snapshotBundle}]\n[SE: Hub CLI download]
-    HubDownload --> HubDecrypt: decryptSnapshot()\n[IN: {snapshotBundle, hubKeyRef}]\n[OUT: {decryptedDbSet}]\n[GUARD: checksum valid]\n[SE: decrypt .db.enc]
-    HubDecrypt --> HubAggregate: aggregate()\n[IN: {decryptedDbSet}]\n[OUT: {aggregatedTables, qualityReport}]\n[SE: DuckDB queries]
-    HubAggregate --> HubReports: generateReports()\n[OUT: {excel, pdf, parquet}]
+    EdgeDataReady --> SnapshotCreated: createSnapshot()\n[TD IN stationDbPath encryptionKeyRef | OUT snapshotFile checksum createdAt | GUARD db_readable | SE encrypt_sqlite_to_db_enc]
+    SnapshotCreated --> SnapshotUploaded: uploadSnapshot()\n[TD IN snapshotFile repoUrl patRef | OUT releaseTag assetUrl | GUARD github_auth_success | SE upload_to_github_releases]
+    SnapshotUploaded --> HubDownload: pullForHub()\n[TD IN releaseTag stationRepoList | OUT snapshotBundle | SE hub_cli_download]
+    HubDownload --> HubDecrypt: decryptSnapshot()\n[TD IN snapshotBundle hubKeyRef | OUT decryptedDbSet | GUARD checksum_valid | SE decrypt_db_enc]
+    HubDecrypt --> HubAggregate: aggregate()\n[TD IN decryptedDbSet | OUT aggregatedTables qualityReport | SE duckdb_queries]
+    HubAggregate --> HubReports: generateReports()\n[TD OUT excel pdf parquet]
     HubReports --> [*]
 ```
 
