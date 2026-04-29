@@ -22,7 +22,7 @@ CareVL được thiết kế theo mô hình **Two-App Architecture**:
 - **Users:** Operator, Bác sĩ, Lab Tech, Trưởng trạm
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Station Users: Operator/Doctor/Lab/Station Lead] --> B[Edge App FastAPI + HTMX]
     B --> C[Station SQLite]
     B --> D[Snapshot .db.enc]
@@ -36,7 +36,7 @@ flowchart LR
 - **Users:** Admin Hub, Data Analyst
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[GitHub Releases from Stations] --> B[Hub CLI]
     B --> C[Decrypt Snapshot]
     C --> D[DuckDB Aggregate]
@@ -144,7 +144,7 @@ Hệ thống CareVL hoạt động theo 3 bước chính:
 Hub Admin chuẩn bị (1 lần) + Trạm cài đặt (4 bước)
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Hub Admin: Create station repo + PAT + Invite Code] --> B[Station: Install Edge App]
     B --> C[Enter Invite Code]
     C --> D[Confirm Station]
@@ -160,7 +160,7 @@ flowchart LR
 4 Personas với 10 chức năng Sidebar
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Persona A: Intake] --> B[2. Queue]
     B --> C[Persona B: Patient Record]
     C --> D[Persona C: 4. Aggregate Input]
