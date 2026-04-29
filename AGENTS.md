@@ -137,6 +137,7 @@ Quyet dinh dang song cua he thong.
 - [Auth Gateway (deprecated — thay Invite Code)](AGENTS/FEATURES/auth_gateway.md)
 - [QR Code Provisioning (Thẻ bài điện tử)](AGENTS/FEATURES/qr_provisioning.md)
 - [Hub Operator GUI (Streamlit)](AGENTS/FEATURES/hub_operator_gui.md)
+- [Hub - Danh sách trạm (Station Registry)](AGENTS/FEATURES/hub_danh_sach_tram.md)
 
 ---
 
@@ -150,4 +151,4 @@ Quyet dinh da bo. Giu lai de biet vi sao khong di huong cu.
 
 ---
 
-*Cap nhat lan cuoi: 2026-04-29 20:00:00*
+*Cap nhat lan cuoi: 2026-04-29 20:30:00*

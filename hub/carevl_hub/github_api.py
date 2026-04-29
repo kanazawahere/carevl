@@ -59,6 +59,15 @@ class GitHubAPI:
         response.raise_for_status()
         return response.json()
 
+    def delete_deploy_key(self, owner: str, repo: str, key_id: str) -> None:
+        """Delete a deploy key from a repository."""
+        response = requests.delete(
+            f"https://api.github.com/repos/{owner}/{repo}/keys/{key_id}",
+            headers=self.headers,
+            timeout=10,
+        )
+        response.raise_for_status()
+
     def check_repo_exists(self, owner: str, repo: str) -> bool:
         """Check if repository exists."""
         try:

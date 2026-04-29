@@ -120,13 +120,14 @@ def _run_create_station(
 
         with st.spinner("② Đang sinh SSH deploy key..."):
             private_key, public_key = generate_ssh_keypair()
-            api.create_deploy_key(
+            deploy_key_info = api.create_deploy_key(
                 owner=owner,
                 repo=repo_name,
                 title=generate_deploy_key_title(station_id),
                 public_key=public_key,
                 read_only=False,
             )
+            deploy_key_id = deploy_key_info["id"]
         st.success("✅ Deploy key đã gắn vào repo")
 
         with st.spinner("③ Đang tạo invite code..."):
@@ -134,9 +135,22 @@ def _run_create_station(
                 station_id=station_id,
                 station_name=station_name,
                 repo_url=repo_url,
-                ssh_private_key=private_key,   # ← đúng field
+                ssh_private_key=private_key,
                 encryption_key=encryption_key,
             )
+
+        admin_pat = _get_admin_pat()
+        # Import inside function to avoid timing issues
+        from carevl_hub.db import add_station
+        add_station(
+            station_id=station_id,
+            station_name=station_name,
+            repo_url=repo_url,
+            invite_code=invite_code,
+            encryption_key=encryption_key,
+            deploy_key_id=str(deploy_key_id),
+            admin_pat=admin_pat,
+        )
 
         st.session_state["last_generated_code"] = invite_code
         st.session_state["last_generated_station"] = {

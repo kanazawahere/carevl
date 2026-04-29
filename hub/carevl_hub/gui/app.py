@@ -3,16 +3,20 @@ CareVL Hub — Operator Console (Streamlit entry point).
 
 Tabs:
   1. 🎫 Tạo mã kích hoạt  — Device Flow + GitHub API (tab_invite)
-  2. 📊 Cấu hình tải dữ liệu — session/file persistence (tab_config)
-  3. 🏥 Health              — version, CWD, session info (tab_health)
+  2. 📋 Danh sách trạm     — Station Registry (tab_stations)
+  3. 📊 Cấu hình tải dữ liệu — session/file persistence (tab_config)
+  4. 🏥 Health              — version, CWD, session info (tab_health)
 """
 
 from __future__ import annotations
 
 import streamlit as st
 
-from carevl_hub.gui import tab_config, tab_health, tab_invite
+from carevl_hub.db import init_db
+from carevl_hub.gui import tab_config, tab_health, tab_invite, tab_stations
 from carevl_hub.gui.session import init_session_defaults, try_load_local_state
+
+init_db()
 
 
 def main() -> None:
@@ -31,8 +35,9 @@ def main() -> None:
     st.title("CareVL Hub — Operator Console")
     st.caption("Streamlit · localhost only")
 
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2, tab3, tab4 = st.tabs([
         "🎫 Tạo mã kích hoạt",
+        "📋 Danh sách trạm",
         "📊 Cấu hình tải dữ liệu",
         "🏥 Health",
     ])
@@ -40,8 +45,10 @@ def main() -> None:
     with tab1:
         tab_invite.render()
     with tab2:
-        tab_config.render()
+        tab_stations.render()
     with tab3:
+        tab_config.render()
+    with tab4:
         tab_health.render()
 
 
