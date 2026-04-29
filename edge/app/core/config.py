@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     GITHUB_TOKEN: str = ""
     GITHUB_REPO: str = "owner/carevl-repo" # Expected format: "owner/repo"
     ENCRYPTION_KEY: str = "your-32-byte-encryption-key-here" # 32 bytes for AES-256
+    SESSION_SECRET: str = ""  # optional; defaults to ENCRYPTION_KEY for signed session cookie
 
     # Custom UUIDv5 Namespace for CareVL
     # Generated a static UUID for this project: e.g., using uuid.uuid4() once

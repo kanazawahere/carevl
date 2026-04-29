@@ -3,6 +3,8 @@
 ## Status
 [Deprecated]
 
+- **Ten tren so do E2E:** Buoc 3 trong `AGENTS/ASSETS/overview_end_to_end.svg` la **kich hoat tram lan dau (Invite Code)** — khong phai luong Device Flow duoi day. Tranh nham voi tieu de feature «Gateway» o day.
+
 - Deployed: khong
 - In progress: khong
 - Deprecated: co

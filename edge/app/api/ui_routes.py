@@ -141,10 +141,6 @@ def get_reports_page(request: Request):
 def get_audit_page(request: Request):
     return templates.TemplateResponse(request=request, name="placeholders/coming_soon.html", context={"request": request, "title": "8. Liên thông (Audit)"})
 
-@router.get("/settings", response_class=HTMLResponse)
-def get_settings_page(request: Request):
-    return templates.TemplateResponse(request=request, name="placeholders/coming_soon.html", context={"request": request, "title": "9. Cài đặt trạm"})
-
 @router.get("/about", response_class=HTMLResponse)
 def get_about_page(request: Request):
     return templates.TemplateResponse(request=request, name="placeholders/coming_soon.html", context={"request": request, "title": "10. Giới thiệu"})

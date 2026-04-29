@@ -1,8 +1,13 @@
 """CLI entry point for CareVL Hub"""
 
-import typer
+import os
+import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
+
+import typer
+
 from carevl_hub.admin import admin_app
 
 app = typer.Typer(
@@ -12,6 +17,41 @@ app = typer.Typer(
 
 # Add admin subcommand
 app.add_typer(admin_app, name="admin")
+
+
+@app.command()
+def gui(
+    port: int = typer.Option(8501, help="Streamlit server port"),
+    host: str = typer.Option("127.0.0.1", help="Bind address (default: localhost only)"),
+):
+    """Launch Hub operator GUI (Streamlit) — ADR 29 MVP."""
+    pkg = Path(__file__).resolve().parent
+    hub_dir = pkg.parent
+    gui_app = pkg / "gui" / "app.py"
+    if not gui_app.is_file():
+        typer.echo(f"GUI entry not found: {gui_app}", err=True)
+        raise typer.Exit(1)
+
+    env = os.environ.copy()
+    prev = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = str(hub_dir) + (os.pathsep + prev if prev else "")
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        str(gui_app),
+        "--server.address",
+        host,
+        "--server.port",
+        str(port),
+        "--browser.gatherUsageStats",
+        "false",
+    ]
+    typer.echo(f"Starting Hub GUI: {' '.join(cmd)}")
+    typer.echo(f"Working directory: {hub_dir}")
+    raise typer.Exit(subprocess.call(cmd, cwd=str(hub_dir), env=env))
 
 
 @app.command()

@@ -254,6 +254,13 @@ $trigger = New-ScheduledTaskTrigger -Daily -At 6am
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "CareVL Hub Daily Sync" -Description "Download and aggregate station data"
 ```
 
+### Hub operator GUI (Streamlit) — planned
+
+Giao dien van hanh tren may Admin (localhost). **Khong** thay the CLI; cung goi core Python. Chi tiet kien truc, bao mat PAT, entrypoint: [29. Hub Operator GUI (Streamlit)](29_Hub_Operator_Gui_Streamlit.md).
+
+- Cai dependency GUI: `uv sync` trong `hub/` (**streamlit** nam trong `dependencies` chinh).
+- Chay (sau khi code): `uv run carevl-hub gui` — mac dinh lang nghe `127.0.0.1`; **khong** mo cong ra Internet thieu reverse proxy + auth.
+
 ### Update Process
 
 **1. Pull latest code:**

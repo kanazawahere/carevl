@@ -1,225 +1,195 @@
-"""Provisioning routes for invite code authentication"""
+"""Provisioning routes for invite code authentication (E2E steps 2–3)."""
 
-from fastapi import APIRouter, HTTPException, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
-from edge.app.services.invite_code import InviteCodeService
-from edge.app.services.credential_manager import CredentialManager
-from edge.app.services.git_operations import GitOperations
-from edge.app.core.config import settings
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.database import Base, engine, get_db
+from app.services.credential_manager import CredentialManager
+from app.services.crypto import aes_key_from_invite_field, decrypt_file
+from app.services.git_operations import GitOperations
+from app.services.github_releases import download_latest_snapshot_enc
+from app.services.invite_code import InviteCodeService
+from app.services.pin_vault import is_provisioned, save_pin_with_secret
+from app.services.browser_session import attach_session_cookie
+from app.services.provision_state import get_station_id, save_station_identity
 
 router = APIRouter(prefix="/provision", tags=["provision"])
-templates = Jinja2Templates(directory="edge/app/templates")
+templates = Jinja2Templates(directory="app/templates")
+
+
+def _repo_dir_for_station(station_id: str) -> Path:
+    db_path = Path(settings.DATABASE_URL.replace("sqlite:///", "")).resolve()
+    return db_path.parent / "repos" / station_id
+
+
+def _pin_must_be_digits(pin: str) -> None:
+    if not pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be 6 digits")
 
 
 @router.get("/", response_class=HTMLResponse)
 async def provision_page(request: Request):
-    """Show provisioning page"""
-    return templates.TemplateResponse(
-        "provision/index.html",
-        {"request": request}
-    )
+    """First-time station setup (invite code)."""
+    return templates.TemplateResponse("provision/index.html", {"request": request})
 
 
 @router.post("/validate-code")
 async def validate_invite_code(invite_code: str = Form(...)):
-    """
-    Validate invite code
-    
-    Returns:
-        JSON with validation result and parsed data
-    """
     is_valid, error = InviteCodeService.validate(invite_code)
-    
     if not is_valid:
         raise HTTPException(status_code=400, detail=error)
-    
-    # Decode and return data
     data = InviteCodeService.decode(invite_code)
-    
     return {
         "status": "success",
         "data": {
             "station_id": data.station_id,
             "station_name": data.station_name,
             "repo_url": data.repo_url,
-            "has_encryption_key": data.encryption_key is not None
-        }
+            "has_encryption_key": data.encryption_key is not None,
+        },
     }
 
 
 @router.post("/setup-new")
 async def setup_new_station(
     invite_code: str = Form(...),
-    pin: str = Form(..., min_length=6, max_length=6)
+    pin: str = Form(..., min_length=6, max_length=6),
+    db: Session = Depends(get_db),
 ):
     """
-    Setup new station with invite code
-    
-    Steps:
-    1. Decode invite code
-    2. Save PAT to Credential Manager
-    3. Save encryption key (if provided)
-    4. Clone repository
-    5. Initialize database
-    6. Save PIN
-    7. Redirect to dashboard
+    New station: PAT + optional encryption key in keyring, clone repo, init DB schema, PIN vault.
     """
+    _pin_must_be_digits(pin)
+    if is_provisioned(db):
+        raise HTTPException(status_code=409, detail="Station already provisioned")
+
     try:
-        # 1. Decode invite code
         data = InviteCodeService.decode(invite_code)
-        
-        # 2. Check if Git is installed
-        if not GitOperations.check_git_installed():
-            raise HTTPException(
-                status_code=500,
-                detail="Git is not installed. Please install Git first."
-            )
-        
-        # 3. Save PAT to Credential Manager
-        if not CredentialManager.save_pat(data.station_id, data.pat):
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to save PAT to Credential Manager"
-            )
-        
-        # 4. Save encryption key (if provided)
-        if data.encryption_key:
-            if not CredentialManager.save_encryption_key(data.station_id, data.encryption_key):
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed to save encryption key"
-                )
-        
-        # 5. Clone repository
-        repo_dir = Path(f"./data/repos/{data.station_id}")
-        success, message = GitOperations.clone_repo(data.repo_url, data.pat, repo_dir)
-        
-        if not success:
-            raise HTTPException(status_code=500, detail=message)
-        
-        # 6. Initialize database (create new empty database)
-        # TODO: Initialize database with schema
-        
-        # 7. Save station config
-        settings.STATION_ID = data.station_id
-        settings.STATION_NAME = data.station_name
-        settings.REPO_URL = data.repo_url
-        
-        # 8. Save PIN (TODO: implement PIN storage)
-        
-        return {
-            "status": "success",
-            "message": "Station setup completed successfully",
-            "station_id": data.station_id,
-            "station_name": data.station_name
-        }
-        
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Setup failed: {e}")
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if not GitOperations.check_git_installed():
+        raise HTTPException(status_code=500, detail="Git is not installed. Please install Git first.")
+
+    if not CredentialManager.save_pat(data.station_id, data.pat):
+        raise HTTPException(status_code=500, detail="Failed to save PAT to Credential Manager")
+
+    if data.encryption_key:
+        if not CredentialManager.save_encryption_key(data.station_id, data.encryption_key):
+            raise HTTPException(status_code=500, detail="Failed to save encryption key")
+
+    repo_dir = _repo_dir_for_station(data.station_id)
+    success, message = GitOperations.clone_or_pull(data.repo_url, data.pat, repo_dir)
+    if not success:
+        raise HTTPException(status_code=500, detail=message)
+
+    Base.metadata.create_all(bind=engine)
+    save_station_identity(db, data.station_id, data.station_name, data.repo_url)
+    save_pin_with_secret(db, pin, data.pat)
+    db.commit()
+
+    payload = {
+        "status": "success",
+        "message": "Station setup completed successfully",
+        "station_id": data.station_id,
+        "station_name": data.station_name,
+    }
+    resp = JSONResponse(payload)
+    attach_session_cookie(resp)
+    return resp
 
 
 @router.post("/setup-restore")
 async def setup_restore_station(
     invite_code: str = Form(...),
-    pin: str = Form(..., min_length=6, max_length=6)
+    pin: str = Form(..., min_length=6, max_length=6),
+    db: Session = Depends(get_db),
 ):
     """
-    Restore station from existing repository
-    
-    Steps:
-    1. Decode invite code
-    2. Save PAT to Credential Manager
-    3. Clone repository
-    4. Find latest snapshot
-    5. Decrypt and restore database
-    6. Save PIN
-    7. Redirect to dashboard
+    Restore: clone repo, download latest .db.enc from GitHub Releases, decrypt into local SQLite, PIN vault.
+    Invite must include encryption_key (same 32-byte / base64 key used for snapshots).
     """
+    _pin_must_be_digits(pin)
+    if is_provisioned(db):
+        raise HTTPException(status_code=409, detail="Station already provisioned")
+
     try:
-        # 1. Decode invite code
         data = InviteCodeService.decode(invite_code)
-        
-        # 2. Check if Git is installed
-        if not GitOperations.check_git_installed():
-            raise HTTPException(
-                status_code=500,
-                detail="Git is not installed. Please install Git first."
-            )
-        
-        # 3. Save PAT to Credential Manager
-        if not CredentialManager.save_pat(data.station_id, data.pat):
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to save PAT to Credential Manager"
-            )
-        
-        # 4. Save encryption key (if provided)
-        if data.encryption_key:
-            if not CredentialManager.save_encryption_key(data.station_id, data.encryption_key):
-                raise HTTPException(
-                    status_code=500,
-                    detail="Failed to save encryption key"
-                )
-        
-        # 5. Clone repository
-        repo_dir = Path(f"./data/repos/{data.station_id}")
-        success, message = GitOperations.clone_repo(data.repo_url, data.pat, repo_dir)
-        
-        if not success:
-            raise HTTPException(status_code=500, detail=message)
-        
-        # 6. Find latest snapshot in releases
-        # TODO: Implement snapshot discovery and restore
-        
-        # 7. Decrypt and restore database
-        # TODO: Implement database restore
-        
-        # 8. Save station config
-        settings.STATION_ID = data.station_id
-        settings.STATION_NAME = data.station_name
-        settings.REPO_URL = data.repo_url
-        
-        # 9. Save PIN (TODO: implement PIN storage)
-        
-        return {
-            "status": "success",
-            "message": "Station restored successfully",
-            "station_id": data.station_id,
-            "station_name": data.station_name
-        }
-        
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    if not data.encryption_key:
+        raise HTTPException(
+            status_code=400,
+            detail="Restore requires encryption_key in the invite (same key used to encrypt snapshots).",
+        )
+
+    if not GitOperations.check_git_installed():
+        raise HTTPException(status_code=500, detail="Git is not installed. Please install Git first.")
+
+    if not CredentialManager.save_pat(data.station_id, data.pat):
+        raise HTTPException(status_code=500, detail="Failed to save PAT to Credential Manager")
+
+    if not CredentialManager.save_encryption_key(data.station_id, data.encryption_key):
+        raise HTTPException(status_code=500, detail="Failed to save encryption key")
+
+    repo_dir = _repo_dir_for_station(data.station_id)
+    success, message = GitOperations.clone_or_pull(data.repo_url, data.pat, repo_dir)
+    if not success:
+        raise HTTPException(status_code=500, detail=message)
+
+    db_path = Path(settings.DATABASE_URL.replace("sqlite:///", "")).resolve()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_dir = db_path.parent / "tmp_restore"
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        enc_path, _name = download_latest_snapshot_enc(data.repo_url, data.pat, tmp_dir)
+        aes_key = aes_key_from_invite_field(data.encryption_key)
+        if db_path.exists():
+            bak = db_path.with_suffix(db_path.suffix + ".pre-restore.bak")
+            if bak.exists():
+                bak.unlink()
+            db_path.rename(bak)
+        decrypt_file(str(enc_path), str(db_path), key=aes_key)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Restore failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Restore failed: {e}") from e
+    finally:
+        for p in tmp_dir.glob("*"):
+            try:
+                p.unlink()
+            except OSError:
+                pass
+
+    save_station_identity(db, data.station_id, data.station_name, data.repo_url)
+    save_pin_with_secret(db, pin, data.pat)
+    db.commit()
+
+    payload = {
+        "status": "success",
+        "message": "Station restored successfully",
+        "station_id": data.station_id,
+        "station_name": data.station_name,
+    }
+    resp = JSONResponse(payload)
+    attach_session_cookie(resp)
+    return resp
 
 
 @router.get("/status")
-async def provision_status():
-    """
-    Check if station is provisioned
-    
-    Returns:
-        JSON with provisioning status
-    """
-    station_id = getattr(settings, 'STATION_ID', None)
-    
-    if not station_id:
-        return {
-            "provisioned": False,
-            "message": "Station not provisioned"
-        }
-    
-    # Check if PAT exists
-    pat = CredentialManager.get_pat(station_id)
-    
+async def provision_status(db: Session = Depends(get_db)):
+    """Whether PIN provisioning has been completed (auth_salt present)."""
+    if not is_provisioned(db):
+        return {"provisioned": False, "message": "Station not provisioned"}
+    station_id = get_station_id(db)
+    pat_ok = bool(station_id and CredentialManager.get_pat(station_id))
     return {
-        "provisioned": pat is not None,
+        "provisioned": pat_ok,
         "station_id": station_id,
-        "station_name": getattr(settings, 'STATION_NAME', None)
+        "message": "Station provisioned" if pat_ok else "PAT missing in Credential Manager",
     }

@@ -27,7 +27,7 @@ Stack:
 - PyInstaller
 
 Feature:
-- Gateway setup qua invite code
+- Kich hoat tram lan dau (Invite Code: du lieu + PIN)
 - 10 chuc nang sidebar
 - Active Sync upload snapshot len GitHub Releases
 - Offline-first, PIN authentication
@@ -43,11 +43,9 @@ Vi tri de xuat: `edge/`
 Muc dich: tong hop va phan tich du lieu tu tat ca tram
 
 Stack:
-- Python CLI (`typer`/`click`)
-- DuckDB
-- Pandas
-- Jupyter
-- Streamlit/Dash tuy chon
+- Python CLI (`typer`) — **nguon that** cho automation / Task Scheduler
+- DuckDB, Pandas, Jupyter
+- **Streamlit** — GUI van hanh noi bo cho Admin tinh (**ke hoach**, chi tiet [29. Hub Operator GUI (Streamlit)](29_Hub_Operator_Gui_Streamlit.md)); **khong** OAuth GitHub trong browser, PAT qua form / session / secrets local
 
 Feature:
 - Download snapshot tu nhieu repo
@@ -57,17 +55,20 @@ Feature:
 - Lien thong batch VNEID / So suc khoe dien tu tu du lieu tong hop (dau ra Hub buoc 11; ke hoach, tach bach voi bao cao tinh)
 - Data quality checks
 - Audit logs
+- **(Planned)** Operator GUI: `carevl-hub gui` → Streamlit localhost, goi cung core Python voi CLI
 
 Deployment:
 - Python package
 - Chay tren may Admin Hub
 - Can internet de keo snapshot
+- **(Planned)** GUI: chi `127.0.0.1` mac dinh; khong mo WAN thieu proxy + auth
 
 Vi tri de xuat: `hub/`
 
 Auth Hub:
 - Dung GitHub Classic PAT cua owner de access tat ca repo
 - Hoac GitHub App neu chi doc release trong org
+- GUI: PAT nhap trong session Streamlit hoac `.streamlit/secrets.toml` — khong commit
 
 ### So do
 He sinh thai:
@@ -96,7 +97,7 @@ carevl/
 
 Chi tiet:
 - `edge/app/`: routes, core, models, services, templates, static
-- `hub/carevl_hub/`: `cli.py`, `downloader.py`, `crypto.py`, `aggregator.py`, `reports.py`, `config.py`
+- `hub/carevl_hub/`: `cli.py`, `admin.py`, `downloader.py`, … (pipeline); **`gui/`** (ke hoach) — `app.py` Streamlit, goi service chung voi CLI
 - `shared/`: `crypto.py`, `models.py`, `constants.py`
 
 ### Dependencies
@@ -128,7 +129,9 @@ uv run carevl-hub download --date 2026-04-28
 uv run carevl-hub decrypt --input snapshots/ --output decrypted/
 uv run carevl-hub aggregate --output hub_report.parquet
 uv run carevl-hub report --format excel --output monthly_report.xlsx
-uv run carevl-hub dashboard --port 8080
+uv run carevl-hub dashboard --port 8080   # TODO / legacy stub
+# (Planned — ADR 29) GUI van hanh:
+uv run carevl-hub gui   # → streamlit run … localhost
 ```
 
 ### Workflow dev
@@ -172,6 +175,7 @@ Hub:
 3. Admin install
 4. Config encryption key va GitHub PAT
 5. Chay lenh download, decrypt, aggregate, report
+6. **(Planned)** Cai optional `streamlit`, chay `carevl-hub gui` tren may Admin (xem [22](22_Deployment_Guide.md), [29](29_Hub_Operator_Gui_Streamlit.md))
 
 ### Tach bao mat
 - Edge PAT: chi `1` repo
@@ -210,3 +214,4 @@ Monorepo hai app giu code dung chung o `shared/`, giu doc tap trung, va de refac
 - [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](15_Hub_Aggregation.md)
 - [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11, fork dau ra Hub)
+- [29. Hub Operator GUI (Streamlit)](29_Hub_Operator_Gui_Streamlit.md)

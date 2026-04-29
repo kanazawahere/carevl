@@ -41,3 +41,4 @@ Snapshot ma hoa giu an toan du lieu khi roi khoi Edge. GitHub Releases dong vai 
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](../ACTIVE/15_Hub_Aggregation.md)
 - [18. Two-App Architecture: Edge vs Hub](../ACTIVE/18_Two_App_Architecture.md)
 - [26. Visualization Catalog](../ACTIVE/26_Visualization.md)
+- [Hub Operator GUI (Streamlit)](hub_operator_gui.md) — phia may tinh Hub (ke hoach)

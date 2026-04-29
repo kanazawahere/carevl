@@ -5,10 +5,24 @@ import time
 import json
 from datetime import datetime, timezone
 from app.core.config import settings
+from app.core.database import SessionLocal
 from app.services.crypto import encrypt_file, compute_file_sha256
+from app.services.provision_state import get_station_id
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def _active_site_id() -> str:
+    try:
+        with SessionLocal() as db:
+            sid = get_station_id(db)
+            if sid:
+                return sid
+    except Exception:
+        pass
+    return settings.SITE_ID
+
 
 def perform_snapshot() -> str:
     """
@@ -52,16 +66,17 @@ def perform_snapshot() -> str:
         snapshot_id = file_hash[:8]
 
         # 5. Rename file to final format
-        snapshot_filename = f"carevl_{settings.SITE_ID}_{timestamp}_{snapshot_id}_{schema_version}.db.enc"
+        site = _active_site_id()
+        snapshot_filename = f"carevl_{site}_{timestamp}_{snapshot_id}_{schema_version}.db.enc"
         snapshot_path = os.path.join(snapshot_dir, snapshot_filename)
 
         os.rename(temp_enc_path, snapshot_path)
 
         # Save sidecar JSON for metadata and checksum
-        sidecar_filename = f"carevl_{settings.SITE_ID}_{timestamp}_{snapshot_id}_{schema_version}.json"
+        sidecar_filename = f"carevl_{site}_{timestamp}_{snapshot_id}_{schema_version}.json"
         sidecar_path = os.path.join(snapshot_dir, sidecar_filename)
         metadata = {
-            "site_id": settings.SITE_ID,
+            "site_id": site,
             "timestamp": timestamp,
             "snapshot_id": snapshot_id,
             "schema_version": schema_version,

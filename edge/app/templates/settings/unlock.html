@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Mở khóa Cài đặt | CareVL{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white rounded-xl shadow-md overflow-hidden">
+    <div class="p-8">
+        <h2 class="text-lg font-medium text-gray-900">Nhập PIN để vào Cài đặt trạm</h2>
+        <p class="mt-2 text-sm text-gray-500">Trạm đã bật tùy chọn yêu cầu PIN khi mở mục Cài đặt.</p>
+        {% if error %}
+        <p class="mt-2 text-sm text-red-600">{{ error }}</p>
+        {% endif %}
+        <form method="post" action="/settings/unlock" class="mt-6 space-y-4">
+            <div>
+                <label for="pin" class="block text-sm font-medium text-gray-700">Mã PIN</label>
+                <input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required
+                    class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm font-mono text-lg tracking-widest" />
+            </div>
+            <button type="submit" class="w-full py-2 px-4 rounded-md bg-primary text-white text-sm font-medium hover:bg-blue-700">Tiếp tục</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

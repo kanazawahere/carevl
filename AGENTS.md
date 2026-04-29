@@ -116,6 +116,8 @@ Quyet dinh dang song cua he thong.
 - [24. Verified State Machine Diagramming](AGENTS/ACTIVE/24_Verified_State_Machine_Diagramming.md)
 - [26. Visualization Catalog: SVG, Mermaid & Tables](AGENTS/ACTIVE/26_Visualization.md)
 - [27. Phạm vi thu thập dữ liệu nghiệp vụ (người trước, kỹ thuật sau)](AGENTS/ACTIVE/27_Business_Data_Intake_Scope.md)
+- [28. Edge: Phạm vi Cài đặt trạm sau provision (`/settings`)](AGENTS/ACTIVE/28_Edge_Station_Settings_Scope.md)
+- [29. Hub Operator GUI (Streamlit)](AGENTS/ACTIVE/29_Hub_Operator_Gui_Streamlit.md)
 
 ---
 
@@ -131,8 +133,9 @@ Quyet dinh dang song cua he thong.
 - [8. Liên thông (Audit)](AGENTS/FEATURES/8_lien_thong_audit.md)
 - [9. Cài đặt trạm](AGENTS/FEATURES/9_cai_dat_tram.md)
 - [10. Giới thiệu](AGENTS/FEATURES/10_gioi_thieu.md)
-- [Auth Gateway](AGENTS/FEATURES/auth_gateway.md)
+- [Auth Gateway (deprecated — thay Invite Code)](AGENTS/FEATURES/auth_gateway.md)
 - [QR Code Provisioning (Thẻ bài điện tử)](AGENTS/FEATURES/qr_provisioning.md)
+- [Hub Operator GUI (Streamlit)](AGENTS/FEATURES/hub_operator_gui.md)
 
 ---
 
@@ -146,4 +149,4 @@ Quyet dinh da bo. Giu lai de biet vi sao khong di huong cu.
 
 ---
 
-*Cap nhat lan cuoi: 2026-04-29 00:00:00*
+*Cap nhat lan cuoi: 2026-04-29 20:00:00*

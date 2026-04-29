@@ -22,6 +22,7 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 - [24. Verified State Machine Diagramming](24_Verified_State_Machine_Diagramming.md)
 - [27. Phạm vi thu thập dữ liệu nghiệp vụ](27_Business_Data_Intake_Scope.md) (phạm vi thu thập trước khi chi tiết schema)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
+- [29. Hub Operator GUI (Streamlit)](29_Hub_Operator_Gui_Streamlit.md) (so do Hub + checklist trien khai GUI)
 - [TUTORIAL.md](../../TUTORIAL.md)
 
 ---
@@ -45,10 +46,13 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 
 | Thanh phan chinh | Vai tro |
 |---|---|
-| Hub CLI | Tai va xu ly snapshot tu nhieu tram |
+| Hub CLI (`carevl-hub`) | Tai va xu ly snapshot; automation |
+| **Hub GUI (planned)** | Streamlit localhost — `carevl-hub gui`; cung core Python voi CLI — [29](29_Hub_Operator_Gui_Streamlit.md) |
 | Decrypt | Giai ma snapshot |
 | DuckDB | Tong hop / truy van |
 | Hub Reports | Bao cao tinh |
+
+**Ghi chu GUI:** So do SVG da ghi chu "planned Streamlit"; khi implement xong, cap nhat hinh va bang tren cho khoi Planned.
 
 ---
 
@@ -57,7 +61,7 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 
 | Thanh phan chinh | Ghi chu |
 |---|---|
-| Hub pipeline | So do tong quan luong xu ly Hub (CLI / data) |
+| Hub pipeline | So do tong quan luong xu ly Hub (CLI + GUI planned / data) — GUI: [29](29_Hub_Operator_Gui_Streamlit.md) |
 
 ---
 
@@ -68,7 +72,7 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 |---|---|
 | Hub Admin chuan bi | Repo + PAT + invite |
 | Station cai dat | Edge app san sang |
-| Gateway | Khoi tao du lieu + PIN |
+| Kich hoat tram (lan dau) | Invite code + du lieu + PIN |
 
 ---
 
@@ -102,7 +106,7 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 |---|---|
 | 1 | Hub Admin: repo + PAT + invite |
 | 2 | Cai dat tram (Edge tren Windows) |
-| 3 | Gateway: invite / du lieu / PIN |
+| 3 | Kich hoat tram lan dau: invite code / du lieu / PIN |
 | 4 | Van hanh hang ngay (tiep nhan, hang doi, lam sang, ket qua) |
 | 5 | Bao cao + audit **tai tram** |
 | 6 | Tao snapshot: SQLite → `.db.enc` |
@@ -151,7 +155,7 @@ stateDiagram-v2
 
 ---
 
-### Gateway setup (rut gon)
+### Kich hoat tram lan dau — Invite Code (rut gon)
 
 ```mermaid
 stateDiagram-v2

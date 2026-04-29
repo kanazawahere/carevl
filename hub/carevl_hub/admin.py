@@ -150,6 +150,24 @@ TRAM_003,Trạm Y Tế Xã C,https://github.com/carevl-bot/station-003,ghp_zzzzz
     typer.echo(f"  carevl-hub admin generate-batch --input-csv {output}")
 
 
+@admin_app.command("operator-checklist")
+def operator_checklist():
+    """Print Hub Admin checklist for E2E step 1 (repos, PATs, invite codes)."""
+    typer.echo(
+        """
+CareVL Hub Admin — checklist (E2E step 1)
+1. GitHub bot account + one repo per station (fine-grained PAT: Contents read/write).
+2. Generate PAT manually in GitHub UI (fine-grained PAT cannot be created via API).
+3. carevl-hub admin generate-code --station-id ... --station-name ... --repo-url ... --pat ...
+   Or: admin generate-batch --input-csv stations.csv --output-dir ./invite_codes
+4. Send each invite code to the station (Zalo / Email).
+5. Optional: admin validate-code <paste> — sanity-check before sending.
+
+Edge step 2–3: station runs bootstrap, opens /provision/, pastes invite, New or Restore, sets PIN.
+"""
+    )
+
+
 @admin_app.command("validate-code")
 def validate_code(
     invite_code: str = typer.Argument(..., help="Invite code to validate")

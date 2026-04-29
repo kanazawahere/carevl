@@ -28,7 +28,7 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; iwr -useb https://raw.githubus
 
 ### 2. Bản thử nghiệm (`canary`)
 
-Dành cho các trạm muốn trải nghiệm hệ thống Gateway, xác thực và bảo mật offline (PIN 6 số) mới nhất.
+Dành cho các trạm muốn thử nhánh `canary` (luồng kích hoạt invite code, đồng bộ và PIN offline mới nhất).
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; iwr -useb https://raw.githubusercontent.com/DigitalVersion/carevl/canary/scripts/setup.ps1 | iex

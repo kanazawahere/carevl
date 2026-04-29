@@ -53,8 +53,8 @@
   <line x1="600" y1="200" x2="600" y2="230" stroke="#64748b" stroke-width="3" marker-end="url(#arrowhead)"/>
   <text x="620" y="220" font-size="12" fill="#475569">Trạm nhận được Invite Code</text>
 
-  <!-- Gateway Setup States (Station side) -->
-  <g id="gateway-setup">
+  <!-- First-time station setup (Invite Code flow; not legacy Device Flow) -->
+  <g id="first-time-station-setup">
     <rect x="50" y="230" width="1100" height="140" fill="#dbeafe" stroke="#3b82f6" stroke-width="3" rx="8"/>
     <text x="70" y="260" font-size="16" font-weight="bold" fill="#1e40af">Phase B: Trạm cài đặt (Tự làm theo hướng dẫn)</text>
     

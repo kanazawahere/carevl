@@ -379,3 +379,4 @@ DuckDB la embedded database nhanh, ho tro SQL day du, va doc truc tiep SQLite qu
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
 - [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11)
 - [../FEATURES/7_xuat_du_lieu_hub.md](../FEATURES/7_xuat_du_lieu_hub.md)
+- [29. Hub Operator GUI (Streamlit)](29_Hub_Operator_Gui_Streamlit.md) — lop dieu khien GUI goi cung pipeline (ke hoach)

@@ -48,14 +48,26 @@ class GitOperations:
                 return True, "Repository cloned successfully"
             else:
                 return False, f"Git clone failed: {result.stderr}"
-                
+
         except subprocess.TimeoutExpired:
             return False, "Git clone timeout (60s)"
         except FileNotFoundError:
             return False, "Git not found. Please install Git."
         except Exception as e:
             return False, f"Unexpected error: {e}"
-    
+
+    @staticmethod
+    def clone_or_pull(repo_url: str, pat: str, target_dir: Path) -> Tuple[bool, str]:
+        """
+        Clone into target_dir, or pull if it is already a git working tree.
+        """
+        git_dir = target_dir / ".git"
+        if git_dir.exists():
+            return GitOperations.pull_repo(target_dir, pat)
+        if target_dir.exists() and any(target_dir.iterdir()):
+            return False, f"Directory exists and is not a git repo: {target_dir}"
+        return GitOperations.clone_repo(repo_url, pat, target_dir)
+
     @staticmethod
     def pull_repo(repo_dir: Path, pat: str) -> Tuple[bool, str]:
         """

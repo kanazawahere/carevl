@@ -1,31 +1,40 @@
+from typing import Optional
+from urllib.parse import quote
+
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.system_config import SystemConfig
-import base64
-import os
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from app.services.pin_vault import fernet_from_stored_salt, save_pin_with_secret
+from app.services.browser_session import attach_session_cookie
+
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
-def _get_fernet_from_pin(pin: str, salt: bytes) -> Fernet:
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=salt,
-        iterations=480000,
-    )
-    key = base64.urlsafe_b64encode(kdf.derive(pin.encode()))
-    return Fernet(key)
+
+def safe_next_path(raw: Optional[str]) -> str:
+    if not raw or not isinstance(raw, str):
+        return "/intake"
+    path = raw.strip().split("?", 1)[0] or "/intake"
+    if not path.startswith("/") or path.startswith("//"):
+        return "/intake"
+    return path
+
 
 @router.get("/login", response_class=HTMLResponse)
 def get_login_page(request: Request):
-    return templates.TemplateResponse(request=request, name="auth/github_auth.html", context={"request": request, "hide_sidebar": True})
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/login.html",
+        context={
+            "request": request,
+            "hide_sidebar": True,
+            "next": safe_next_path(request.query_params.get("next")),
+        },
+    )
 
 @router.get("/setup/repo", response_class=HTMLResponse)
 def get_repo_setup(request: Request):
@@ -64,24 +73,19 @@ def get_pin_setup(request: Request):
 
 @router.post("/setup/pin")
 def post_pin_setup(pin: str = Form(...), db: Session = Depends(get_db)):
-    # For demonstration, we simulate a GitHub token
     dummy_token = "gho_dummy_token_for_offline_sync"
-
-    salt = os.urandom(16)
-    f = _get_fernet_from_pin(pin, salt)
-    encrypted_token = f.encrypt(dummy_token.encode()).decode('utf-8')
-
-    # Save to SQLite DB
-    db.query(SystemConfig).filter(SystemConfig.key.in_(["auth_salt", "encrypted_token"])).delete()
-
-    db.add(SystemConfig(key="auth_salt", value=base64.b64encode(salt).decode('utf-8')))
-    db.add(SystemConfig(key="encrypted_token", value=encrypted_token))
+    save_pin_with_secret(db, pin, dummy_token)
     db.commit()
-
-    return RedirectResponse(url="/intake", status_code=303)
+    resp = RedirectResponse(url="/intake", status_code=303)
+    attach_session_cookie(resp)
+    return resp
 
 @router.post("/login/offline")
-def login_offline(pin: str = Form(...), db: Session = Depends(get_db)):
+def login_offline(
+    pin: str = Form(...),
+    next: str = Form("/intake"),
+    db: Session = Depends(get_db),
+):
     salt_record = db.query(SystemConfig).filter(SystemConfig.key == "auth_salt").first()
     token_record = db.query(SystemConfig).filter(SystemConfig.key == "encrypted_token").first()
 
@@ -89,11 +93,14 @@ def login_offline(pin: str = Form(...), db: Session = Depends(get_db)):
         return RedirectResponse(url="/login?error=not_setup", status_code=303)
 
     try:
-        salt = base64.b64decode(salt_record.value)
-        f = _get_fernet_from_pin(pin, salt)
-        # Verify PIN is correct by attempting to decrypt
+        f = fernet_from_stored_salt(pin, salt_record.value)
         f.decrypt(token_record.value.encode())
-        return RedirectResponse(url="/intake", status_code=303)
+        resp = RedirectResponse(url=safe_next_path(next), status_code=303)
+        attach_session_cookie(resp)
+        return resp
     except Exception:
-        # Invalid PIN
-        return RedirectResponse(url="/login?error=invalid_pin", status_code=303)
+        np = safe_next_path(next)
+        return RedirectResponse(
+            url=f"/login?error=invalid_pin&next={quote(np, safe='')}",
+            status_code=303,
+        )

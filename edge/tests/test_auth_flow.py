@@ -395,5 +395,66 @@ class TestEndToEndFlow:
         print("✅ Complete restore station setup flow passed")
 
 
+class TestGithubReleasesHelpers:
+    def test_parse_owner_repo(self):
+        from app.services.github_releases import parse_owner_repo
+
+        assert parse_owner_repo("https://github.com/org/foo") == ("org", "foo")
+        assert parse_owner_repo("https://github.com/org/foo.git") == ("org", "foo")
+
+    def test_find_latest_db_enc_prefers_final(self):
+        from app.services.github_releases import find_latest_db_enc_asset
+
+        assets = [
+            {"name": "readme.txt", "browser_download_url": "https://x/r"},
+            {"name": "old.db.enc", "browser_download_url": "https://x/old"},
+            {"name": "FINAL_SITE_2026.db.enc", "browser_download_url": "https://x/final"},
+        ]
+        url, name = find_latest_db_enc_asset(assets)
+        assert name == "FINAL_SITE_2026.db.enc"
+        assert "final" in url
+
+
+class TestBrowserSession:
+    def test_session_value_roundtrip(self):
+        from app.services.browser_session import issue_session_value, verify_session_value
+
+        v = issue_session_value()
+        assert verify_session_value(v) is True
+        assert verify_session_value("bad") is False
+
+
+class TestChangePinRewrap:
+    def test_change_pin_rewrap(self):
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+
+        import app.models  # noqa: F401 — register metadata
+        from app.core.database import Base
+        from app.services.pin_change import assert_pin_change_allowed, change_pin_rewrap
+        from app.services.pin_vault import save_pin_with_secret
+
+        eng = create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(eng)
+        S = sessionmaker(bind=eng)
+        db = S()
+        save_pin_with_secret(db, "111111", "secret-token")
+        db.commit()
+        assert_pin_change_allowed(db)
+        ok, err = change_pin_rewrap(db, "111111", "222222")
+        assert ok is True and err == ""
+        db.commit()
+        ok2, err2 = change_pin_rewrap(db, "333333", "444444")
+        assert ok2 is False and err2 == "invalid_old_pin"
+
+
+class TestCryptoInviteKey:
+    def test_aes_key_utf8_32(self):
+        from app.services.crypto import aes_key_from_invite_field
+
+        raw = "x" * 32
+        assert len(aes_key_from_invite_field(raw)) == 32
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])
