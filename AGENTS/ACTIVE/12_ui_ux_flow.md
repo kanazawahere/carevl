@@ -28,6 +28,7 @@ Luong nay hop nghiep vu kham that. Ket qua den tre la mac dinh, khong phai ngoai
 
 ## Related Documents
 - [03. Web UI & HTMX Interaction](03_Web_UI_HTMX.md)
+- [27. Business Data Intake Scope](27_Business_Data_Intake_Scope.md)
 - [09. Dac Ta Schema CareVL Phase 2](09_Phase2_Schema_Spec.md)
 - [../FEATURES/1_tiep_nhan_moi.md](../FEATURES/1_tiep_nhan_moi.md)
 - [../FEATURES/5_cap_nhat_ket_qua.md](../FEATURES/5_cap_nhat_ket_qua.md)

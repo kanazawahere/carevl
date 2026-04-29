@@ -38,5 +38,6 @@ Mot diem nhap. It sai tay. `Sticker ID` di cung benh nhan tu luc vao den luc co 
 
 ## Related Documents
 - [Sidebar UI Architecture](sidebar_ui.md)
+- [27. Business Data Intake Scope (nguoi nghiep vu truoc, ky thuat sau)](../ACTIVE/27_Business_Data_Intake_Scope.md)
 - [12. UI/UX Data Flow: Intake to Delayed Results](../ACTIVE/12_ui_ux_flow.md)
 - [18. Two-App Architecture: Edge vs Hub](../ACTIVE/18_Two_App_Architecture.md)

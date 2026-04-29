@@ -20,6 +20,7 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 
 ## Related Documents
 - [24. Verified State Machine Diagramming](24_Verified_State_Machine_Diagramming.md)
+- [27. Business Data Intake Scope](27_Business_Data_Intake_Scope.md) (pham vi thu thap truoc khi chi tiet schema)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
 - [TUTORIAL.md](../../TUTORIAL.md)
 
