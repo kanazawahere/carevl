@@ -19,11 +19,15 @@ Tài liệu này quy định cách thức tạo và lưu trữ hình ảnh cho h
 
 #### B. Diagram kỹ thuật (Sơ đồ kiến trúc, state machine, flowchart)
 - **Công cụ cho phép:** 
-  - SVG inline (code trực tiếp)
-  - Draw.io / Excalidraw (export SVG)
-  - Mermaid (nếu cần)
+  - Mermaid (source-of-truth, ưu tiên)
+  - SVG inline (artifact hoặc minh họa tĩnh)
+  - Draw.io / Excalidraw (export SVG artifact)
 - **Định dạng:** `.svg` (ưu tiên) hoặc `.png`
 - **Mục đích:** Minh họa kiến trúc, luồng dữ liệu, state machine trong tài liệu kỹ thuật
+- **Quy tắc mới cho `stateDiagram-v2`:**
+  - Transition label chỉ ghi action ngắn (ví dụ `submit()`, `uploadSnapshot()`).
+  - Không nhồi `IN/OUT/GUARD/SE` vào transition label vì GitHub dễ cắt chữ.
+  - `IN/OUT/GUARD/SE` phải để trong bảng Markdown ngay dưới sơ đồ.
 
 ### 3. Quy tắc đặt tên
 - Mockup UI: `01_feature_name.png`, `02_screen_name.png`
