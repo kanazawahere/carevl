@@ -78,6 +78,10 @@ O buoc finalize, truoc `submit`, agent phai lam:
 ## SOP & Resources
 - [Cam nang Thiet ke Hinh anh (Image Generation Bible)](AGENTS/IMAGE_GUIDE.md)
 
+## START HERE - DIAGRAMS & STATE MACHINES
+- [25. Diagram Hub: State Machine & Dataflow Index](AGENTS/ACTIVE/25_Diagram_Hub.md)
+- [24. Verified State Machine Diagramming](AGENTS/ACTIVE/24_Verified_State_Machine_Diagramming.md)
+
 ---
 
 ## ACTIVE (Tinh nang & Kien truc dang chay)
@@ -107,6 +111,7 @@ Quyet dinh dang song cua he thong.
 - [22. Deployment Guide: Edge & Hub](AGENTS/ACTIVE/22_Deployment_Guide.md)
 - [23. Authentication Testing Guide](AGENTS/ACTIVE/23_Auth_Testing_Guide.md)
 - [24. Verified State Machine Diagramming](AGENTS/ACTIVE/24_Verified_State_Machine_Diagramming.md)
+- [25. Diagram Hub: State Machine & Dataflow Index](AGENTS/ACTIVE/25_Diagram_Hub.md)
 
 ---
 

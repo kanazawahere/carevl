@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="620" viewBox="0 0 1400 620">
+  <defs>
+    <style>
+      .title { font: 700 24px Arial, sans-serif; fill: #0f172a; }
+      .subtitle { font: 500 14px Arial, sans-serif; fill: #334155; }
+      .box { fill: #f8fafc; stroke: #475569; stroke-width: 2; rx: 10; ry: 10; }
+      .sectionA { fill: #e0f2fe; }
+      .sectionB { fill: #dcfce7; }
+      .sectionC { fill: #fef3c7; }
+      .label { font: 600 14px Arial, sans-serif; fill: #0f172a; }
+      .small { font: 500 12px Arial, sans-serif; fill: #1e293b; }
+      .arrow { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrowHead); }
+    </style>
+    <marker id="arrowHead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="42" class="title">CareVL End-to-End Workflow (Overview)</text>
+  <text x="40" y="68" class="subtitle">Hub Admin provisioning -> Station setup -> Daily operations -> Snapshot export -> Hub aggregation -> Reports</text>
+
+  <rect x="40" y="100" width="220" height="70" class="box sectionA"/>
+  <text x="58" y="128" class="label">1) Hub Admin</text>
+  <text x="58" y="148" class="small">Create repo + PAT + Invite Code</text>
+
+  <rect x="300" y="100" width="220" height="70" class="box sectionA"/>
+  <text x="318" y="128" class="label">2) Station Install</text>
+  <text x="318" y="148" class="small">Install Edge app on Windows</text>
+
+  <rect x="560" y="100" width="220" height="70" class="box sectionA"/>
+  <text x="578" y="128" class="label">3) Gateway Setup</text>
+  <text x="578" y="148" class="small">Invite -> Data setup -> PIN</text>
+
+  <rect x="820" y="100" width="220" height="70" class="box sectionB"/>
+  <text x="838" y="128" class="label">4) Daily Operations</text>
+  <text x="838" y="148" class="small">Intake / Queue / Clinical / Results</text>
+
+  <rect x="1080" y="100" width="220" height="70" class="box sectionB"/>
+  <text x="1098" y="128" class="label">5) Local Reports</text>
+  <text x="1098" y="148" class="small">Station reports and audit checks</text>
+
+  <rect x="170" y="280" width="240" height="80" class="box sectionC"/>
+  <text x="190" y="312" class="label">6) Create Snapshot</text>
+  <text x="190" y="334" class="small">Encrypt SQLite -> .db.enc</text>
+
+  <rect x="470" y="280" width="240" height="80" class="box sectionC"/>
+  <text x="490" y="312" class="label">7) Upload Snapshot</text>
+  <text x="490" y="334" class="small">Push asset to GitHub Releases</text>
+
+  <rect x="770" y="280" width="240" height="80" class="box sectionC"/>
+  <text x="790" y="312" class="label">8) Hub Download</text>
+  <text x="790" y="334" class="small">Download snapshots from stations</text>
+
+  <rect x="1070" y="280" width="240" height="80" class="box sectionC"/>
+  <text x="1090" y="312" class="label">9) Hub Aggregate</text>
+  <text x="1090" y="334" class="small">Decrypt + DuckDB aggregate</text>
+
+  <rect x="560" y="460" width="280" height="90" class="box"/>
+  <text x="582" y="495" class="label">10) Provincial Reports</text>
+  <text x="582" y="518" class="small">Excel / PDF / Parquet outputs</text>
+
+  <path d="M260 135 L300 135" class="arrow"/>
+  <path d="M520 135 L560 135" class="arrow"/>
+  <path d="M780 135 L820 135" class="arrow"/>
+  <path d="M1040 135 L1080 135" class="arrow"/>
+
+  <path d="M1190 170 C1190 220, 980 240, 890 280" class="arrow"/>
+  <path d="M770 320 L710 320" class="arrow"/>
+  <path d="M470 320 L410 320" class="arrow"/>
+  <path d="M1010 320 L1070 320" class="arrow"/>
+
+  <path d="M1190 360 C1190 430, 940 470, 840 500" class="arrow"/>
+  <path d="M290 360 C290 430, 500 470, 560 500" class="arrow"/>
+</svg>

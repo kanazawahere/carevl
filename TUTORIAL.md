@@ -100,39 +100,6 @@ Tạo 1 mã PIN 6 số. Mã này dùng để mở khóa hệ thống hàng ngày
 
 ![PIN Setup](AGENTS/ASSETS/05_mockup_pin_setup.png)
 
-### Kiểm chứng luồng Gateway (rút gọn)
-```mermaid
-stateDiagram-v2
-    [*] --> InviteCodeInput
-    InviteCodeInput --> InviteValidated: submitInviteCode()
-    InviteCodeInput --> InviteError: submitInviteCodeFail()
-
-    InviteValidated --> StationConfirm: confirmStation()
-    StationConfirm --> DataSetupChoice: chooseSetupMode()
-
-    DataSetupChoice --> NewDbInit: chooseNewDb()
-    DataSetupChoice --> RestoreInit: chooseRestore()
-    RestoreInit --> RestoreDone: restoreSnapshot()
-
-    NewDbInit --> PinSetup: continue()
-    RestoreDone --> PinSetup: continue()
-    PinSetup --> Ready: savePin()
-    Ready --> [*]
-
-    InviteError --> InviteCodeInput: retry()
-```
-
-Chi tiết đầy đủ về `Schema Contracts` và `Dataflow Transactions` xem tại:
-- [24. Verified State Machine Diagramming](AGENTS/ACTIVE/24_Verified_State_Machine_Diagramming.md)
-
-**Acceptance Criteria Mapping (Gateway Setup)**
-- **AC1:** Invite Code hop le (base64 + du key `stationId/stationName/repoUrl`) moi duoc qua `InviteValidated`; neu sai phai ve `InviteError`.
-- **AC2:** Station chi duoc vao buoc khoi tao du lieu sau khi xac nhan thong tin tram (`StationConfirm` -> `DataSetupChoice`).
-- **AC3:** Station phai chon dung 1 trong 2 nhanh khoi tao: `New DB` hoac `Restore Snapshot`, khong duoc di dong thoi 2 nhanh.
-- **AC4:** Nhanh `Restore Snapshot` chi thanh cong khi co Snapshot ton tai va decrypt/import thanh cong (`RestoreInit` -> `RestoreDone`).
-- **AC5:** He thong chi o trang thai `Ready` sau khi PIN hop le duoc luu secure (`PinSetup` -> `Ready`).
-- **AC6:** Khi Invite Code loi, luong bat buoc retry tu `InviteError` quay lai `InviteCodeInput` (khong duoc bypass).
-
 ---
 
 ## PHẦN 2: THAO TÁC THEO PERSONAS (SAU KHI ĐĂNG NHẬP)
@@ -142,85 +109,7 @@ Hệ thống cung cấp một Menu (Sidebar) với 10 chức năng. Thanh menu n
 ### Tổng quan Luồng hoạt động (what should happen)
 
 Mục tiêu của sơ đồ này là mô tả luồng chuẩn end-to-end từ lúc khởi tạo trạm đến lúc Hub có báo cáo tổng hợp.
-Phần gap analysis và kiểm chứng sâu được đặt ở phụ lục kỹ thuật phía dưới.
-
-```mermaid
-flowchart TD
-    A[Hub Admin provisions Station repo and Invite Code] --> B[Station installs Edge App]
-    B --> C[Station completes Gateway Setup]
-    C --> D{Setup mode}
-    D -->|New DB| E[Initialize empty Station SQLite]
-    D -->|Restore Snapshot| F[Restore latest Snapshot]
-    E --> G[Station sets offline PIN and enters Ready state]
-    F --> G
-
-    G --> H[Daily operations by personas via Sidebar]
-    H --> I[Intake and Queue]
-    I --> J[Clinical recording and results update]
-    J --> K[Reports and local audit checks]
-
-    K --> L[Station creates encrypted Snapshot]
-    L --> M[Station uploads Snapshot to GitHub Releases]
-    M --> N[Hub downloads Snapshots from Stations]
-    N --> O[Hub decrypts and validates Snapshots]
-    O --> P[Hub aggregates data in DuckDB]
-    P --> Q[Hub generates provincial reports]
-```
-
----
-
-## PHỤ LỤC KỸ THUẬT: VERIFIED STATE MACHINE (CHO DEBUG)
-
-### V2 End-to-End State Machine
-
-```mermaid
-stateDiagram-v2
-    [*] --> ProvisionedByHub
-    ProvisionedByHub --> InstalledAtStation: installEdge()
-    InstalledAtStation --> GatewayReady: completeGatewaySetup()
-    GatewayReady --> DailyOps: startDailyOps()
-    DailyOps --> ClinicalDataReady: runIntakeQueueClinical()
-    ClinicalDataReady --> SnapshotReady: createSnapshot()
-    SnapshotReady --> SnapshotPublished: uploadSnapshot()
-    SnapshotPublished --> HubIngested: hubDownload()
-    HubIngested --> HubValidated: decryptAndValidate()
-    HubValidated --> HubAggregated: aggregateDuckDB()
-    HubAggregated --> ReportsGenerated: generateReports()
-    ReportsGenerated --> [*]
-```
-
-**Schema Contracts (End-to-End)**
-| Contract | Fields | Rules |
-|---|---|---|
-| EdgeInstallInput | installerPackage, inviteCode | installerPackage signed, inviteCode required |
-| GatewayConfig | stationConfig, authReady | authReady must be true |
-| ClinicalEvents | patientEvents, observations, delayedResults | events must include encounter reference |
-| SnapshotArtifact | snapshotFile, checksum, releaseTag | checksum required |
-| HubBundle | snapshotBundle, qualityFlags | snapshotBundle not empty |
-| HubAggregate | aggregateTables, aggregateMetrics | aggregate tables consistent with schema |
-| ProvincialReport | reportFiles | at least one output format |
-
-**Dataflow Transactions (End-to-End)**
-| Transition | From | To | Input Contract | Output Contract | Guard | Side Effects |
-|---|---|---|---|---|---|---|
-| installEdge() | ProvisionedByHub | InstalledAtStation | EdgeInstallInput | StationRuntimeReady | package_valid | install_and_boot |
-| completeGatewaySetup() | InstalledAtStation | GatewayReady | InviteCodeInput + SetupMode + PinInput | GatewayConfig | invite_and_pin_valid | store_credentials_and_pin |
-| startDailyOps() | GatewayReady | DailyOps | GatewayConfig | ActiveSession | authReady | open_sidebar_workflow |
-| runIntakeQueueClinical() | DailyOps | ClinicalDataReady | ClinicalEvents | LocalClinicalDataset | activeSession | write_station_sqlite |
-| createSnapshot() | ClinicalDataReady | SnapshotReady | LocalClinicalDataset + EncryptionKeyRef | SnapshotArtifact | db_readable | encrypt_sqlite_to_db_enc |
-| uploadSnapshot() | SnapshotReady | SnapshotPublished | SnapshotArtifact + RepoAuth | SnapshotArtifact | github_auth_success | upload_to_github_releases |
-| hubDownload() | SnapshotPublished | HubIngested | StationRepoList + releaseTag | HubBundle | release_exists | hub_cli_download |
-| decryptAndValidate() | HubIngested | HubValidated | HubBundle + HubKeyRef | DecryptedDbSet + qualityFlags | checksum_valid | decrypt_db_enc |
-| aggregateDuckDB() | HubValidated | HubAggregated | DecryptedDbSet | HubAggregate | decryptedDb_not_empty | duckdb_queries |
-| generateReports() | HubAggregated | ReportsGenerated | HubAggregate | ProvincialReport | report_rules_valid | export_reports |
-
-**Chú thích ký hiệu (Legend)**
-- `Schema Contract`: mô tả cấu trúc dữ liệu (fields + rules).
-- `Dataflow Transaction`: mô tả dữ liệu và side effects đi qua transition.
-- `GUARD`: điều kiện bắt buộc để transition được phép xảy ra.
-- `SE`: Side Effects (ghi DB, goi API, upload, decrypt, aggregate...).
-
-**Note về Mermaid (GitHub render):** áp dụng quy tắc dự án: cứ quá **21 ký tự** trên label thì chủ động xuống dòng thủ công (với flowchart), ưu tiên `A["Line 1<br/>Line 2"]` hoặc markdown string. Riêng `stateDiagram-v2` giữ transition label ngắn (chỉ action) và đưa contracts xuống bảng Markdown ngay bên dưới diagram.
+![End-to-End Workflow Overview](AGENTS/ASSETS/overview_end_to_end.svg)
 
 ---
 

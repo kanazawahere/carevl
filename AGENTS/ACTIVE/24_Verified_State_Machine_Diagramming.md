@@ -179,6 +179,7 @@ Hay tao Verified State Machine voi:
 ```
 
 ## Related Documents
+- [25. Diagram Hub: State Machine & Dataflow Index](25_Diagram_Hub.md)
 - [16. Testing Guidelines](16_Testing_Guidelines.md)
 - [21. API Specification](21_API_Specification.md)
 - [23. Authentication Testing Guide](23_Auth_Testing_Guide.md)
