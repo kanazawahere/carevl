@@ -53,7 +53,8 @@ Feature:
 - Download snapshot tu nhieu repo
 - Giai ma AES-256
 - Aggregate bang DuckDB
-- Tao report Excel/PDF/Parquet
+- Tao report Excel/PDF/Parquet (dau ra Hub buoc 10 trong `overview_end_to_end.svg`)
+- Lien thong batch VNEID / So suc khoe dien tu tu du lieu tong hop (dau ra Hub buoc 11; ke hoach, tach bach voi bao cao tinh)
 - Data quality checks
 - Audit logs
 
@@ -72,6 +73,7 @@ Auth Hub:
 He sinh thai:
 - Edge app moi tram upload snapshot len GitHub Releases
 - Hub app download tat ca snapshot de aggregate
+- Sau aggregate, **hai nhanh dau ra** chuan: bao cao cap tinh (10) va lien thong batch VNEID/SKDT (11) — xem [26. Visualization Catalog](26_Visualization.md) / `overview_end_to_end.svg`
 - Khong co real-time sync; chi pull khi can
 
 Anh kien truc:
@@ -207,3 +209,4 @@ Monorepo hai app giu code dung chung o `shared/`, giu doc tap trung, va de refac
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
 - [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](15_Hub_Aggregation.md)
+- [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11, fork dau ra Hub)

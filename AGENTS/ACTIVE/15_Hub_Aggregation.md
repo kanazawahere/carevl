@@ -12,6 +12,8 @@ Hub can tong hop du lieu tu 10-50 tram, moi tram mot snapshot SQLite ma hoa. Muc
 - Chay data quality checks
 - Theo doi audit logs
 
+**Khuon E2E (khong hieu nham):** sau tong hop DuckDB, luong chuan tach **hai dau ra Hub** nhu `overview_end_to_end.svg`: (10) bao cao cap tinh; (11) lien thong batch VNEID / So suc khoe dien tu. Tai lieu Hub khong duoc mo ta hop am chi mot nhanh neu no anh huong thiet ke buoc 11. Xem [26. Visualization Catalog](26_Visualization.md).
+
 Rang buoc:
 - Khong co budget cho database server
 - Admin Hub chi biet Python co ban
@@ -359,7 +361,7 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "CareVL Hub D
 - Test report generation
 
 **Integration tests:**
-- End-to-end: download -> decrypt -> aggregate -> report
+- End-to-end: download -> decrypt -> aggregate -> (10) bao cao cap tinh va / hoac (11) lien thong batch VNEID/SKDT (theo pham vi release)
 - Test voi du lieu that tu 2-3 tram
 - Validate output Excel/Parquet
 
@@ -375,4 +377,5 @@ DuckDB la embedded database nhanh, ho tro SQL day du, va doc truc tiep SQLite qu
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
 - [09. Phase 2 Schema Spec](09_Phase2_Schema_Spec.md)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
+- [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11)
 - [../FEATURES/7_xuat_du_lieu_hub.md](../FEATURES/7_xuat_du_lieu_hub.md)

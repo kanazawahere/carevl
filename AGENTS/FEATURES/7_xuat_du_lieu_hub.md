@@ -10,6 +10,8 @@
 ## Context
 Tram can day snapshot du lieu len Hub de sao luu, dong bo, va tong hop. He thong phai chay duoc ca luc nguoi dung bam tay, ca luc co Active Sync.
 
+Phia Hub, sau khi nhan va xu ly snapshot (buoc 6–9 trong `overview_end_to_end.svg`), **hai dau ra chuan** la bao cao cap tinh (10) va lien thong batch VNEID/SKDT (11); xem bang buoc trong [26. Visualization Catalog](../ACTIVE/26_Visualization.md). Feature nay phu trach **canh Edge** cua day snapshot; khong mo ta day du pipeline Hub nhung **khong duoc** ngam dinh Hub chi co bao cao tinh.
+
 ## Decision
 Dung man hinh `GET /admin/backups` cho Persona D quan ly snapshot va sync.
 
@@ -38,3 +40,4 @@ Snapshot ma hoa giu an toan du lieu khi roi khoi Edge. GitHub Releases dong vai 
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](../ACTIVE/07_active_sync_protocol.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](../ACTIVE/15_Hub_Aggregation.md)
 - [18. Two-App Architecture: Edge vs Hub](../ACTIVE/18_Two_App_Architecture.md)
+- [26. Visualization Catalog](../ACTIVE/26_Visualization.md)

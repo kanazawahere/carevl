@@ -4,6 +4,8 @@
 [Active]
 
 ## Context
+**Khong nham:** tai lieu nay la **workflow Git** (nhanh `main` / `canary`), **khong** phai luong nghiep vu end-to-end tram → snapshot → Hub. Luong nghiep vu chuan (buoc 1–11, hai dau ra Hub) xem [26. Visualization Catalog — `overview_end_to_end.svg`](26_Visualization.md).
+
 Can luong branch ro de phat trien hang ngay, hotfix, va dua code on dinh ra ban dung that ma khong lam rot `main`.
 
 ## Decision
@@ -39,3 +41,4 @@ Hai nhanh giu doi van toc va do an toan can bang. `canary` cho phep chay nhanh. 
 ## Related Documents
 - [04. Development Guidelines & Troubleshooting](04_Development_Guidelines.md)
 - [16. Testing Guidelines](16_Testing_Guidelines.md)
+- [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E nghiep vu, khac file nay)

@@ -118,12 +118,13 @@ Quyet dinh chot:
 6. DuckDB thuoc Hub, khong nam trong Edge
 
 ## Rationale
-Schema nay giu UI Edge van nhe, nhung du lieu ben duoi sach hon, de query hon, va de day sang Hub de tong hop. Tach bang theo y nghia y khoa giup bao cao, audit, migrate, va lien thong sau nay de di dung huong FHIR.
+Schema nay giu UI Edge van nhe, nhung du lieu ben duoi sach hon, de query hon, va de day sang Hub de tong hop. Tach bang theo y nghia y khoa giup bao cao, audit, migrate, va lien thong sau nay de di dung huong FHIR. Dinh danh nghiep vu (CCCD, VNeID, BHYT) la nguon cho ca **bao cao tong hop** va **lien thong batch** o Hub (buoc 10 vs 11 trong `overview_end_to_end.svg`); khong dong nhat “co VNeID trong schema” voi “chi co mot kenh xuat”.
 
 ## Related Documents
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](15_Hub_Aggregation.md)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
+- [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11)
 - [FHIR Patient R4](https://www.hl7.org/fhir/r4/patient.html)
 - [FHIR Encounter R4](https://www.hl7.org/fhir/R4/encounter.html)
 - [FHIR Observation R4](https://www.hl7.org/fhir/r4/observation.html)

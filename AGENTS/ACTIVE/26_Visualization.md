@@ -95,11 +95,23 @@ Tach ro: catalog ky thuat (vector + mermaid) vs huong dan nguoi dung (screenshot
 ### `overview_end_to_end.svg`
 ![End-to-end overview](../ASSETS/overview_end_to_end.svg)
 
-| Giai doan | Muc tieu |
+**Khuon nghiep vu chuan (truth source cho trien khai):** SVG la ban danh so buoc 1–11. Tai lieu khac chi duoc mo ta chi tiet hon hoac lat cat (workflow_1/2/3), **khong duoc** ngam dinh mot luong Hub chi co mot dau ra neu no xung dot voi buoc 10 vs 11.
+
+| Buoc | Muc tieu (tom tat) |
 |---|---|
-| Setup -> Van hanh | Tram hoat dong hang ngay |
-| Xuat du lieu | Snapshot len Hub |
-| Tong hop | Bao cao cap tinh |
+| 1 | Hub Admin: repo + PAT + invite |
+| 2 | Cai dat tram (Edge tren Windows) |
+| 3 | Gateway: invite / du lieu / PIN |
+| 4 | Van hanh hang ngay (tiep nhan, hang doi, lam sang, ket qua) |
+| 5 | Bao cao + audit **tai tram** |
+| 6 | Tao snapshot: SQLite → `.db.enc` |
+| 7 | Upload snapshot (GitHub Releases) |
+| 8 | Hub tai snapshot tu cac repo tram |
+| 9 | Hub: giai ma → tong hop DuckDB |
+| 10 | **Dau ra 1:** bao cao cap tinh (Excel / PDF / Parquet) |
+| 11 | **Dau ra 2:** lien thong batch (VNEID / So suc khoe dien tu) — canh bao cao tinh, khong thay the |
+
+Sau buoc 9, luong re **hai nhanh song song** (10 va 11), khong hop nhat thanh mot hop duy nhat trong van ban ky thuat.
 
 ---
 

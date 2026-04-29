@@ -1,15 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="640" viewBox="0 0 1400 640">
   <defs>
     <style>
-      .title { font: 700 24px Arial, sans-serif; fill: #0f172a; }
+      .title    { font: 700 24px Arial, sans-serif; fill: #0f172a; }
       .subtitle { font: 500 14px Arial, sans-serif; fill: #334155; }
-      .box { fill: #f8fafc; stroke: #475569; stroke-width: 2; rx: 10; ry: 10; }
+      .box      { fill: #f8fafc; stroke: #475569; stroke-width: 2; }
       .sectionA { fill: #e0f2fe; }
       .sectionB { fill: #dcfce7; }
       .sectionC { fill: #fef3c7; }
-      .label { font: 600 14px Arial, sans-serif; fill: #0f172a; }
-      .small { font: 500 12px Arial, sans-serif; fill: #1e293b; }
-      .arrow { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrowHead); }
+      .sectionD { fill: #ede9fe; }
+      .label    { font: 600 14px Arial, sans-serif; fill: #0f172a; }
+      .small    { font: 500 12px Arial, sans-serif; fill: #1e293b; }
+      .arrow    { stroke: #334155; stroke-width: 2.5; fill: none; marker-end: url(#arrowHead); }
+      .stem     { stroke: #334155; stroke-width: 2.5; fill: none; }
     </style>
     <marker id="arrowHead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
       <path d="M0,0 L8,4 L0,8 Z" fill="#334155"/>
@@ -17,64 +19,73 @@
   </defs>
 
   <text x="40" y="42" class="title">CareVL End-to-End Workflow (Overview)</text>
-  <text x="40" y="68" class="subtitle">Hub Admin provisioning -> Station setup -> Daily ops -> Snapshot -> GitHub -> Hub pipeline -> Reports</text>
+  <text x="40" y="68" class="subtitle">Hub Admin provisioning &#x2192; Station setup &#x2192; Daily ops &#x2192; Snapshot &#x2192; GitHub &#x2192; Hub pipeline &#x2192; VNEID + Reports</text>
 
-  <!-- Row 1: Station-side until operations -->
-  <rect x="40" y="100" width="220" height="70" class="box sectionA"/>
-  <text x="58" y="128" class="label">1) Hub Admin</text>
-  <text x="58" y="148" class="small">Repo + PAT + Invite Code</text>
+  <!-- Row 1: Station-side -->
+  <rect x="40"   y="100" width="220" height="70" rx="10" ry="10" class="box sectionA"/>
+  <text x="58"  y="128" class="label">1) Hub Admin</text>
+  <text x="58"  y="148" class="small">Repo + PAT + Invite Code</text>
 
-  <rect x="300" y="100" width="220" height="70" class="box sectionA"/>
+  <rect x="300"  y="100" width="220" height="70" rx="10" ry="10" class="box sectionA"/>
   <text x="318" y="128" class="label">2) Station install</text>
   <text x="318" y="148" class="small">Edge app on Windows</text>
 
-  <rect x="560" y="100" width="220" height="70" class="box sectionA"/>
+  <rect x="560"  y="100" width="220" height="70" rx="10" ry="10" class="box sectionA"/>
   <text x="578" y="128" class="label">3) Gateway setup</text>
   <text x="578" y="148" class="small">Invite / data / PIN</text>
 
-  <rect x="820" y="100" width="220" height="70" class="box sectionB"/>
+  <rect x="820"  y="100" width="220" height="70" rx="10" ry="10" class="box sectionB"/>
   <text x="838" y="128" class="label">4) Daily operations</text>
   <text x="838" y="148" class="small">Intake / queue / clinical / results</text>
 
-  <rect x="1080" y="100" width="220" height="70" class="box sectionB"/>
+  <rect x="1080" y="100" width="220" height="70" rx="10" ry="10" class="box sectionB"/>
   <text x="1098" y="128" class="label">5) Local reports</text>
   <text x="1098" y="148" class="small">Station reports + audit</text>
 
-  <!-- Row 2: Snapshot path then Hub -->
-  <rect x="170" y="290" width="240" height="80" class="box sectionC"/>
+  <!-- Row 2: Snapshot → Hub -->
+  <rect x="170"  y="290" width="240" height="80" rx="10" ry="10" class="box sectionC"/>
   <text x="190" y="322" class="label">6) Create snapshot</text>
-  <text x="190" y="344" class="small">SQLite -> encrypted .db.enc</text>
+  <text x="190" y="344" class="small">SQLite &#x2192; encrypted .db.enc</text>
 
-  <rect x="470" y="290" width="240" height="80" class="box sectionC"/>
+  <rect x="470"  y="290" width="240" height="80" rx="10" ry="10" class="box sectionC"/>
   <text x="490" y="322" class="label">7) Upload snapshot</text>
   <text x="490" y="344" class="small">GitHub Releases asset</text>
 
-  <rect x="770" y="290" width="240" height="80" class="box sectionC"/>
+  <rect x="770"  y="290" width="240" height="80" rx="10" ry="10" class="box sectionC"/>
   <text x="790" y="322" class="label">8) Hub download</text>
   <text x="790" y="344" class="small">Pull from station repos</text>
 
-  <rect x="1070" y="290" width="240" height="80" class="box sectionC"/>
+  <rect x="1070" y="290" width="240" height="80" rx="10" ry="10" class="box sectionC"/>
   <text x="1090" y="322" class="label">9) Hub process</text>
-  <text x="1090" y="344" class="small">Decrypt then DuckDB aggregate</text>
+  <text x="1090" y="344" class="small">Decrypt &#x2192; DuckDB aggregate</text>
 
-  <rect x="560" y="480" width="280" height="90" class="box"/>
-  <text x="582" y="515" class="label">10) Provincial reports</text>
-  <text x="582" y="538" class="small">Excel / PDF / Parquet</text>
+  <!-- Row 3: Two outputs — fork below box 9 -->
+  <rect x="700"  y="480" width="260" height="80" rx="10" ry="10" class="box"/>
+  <text x="722" y="513" class="label">10) Provincial reports</text>
+  <text x="722" y="535" class="small">Excel / PDF / Parquet</text>
 
-  <!-- Row1: left to right -->
-  <path d="M260 135 L300 135" class="arrow"/>
-  <path d="M520 135 L560 135" class="arrow"/>
-  <path d="M780 135 L820 135" class="arrow"/>
+  <rect x="1060" y="480" width="260" height="80" rx="10" ry="10" class="box sectionD"/>
+  <text x="1082" y="513" class="label">11) VNEID push</text>
+  <text x="1082" y="535" class="small">So suc khoe dien tu (batch)</text>
+
+  <!-- Row 1 arrows: 1→2→3→4→5 -->
+  <path d="M260  135 L300  135" class="arrow"/>
+  <path d="M520  135 L560  135" class="arrow"/>
+  <path d="M780  135 L820  135" class="arrow"/>
   <path d="M1040 135 L1080 135" class="arrow"/>
 
-  <!-- Daily ops (4) -> snapshot chain: clear orthogonal -->
+  <!-- Daily ops (4) → snapshot chain -->
   <path d="M930 170 L930 250 L290 250 L290 290" class="arrow"/>
 
-  <!-- Row2: 6 -> 7 -> 8 -> 9 (left to right) -->
-  <path d="M410 330 L470 330" class="arrow"/>
-  <path d="M710 330 L770 330" class="arrow"/>
+  <!-- Row 2 arrows: 6→7→8→9 -->
+  <path d="M410  330 L470  330" class="arrow"/>
+  <path d="M710  330 L770  330" class="arrow"/>
   <path d="M1010 330 L1070 330" class="arrow"/>
 
-  <!-- 9 -> 10 -->
-  <path d="M1190 370 L1190 440 L700 440 L700 480" class="arrow"/>
+  <!-- Fork from box 9 → shared stem (no arrowhead) -->
+  <path d="M1190 370 L1190 420" class="stem"/>
+  <!-- Fork left branch → 10) Provincial reports -->
+  <path d="M1190 420 L830 420 L830 480" class="arrow"/>
+  <!-- Fork right branch → 11) VNEID push -->
+  <path d="M1190 420 L1190 480" class="arrow"/>
 </svg>

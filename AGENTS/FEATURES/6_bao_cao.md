@@ -18,7 +18,7 @@ Dung man hinh `GET /reports` lam dashboard bao cao.
 - Ho tro xuat thong tin de doi chieu va nop bao cao.
 
 ## Rationale
-Bao cao tap trung giup quyet dinh nhanh. Doc tai cho duoc, xuat di duoc. Kien truc nay cung hop voi luong tong hop DuckDB o Hub.
+Bao cao tap trung giup quyet dinh nhanh. Doc tai cho duoc, xuat di duoc. Kien truc nay cung hop voi luong tong hop DuckDB o Hub. Trong so do E2E: bao cao **tai tram** la buoc 5; bao cao **cap tinh sau DuckDB** la buoc 10 — tach khoi buoc 11 (VNEID/SKDT batch).
 
 ## Related Endpoints
 - `GET /reports`
@@ -36,3 +36,4 @@ Bao cao tap trung giup quyet dinh nhanh. Doc tai cho duoc, xuat di duoc. Kien tr
 - [Sidebar UI Architecture](sidebar_ui.md)
 - [4. Nhap lieu (Aggregate)](4_nhap_lieu_aggregate.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](../ACTIVE/15_Hub_Aggregation.md)
+- [26. Visualization Catalog](../ACTIVE/26_Visualization.md) (`overview_end_to_end.svg`)

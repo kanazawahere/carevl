@@ -17,6 +17,8 @@ Dung man hinh `GET /audit` cho Persona D xem audit va quan ly lien thong.
 - Ghi nhan cac su kien lien thong voi he thong ngoai.
 - Doc va loc `AuditEvent` theo thoi gian, nguoi dung, doi tuong.
 
+**Anh xa E2E:** lien thong **day du lieu ra** (VNEID / So suc khoe dien tu, batch o cap Hub) la **buoc 11** trong `overview_end_to_end.svg`; man audit Edge va pipeline Hub **bo sung** nhau (truy vet vs kenh xuat), khong gop thanh mot man duy nhat trong van ban thiet ke.
+
 ## Rationale
 Audit ro rang giup van hanh an tam hon, de doi chieu hon, va dung huong voi yeu cau truy vet trong he thong y te.
 
@@ -36,3 +38,4 @@ Audit ro rang giup van hanh an tam hon, de doi chieu hon, va dung huong voi yeu 
 - [Sidebar UI Architecture](sidebar_ui.md)
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](../ACTIVE/07_active_sync_protocol.md)
 - [10. Quy che van hanh](../ACTIVE/10_Quy_Che_Van_Hanh.md)
+- [26. Visualization Catalog](../ACTIVE/26_Visualization.md) (`overview_end_to_end.svg`, buoc 11)

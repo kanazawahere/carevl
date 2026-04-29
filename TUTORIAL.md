@@ -110,7 +110,7 @@ Hệ thống cung cấp một Menu (Sidebar) với 10 chức năng. Thanh menu n
 
 ### Tổng quan Luồng hoạt động (what should happen)
 
-Mục tiêu của sơ đồ này là mô tả luồng chuẩn end-to-end từ lúc khởi tạo trạm đến lúc Hub có báo cáo tổng hợp.
+Mục tiêu của sơ đồ này là mô tả **luồng chuẩn end-to-end có đánh số bước (1–11)** từ cấp phép Hub → cài trạm → vận hành → snapshot → GitHub → xử lý Hub. Sau khi Hub tổng hợp (bước 9), hệ thống **tách hai đầu ra**: **báo cáo cấp tỉnh** (tệp Excel/PDF/Parquet) và **kênh liên thông batch** (VNEID / Sổ sức khỏe điện tử) — hai hướng này **song song**, không gộp thành một ý “chỉ có báo cáo”. Chi tiết kỹ thuật và bảng tương ứng: [Visualization Catalog](AGENTS/ACTIVE/26_Visualization.md) (`overview_end_to_end.svg`).
 ![End-to-End Workflow Overview](AGENTS/ASSETS/overview_end_to_end.svg)
 
 ---
