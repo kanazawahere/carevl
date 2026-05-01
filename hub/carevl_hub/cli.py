@@ -9,6 +9,10 @@ from typing import Optional
 import typer
 
 from carevl_hub.admin import admin_app
+from carevl_hub.aggregator import DuckDBAggregator
+from carevl_hub.config import load_settings
+from carevl_hub.crypto import decrypt_file, validate_sqlite_integrity
+from carevl_hub.downloader import GitHubDownloader
 
 app = typer.Typer(
     name="carevl-hub",
@@ -81,14 +85,34 @@ def download(
     latest: bool = typer.Option(False, help="Download latest snapshots")
 ):
     """Download encrypted snapshots from GitHub"""
-    typer.echo("Downloading snapshots...")
-    
-    # TODO: Implement download
-    # - List repos in org
-    # - List releases
-    # - Download .db.enc files
-    
-    typer.echo("✓ Download completed")
+    settings = load_settings()
+    output_dir = settings.snapshots_dir
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    repo_list = [item.strip() for item in repos.split(",") if item.strip()] if repos else None
+
+    typer.echo(f"Downloading snapshots into {output_dir}...")
+    typer.echo(f"GitHub owner: {settings.github_org}")
+    if repo_list:
+        typer.echo(f"Repos: {', '.join(repo_list)}")
+    elif latest:
+        typer.echo("Repos: all accessible repos, latest release only")
+
+    downloader = GitHubDownloader(token=settings.github_token, org=settings.github_org)
+    downloaded_files = downloader.download_snapshots(
+        output_dir=output_dir,
+        date=date,
+        repos=repo_list,
+        latest=latest,
+    )
+
+    if not downloaded_files:
+        typer.echo("No snapshot assets downloaded.")
+        raise typer.Exit(1)
+
+    typer.echo(f"✓ Download completed: {len(downloaded_files)} file(s)")
+    for path in downloaded_files:
+        typer.echo(f"  - {path}")
 
 
 @app.command()
@@ -97,14 +121,27 @@ def decrypt(
     output_dir: Path = typer.Option(..., help="Output directory for decrypted .db files")
 ):
     """Decrypt encrypted snapshots"""
+    settings = load_settings()
     typer.echo(f"Decrypting snapshots from {input_dir}...")
-    
-    # TODO: Implement decryption
-    # - Scan for .db.enc files
-    # - Decrypt using shared.crypto
-    # - Validate SQLite integrity
-    
-    typer.echo("✓ Decryption completed")
+
+    enc_files = sorted(input_dir.rglob("*.db.enc"))
+    if not enc_files:
+        typer.echo("No .db.enc files found.")
+        raise typer.Exit(1)
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    key = settings.encryption_key.encode("utf-8")
+    decrypted_files: list[Path] = []
+
+    for enc_file in enc_files:
+        relative_parent = enc_file.parent.relative_to(input_dir)
+        output_path = output_dir / relative_parent / enc_file.name[:-4]
+        decrypt_file(str(enc_file), str(output_path), key=key)
+        validate_sqlite_integrity(output_path)
+        decrypted_files.append(output_path)
+        typer.echo(f"  - {output_path}")
+
+    typer.echo(f"✓ Decryption completed: {len(decrypted_files)} file(s)")
 
 
 @app.command()
@@ -113,14 +150,42 @@ def aggregate(
     output: Path = typer.Option(..., help="Output file (.parquet, .db, .csv)")
 ):
     """Aggregate data from multiple stations using DuckDB"""
+    settings = load_settings()
     typer.echo(f"Aggregating data from {input_dir}...")
-    
-    # TODO: Implement aggregation
-    # - Attach all SQLite databases
-    # - Run DuckDB queries
-    # - Export to Parquet/CSV
-    
-    typer.echo(f"✓ Aggregation completed: {output}")
+
+    db_files = sorted(input_dir.rglob("*.db"))
+    if not db_files:
+        typer.echo("No decrypted .db files found.")
+        raise typer.Exit(1)
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    duckdb_path = output if output.suffix.lower() in {".duckdb", ".db"} else None
+    aggregator = DuckDBAggregator(
+        memory_limit=settings.duckdb_memory_limit,
+        threads=settings.duckdb_threads,
+    )
+
+    try:
+        aggregator.connect(db_path=duckdb_path)
+        aggregator.attach_databases(db_files)
+        counts = aggregator.aggregate_all()
+
+        if output.suffix.lower() == ".parquet":
+            parquet_dir = output.parent / output.stem
+            aggregator.export_to_parquet(parquet_dir)
+            typer.echo(f"Parquet exported to {parquet_dir}")
+        elif output.suffix.lower() in {".duckdb", ".db"}:
+            typer.echo(f"DuckDB file written to {output}")
+        else:
+            typer.echo("Unsupported output suffix. Use `.duckdb`, `.db`, or `.parquet`.")
+            raise typer.Exit(1)
+    finally:
+        aggregator.close()
+
+    typer.echo(
+        "✓ Aggregation completed: "
+        + ", ".join(f"{table}={count}" for table, count in counts.items())
+    )
 
 
 @app.command()

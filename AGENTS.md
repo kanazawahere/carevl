@@ -36,6 +36,15 @@
    - Day file cu qua `ARCHIVE`
    - Cap nhat link trong `AGENTS.md`
 
+6. **Khi file ADR cu da bi thay doi boi thiet ke moi, uu tien giu so cu lam `deprecated pointer`**
+   - Neu file cu dang duoc link rong, **khong nen** viet de no tiep tuc gia lam truth source
+   - Thay vao do:
+     - doi `## Status` thanh `[Deprecated]`
+     - ghi ro file cu mo ta flow nao da het hieu luc
+     - tro sang ADR moi trong `ACTIVE`
+   - Muc tieu: **giu so cu de khong vo link lich su**, nhung khong de nguoi doc hieu nham flow cu la flow dang song
+   - Chi day file cu qua `ARCHIVE` khi chac chan link cu/tham chieu cu khong con can giu on dinh
+
 ## Development Environment (Bat buoc)
 
 **Python = uv, uv = python**
@@ -119,6 +128,10 @@ Quyet dinh dang song cua he thong.
 - [28. Edge: Phạm vi Cài đặt trạm sau provision (`/settings`)](AGENTS/ACTIVE/28_Edge_Station_Settings_Scope.md)
 - [29. Hub Operator GUI (Streamlit)](AGENTS/ACTIVE/29_Hub_Operator_Gui_Streamlit.md)
 - [30. Hub Auto-Provisioning: Device Flow + Classic PAT](AGENTS/ACTIVE/30_Hub_Auto_Provisioning.md)
+- [31. Snapshot Upload via GitHub Actions (không PAT trên trạm)](AGENTS/ACTIVE/31_Snapshot_Upload_Via_GitHub_Actions.md)
+- [32. Hub Download & Process After GitHub Actions Release](AGENTS/ACTIVE/32_Hub_Download_And_Process_After_Actions.md)
+- [33. Invite Code Authentication: Deploy Key First](AGENTS/ACTIVE/33_Invite_Code_Authentication_Deploy_Key_First.md)
+- [34. Active Sync via Git Push and GitHub Actions](AGENTS/ACTIVE/34_Active_Sync_Via_Git_Push_And_Actions.md)
 
 ---
 
@@ -151,4 +164,4 @@ Quyet dinh da bo. Giu lai de biet vi sao khong di huong cu.
 
 ---
 
-*Cap nhat lan cuoi: 2026-04-29 20:30:00*
+*Cap nhat lan cuoi: 2026-05-01 12:05:00*

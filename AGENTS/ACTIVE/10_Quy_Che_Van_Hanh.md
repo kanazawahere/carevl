@@ -123,5 +123,5 @@ Mot tram mot danh tinh giu trach nhiem ro, truy vet ro, va tong hop ro. Tach ro 
 ## Related Documents
 - [08. Huong Dan Admin](08_Huong_Dan_Admin.md)
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
-- [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)

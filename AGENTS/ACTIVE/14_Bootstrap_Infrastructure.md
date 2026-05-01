@@ -61,4 +61,4 @@ Muc tieu la zero-config cho tram, giam thao tac tay, va cho phep chay lai an toa
 ## Related Documents
 - [04. Development Guidelines & Troubleshooting](04_Development_Guidelines.md)
 - [16. Testing Guidelines](16_Testing_Guidelines.md)
-- [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)

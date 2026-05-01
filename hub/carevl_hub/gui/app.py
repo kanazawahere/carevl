@@ -10,13 +10,24 @@ Tabs:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
 from carevl_hub.db import init_db
 from carevl_hub.gui import tab_config, tab_health, tab_invite, tab_stations
-from carevl_hub.gui.session import init_session_defaults, try_load_local_state
+from carevl_hub.gui.session import init_session_defaults, local_state_path, try_load_local_state
 
 init_db()
+
+
+def _local_state_path():
+    return local_state_path()
+
+
+def _config_fields_diagram_path():
+    path = Path(__file__).resolve().parent / "assets" / "hub_operator_config_fields.svg"
+    return path if path.is_file() else None
 
 
 def main() -> None:

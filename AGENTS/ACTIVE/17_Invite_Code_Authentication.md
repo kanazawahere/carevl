@@ -1,154 +1,35 @@
-# Invite Code Authentication: Fine-grained PAT Provisioning
+# 17. Invite Code Authentication: Fine-grained PAT Provisioning
 
 ## Status
-[Active - Implemented]
-
-Test Status: ✅ Fully tested (17/17 tests passing) — PAT flow
-- Unit tests: `edge/tests/test_auth_flow.py`
-- Manual demo: `edge/tests/manual_auth_test.py`
-- SSH deploy key flow: 🚧 tests cần cập nhật
+[Deprecated]
 
 ## Context
-CareVL can cach xac thuc don gian cho tram:
-- khong can backend server
-- khong doi ky nang Git/GitHub/OAuth
-- chi dua vao GitHub
-- setup trong khoang 5 phut
 
-Rang buoc:
-- khong co ngan sach infrastructure
-- nguoi dung cuoi khong biet Git
-- van phai du an toan cho du lieu y te cong dong
+File nay mo ta quyet dinh cu:
+- invite code chua `pat`
+- tram clone/push bang PAT
+- restore/download dua tren PAT flow
+
+He thong hien tai da doi sang:
+- invite code uu tien `ssh_private_key`
+- tram clone/push bang SSH deploy key
+- PAT tren invite/tram chi con duong legacy backward-compatible
 
 ## Decision
-Dung GitHub Fine-grained PAT voi Invite Code provisioning.
 
-### Mo hinh cot loi
-- `1 repo = 1 may tram`, khong phai `1 user`
-- Doi may thi dung lai invite code cu, chon `Restore`, pull du lieu ve
-- Khong gan voi GitHub account ca nhan
+Khong dung file nay lam truth source cho authentication flow nua.
 
-Vi du:
-- `station-001` repo -> may so 1 tai mot tram
-- May hong -> cai may moi -> nhap lai invite code -> restore du lieu
-
-### Snapshot luu dau
-- Dung GitHub Releases
-- File ten: `FINAL_{SITE_ID}_YYYY-MM-DDTHH-mm-ss.db.enc`
-- PAT phai co `Contents: write`
-- Khong commit SQLite vao code repo
-
-### Hub workflow
-1. Dung script Python list releases tu nhieu repo
-2. Download `.db.enc`
-3. Giai ma bang `ENCRYPTION_KEY`
-4. Aggregate bang DuckDB, co the query truc tiep SQLite qua `sqlite_scan(...)`
-5. Tao bao cao tong hop
-
-### Kien truc setup
-```text
-Hub Admin mot lan:
-1. Tao bot account
-2. Tao nhieu repo
-3. Tao nhieu PAT fine-grained
-4. Xuat invite code
-5. Gui code qua Zalo/Email
-
-Tram:
-1. Nhap invite code
-2. App parse code
-3. Luu PAT vao Credential Manager
-4. Git clone/pull voi PAT
-5. Setup PIN
-6. Ready
-```
-
-### Technical implementation
-
-**Hub Admin (1 lần đầu):**
-1. Tạo bot GitHub account, bật 2FA
-2. Tạo Classic PAT (scope: `repo`) → lưu vào Hub GUI Tab Cấu hình
-
-**Hub Admin (mỗi trạm):**
-1. Tab "🎫 Tạo mã kích hoạt" → điền Station ID + Tên trạm
-2. Bấm "🚀 Tạo trạm" → GUI tự động:
-   - Tạo private repo (`github_api.py → create_repo()`)
-   - Sinh Ed25519 SSH key pair in RAM (`generate_ssh_keypair()`)
-   - Gắn public key làm deploy key vào repo (`create_deploy_key()`)
-   - Encode invite code chứa `ssh_private_key` (`admin.py → encode_invite_code()`)
-3. Copy invite code → gửi trạm qua Zalo/Email
-
-**Trạm Edge:**
-1. Dán invite code → `InviteCodeData` parse JSON
-2. `auth_type = "ssh"` nếu có `ssh_private_key`, `"pat"` nếu có `pat`
-3. Lưu credential vào Windows Credential Manager
-4. `git_operations.py` clone/push:
-   - SSH: viết key ra temp file → `GIT_SSH_COMMAND` → xóa temp file
-   - PAT: inject vào HTTPS URL (backward compatible)
-5. Setup PIN
-
-**Chi tiết quan trọng:**
-- Deploy key tạo được qua API (khác PAT), chỉ có quyền trên 1 repo
-- SSH private key lưu secure trong Windows Credential Manager
-- Invite code cũ (có `pat`) vẫn hoạt động — backward compatible
-- Temp SSH key file tự xóa sau khi dùng (`missing_ok=True`)
-- **Windows:** ghi key file với `newline="\n"` (LF, không CRLF) — OpenSSH từ chối CRLF
-- **Windows:** dùng `icacls` thay `chmod` để set permission — OpenSSH từ chối key nếu file có quyền quá rộng
-
-### Security analysis
-Threat chinh va giam thieu:
-- PAT lo qua Zalo/Email -> chi lo `1` repo; co the revoke ngay
-- PAT bi lay tu may tram -> gioi han anh huong `1` tram; luu trong Credential Manager
-- Bot account bi compromise -> bat `2FA`, chi Hub Admin giu, theo doi audit log
-- Man-in-the-middle -> git dung HTTPS/TLS
-
-Trade-off chap nhan:
-- PAT lo co the lam lo du lieu `1` tram
-- Tao PAT thu cong rat ton tay luc dau
-- Audit chi tiet khong dep nhu he thong co server
-
-### Tai sao khong dung cach khac
-- Khong GitHub App: can server va callback OAuth
-- Khong Device Flow: phuc tap, doi GitHub account, token expire va can refresh
-- Chon fine-grained PAT: scope theo repo, khong can server, khong expire neu dat `No expiration`, UX don gian
-
-### Checklist
-Hub Admin:
-- [x] Tao bot account co `2FA`
-- [x] Tao private repo
-- [x] Tao PAT fine-grained
-- [x] Export invite code
-- [x] Gui code cho tram
-
-Station App:
-- [x] Co UI nhap invite code
-- [x] Parse/validate code
-- [x] Luu PAT vao Credential Manager
-- [x] Clone/pull/push bang PAT
-- [x] Ho tro `New DB` va `Restore DB`
-- [x] Setup PIN
-
-Testing:
-- [x] Test parse invite code (6 tests)
-- [x] Test luu/lay PAT (3 tests)
-- [x] Test clone/push (4 tests)
-- [x] Test revoke PAT (covered in credential tests)
-- [x] Test PAT sai/het han (covered in validation tests)
-- [x] Test PIN encryption (2 tests)
-- [x] Test end-to-end flow (2 tests)
-- [x] **Total: 17/17 tests passing ✅**
-
-Migration:
-- Device Flow da dua vao archive
-- Ly do doi: PAT don gian hon, it buoc hon, khong doi account ca nhan, hop rang buoc khong co server
+Thay vao do:
+- auth/provision hien tai xem [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
+- snapshot sync hien tai xem [31](31_Snapshot_Upload_Via_GitHub_Actions.md) va [34](34_Active_Sync_Via_Git_Push_And_Actions.md)
 
 ## Rationale
-Fine-grained PAT la cach re, de, va vua du an toan trong bai toan nay. Moi tram chi giu quyen tren repo cua no. Hub van tong hop duoc qua snapshot va DuckDB ma khong can backend rieng.
+
+Giu file so cu de bao toan lich su va link cu. Danh dau deprecated de tranh tiep tuc doc nham PAT flow thanh thiet ke dang song.
 
 ## Related Documents
-- [02. SQLite Security & Snapshots](02_SQLite_Security.md)
-- [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
-- [14. Bootstrap Infrastructure: One-Liner Setup](14_Bootstrap_Infrastructure.md)
-- [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
+
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
+- [31. Snapshot Upload via GitHub Actions](31_Snapshot_Upload_Via_GitHub_Actions.md)
 - [23. Authentication Testing Guide](23_Auth_Testing_Guide.md)
 - [../ARCHIVE/17_GitHub_Device_Flow.md](../ARCHIVE/17_GitHub_Device_Flow.md)

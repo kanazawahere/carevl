@@ -21,4 +21,4 @@ WAL giam loi `database is locked` khi doc/ghi dong thoi. Backup API dam bao snap
 ## Related Documents
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
 - [14. Bootstrap Infrastructure: One-Liner Setup](14_Bootstrap_Infrastructure.md)
-- [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)

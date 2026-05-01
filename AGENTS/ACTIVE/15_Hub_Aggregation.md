@@ -20,6 +20,11 @@ Rang buoc:
 - Can chay duoc tren laptop Windows
 - Phai nhanh, du lieu co the len den GB
 
+**Cap nhat sau ADR 31/32/34:**
+- Tram Edge push snapshot vao repo bang SSH deploy key
+- GitHub Actions trong repo publish Release `latest-snapshot`
+- Hub van download tu release asset, khong doc truc tiep git history de aggregate
+
 ## Decision
 Dung DuckDB lam analytics engine cho Hub.
 
@@ -84,8 +89,8 @@ uv run carevl-hub download --latest
 
 Logic:
 - List tat ca repo trong org bang GitHub API
-- Voi moi repo, list releases
-- Filter release theo date hoac tag
+- Voi moi repo, list releases hoac lay `releases/latest`
+- Release ky vong: `latest-snapshot`, do GitHub Actions tao/cap nhat
 - Download file `.db.enc` tu release assets
 - Luu vao `snapshots/{station_id}/{timestamp}.db.enc`
 
@@ -282,6 +287,11 @@ response = httpx.get(
 releases = response.json()
 ```
 
+**Ghi chu van hanh:**
+- Release asset nay la hop dong tai ve chuan cho Hub
+- Neu repo co commit moi trong `snapshots/` nhung chua co release moi, check tab Actions truoc
+- Download layer cua Hub khong can biet tram dung SSH; no chi can thay release asset hop le
+
 **Download asset:**
 ```python
 asset_url = release["assets"][0]["browser_download_url"]
@@ -374,7 +384,8 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "CareVL Hub D
 DuckDB la embedded database nhanh, ho tro SQL day du, va doc truc tiep SQLite qua `sqlite_scan()`. Khong can setup Postgres hay MySQL. CLI don gian giup Admin Hub khong can biet nhieu ky thuat. Parquet lam format trung gian giup tai su dung va chia se du lieu de.
 
 ## Related Documents
-- [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
+- [32. Hub Download & Process After GitHub Actions Release](32_Hub_Download_And_Process_After_Actions.md)
+- [34. Active Sync via Git Push and GitHub Actions](34_Active_Sync_Via_Git_Push_And_Actions.md)
 - [09. Phase 2 Schema Spec](09_Phase2_Schema_Spec.md)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
 - [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11)

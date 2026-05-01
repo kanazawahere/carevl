@@ -20,7 +20,7 @@
     Bước 3: Xuất Dữ liệu &amp; Tổng hợp
   </text>
   <text x="600" y="55" text-anchor="middle" font-size="14" fill="#64748b">
-    Edge App → GitHub → Hub App (Two-App Architecture)
+    Edge App → Git push → GitHub Actions/Releases → Hub App
   </text>
 
   <!-- Edge App (Station) -->
@@ -59,25 +59,25 @@
 
   <!-- Arrow to GitHub -->
   <line x1="620" y1="260" x2="670" y2="260" stroke="#dc2626" stroke-width="3" marker-end="url(#arrowhead-red)"/>
-  <text x="645" y="250" text-anchor="middle" font-size="11" fill="#dc2626">Upload</text>
+  <text x="645" y="250" text-anchor="middle" font-size="11" fill="#dc2626">Git push</text>
 
-  <!-- GitHub Releases -->
+  <!-- GitHub Actions + Releases -->
   <g id="github">
     <rect x="670" y="90" width="280" height="380" fill="#f1f5f9" stroke="#64748b" stroke-width="3" rx="8"/>
-    <text x="810" y="120" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">GitHub Releases</text>
-    <text x="810" y="140" text-anchor="middle" font-size="12" fill="#475569">(Data Transport Layer)</text>
+    <text x="810" y="120" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e293b">GitHub Repo + Actions</text>
+    <text x="810" y="140" text-anchor="middle" font-size="12" fill="#475569">(snapshots/ + latest-snapshot release)</text>
     
     <!-- Station 001 -->
     <rect x="690" y="160" width="240" height="60" fill="#64748b" stroke="#475569" stroke-width="2" rx="5" filter="url(#shadow)"/>
     <text x="810" y="180" text-anchor="middle" fill="white" font-size="12" font-weight="bold">station-001 repo</text>
-    <text x="810" y="198" text-anchor="middle" fill="white" font-size="10">Release: 2026-04-28</text>
-    <text x="810" y="213" text-anchor="middle" fill="white" font-size="10">carevl-20260428.db.enc</text>
+    <text x="810" y="198" text-anchor="middle" fill="white" font-size="10">snapshots/FINAL_TRAM_001_...</text>
+    <text x="810" y="213" text-anchor="middle" fill="white" font-size="10">Release asset: latest-snapshot</text>
     
     <!-- Station 002 -->
     <rect x="690" y="235" width="240" height="60" fill="#64748b" stroke="#475569" stroke-width="2" rx="5" filter="url(#shadow)"/>
     <text x="810" y="255" text-anchor="middle" fill="white" font-size="12" font-weight="bold">station-002 repo</text>
-    <text x="810" y="273" text-anchor="middle" fill="white" font-size="10">Release: 2026-04-28</text>
-    <text x="810" y="288" text-anchor="middle" fill="white" font-size="10">carevl-20260428.db.enc</text>
+    <text x="810" y="273" text-anchor="middle" fill="white" font-size="10">snapshots/FINAL_TRAM_002_...</text>
+    <text x="810" y="288" text-anchor="middle" fill="white" font-size="10">Release asset: latest-snapshot</text>
     
     <!-- Dots -->
     <text x="810" y="320" text-anchor="middle" font-size="20" fill="#94a3b8">...</text>
@@ -85,8 +85,8 @@
     <!-- Station 100 -->
     <rect x="690" y="340" width="240" height="60" fill="#64748b" stroke="#475569" stroke-width="2" rx="5" filter="url(#shadow)"/>
     <text x="810" y="360" text-anchor="middle" fill="white" font-size="12" font-weight="bold">station-100 repo</text>
-    <text x="810" y="378" text-anchor="middle" fill="white" font-size="10">Release: 2026-04-28</text>
-    <text x="810" y="393" text-anchor="middle" fill="white" font-size="10">carevl-20260428.db.enc</text>
+    <text x="810" y="378" text-anchor="middle" fill="white" font-size="10">snapshots/FINAL_TRAM_100_...</text>
+    <text x="810" y="393" text-anchor="middle" fill="white" font-size="10">Release asset: latest-snapshot</text>
     
     <text x="810" y="430" text-anchor="middle" font-size="11" fill="#64748b" font-style="italic">Async, offline-friendly</text>
     <text x="810" y="450" text-anchor="middle" font-size="11" fill="#64748b" font-style="italic">No real-time sync needed</text>
@@ -133,9 +133,10 @@
     <text x="70" y="530" font-size="16" font-weight="bold" fill="#1e293b">Luồng dữ liệu chi tiết:</text>
     
     <text x="70" y="560" font-size="13" fill="#475569" font-weight="bold">Edge App (Trạm):</text>
-    <text x="90" y="580" font-size="12" fill="#64748b">• Trưởng trạm click "7. Xuất dữ liệu Hub" → App tự động encrypt SQLite bằng AES-256 → Upload lên GitHub Releases</text>
+    <text x="90" y="580" font-size="12" fill="#64748b">• Trưởng trạm click "7. Xuất dữ liệu Hub" → App encrypt SQLite bằng AES-256 → push file vào repo bằng SSH deploy key</text>
+    <text x="90" y="600" font-size="12" fill="#64748b">• GitHub Actions trong repo tự động publish/cập nhật release `latest-snapshot` từ thư mục `snapshots/`</text>
     
-    <text x="70" y="605" font-size="13" fill="#475569" font-weight="bold">Hub App (Tỉnh):</text>
-    <text x="90" y="625" font-size="12" fill="#64748b">• Admin Hub chạy CLI: `uv run carevl-hub download --date 2026-04-28` → Download 100 snapshots → Decrypt → DuckDB aggregate → Generate reports</text>
+    <text x="70" y="625" font-size="13" fill="#475569" font-weight="bold">Hub App (Tỉnh):</text>
+    <text x="90" y="645" font-size="12" fill="#64748b">• Admin Hub chạy CLI để tải snapshot từ release các repo trạm → Decrypt → DuckDB aggregate → Generate reports</text>
   </g>
 </svg>

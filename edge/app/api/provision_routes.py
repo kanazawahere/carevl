@@ -32,6 +32,14 @@ def _pin_must_be_digits(pin: str) -> None:
         raise HTTPException(status_code=400, detail="PIN must be 6 digits")
 
 
+def _latest_repo_snapshot(repo_dir: Path) -> Path:
+    snapshots_dir = repo_dir / "snapshots"
+    candidates = sorted(snapshots_dir.glob("FINAL_*.db.enc"))
+    if not candidates:
+        raise FileNotFoundError("No snapshot found in repo snapshots/ directory")
+    return candidates[-1]
+
+
 @router.get("/", response_class=HTMLResponse)
 async def provision_page(request: Request):
     """First-time station setup (invite code)."""
@@ -66,7 +74,7 @@ async def setup_new_station(
     db: Session = Depends(get_db),
 ):
     """
-    New station: PAT + optional encryption key in keyring, clone repo, init DB schema, PIN vault.
+    New station: credential + optional encryption key in keyring, clone repo, init DB schema, PIN vault.
     """
     _pin_must_be_digits(pin)
     if is_provisioned(db):
@@ -177,7 +185,10 @@ async def setup_restore_station(
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        enc_path, _name = download_latest_snapshot_enc(data.repo_url, data.pat, tmp_dir)
+        if data.auth_type == "ssh":
+            enc_path = _latest_repo_snapshot(repo_dir)
+        else:
+            enc_path, _name = download_latest_snapshot_enc(data.repo_url, data.pat, tmp_dir)
         aes_key = aes_key_from_invite_field(data.encryption_key)
         if db_path.exists():
             bak = db_path.with_suffix(db_path.suffix + ".pre-restore.bak")
@@ -219,5 +230,5 @@ async def provision_status(db: Session = Depends(get_db)):
     return {
         "provisioned": pat_ok,
         "station_id": station_id,
-        "message": "Station provisioned" if pat_ok else "PAT missing in Credential Manager",
+        "message": "Station provisioned" if pat_ok else "Credential missing in Credential Manager",
     }

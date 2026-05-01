@@ -112,15 +112,7 @@ class CredentialManager:
     
     @staticmethod
     def get_encryption_key(station_id: str) -> Optional[str]:
-        """
-        Retrieve encryption key from Windows Credential Manager
-        
-        Args:
-            station_id: Station identifier
-        
-        Returns:
-            Encryption key or None if not found
-        """
+        """Retrieve encryption key from Windows Credential Manager"""
         try:
             key = keyring.get_password(
                 f"{CredentialManager.SERVICE_NAME}_ENCRYPTION",

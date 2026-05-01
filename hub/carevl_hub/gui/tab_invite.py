@@ -1,12 +1,13 @@
 """
-Tab 1: Tạo mã kích hoạt tự động (Admin PAT + Deploy Key).
+Tab 1: Tạo mã kích hoạt tự động (Admin PAT + Deploy Key + Workflow).
 
 Luồng:
   Admin nhập PAT ở Tab 2 (Cấu hình) → Tab 1 dùng PAT đó để:
   1. Tạo private repo
   2. Sinh Ed25519 SSH key pair (in RAM)
   3. Gắn public key làm deploy key vào repo
-  4. Generate invite code chứa ssh_private_key
+  4. Push GitHub Actions workflow tạo Release tự động
+  5. Generate invite code chứa ssh_private_key
 """
 
 from __future__ import annotations
@@ -130,7 +131,11 @@ def _run_create_station(
             deploy_key_id = deploy_key_info["id"]
         st.success("✅ Deploy key đã gắn vào repo")
 
-        with st.spinner("③ Đang tạo invite code..."):
+        with st.spinner("③ Đang cài workflow release snapshot..."):
+            api.push_release_workflow(owner=owner, repo=repo_name)
+        st.success("✅ Workflow release snapshot đã được cài")
+
+        with st.spinner("④ Đang tạo invite code..."):
             invite_code = encode_invite_code(
                 station_id=station_id,
                 station_name=station_name,

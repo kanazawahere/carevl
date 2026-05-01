@@ -96,7 +96,7 @@ ASCII art  →  Mermaid  →  SVG
 | Edge App (FastAPI + HTMX) | UI + API tai tram |
 | Station SQLite | Du lieu offline-first |
 | Snapshot .db.enc | Backup / dong bo artifact |
-| GitHub Releases | Kenh luu tru snapshot |
+| GitHub repo + Actions + Releases | Kenh nhan snapshot push va phat hanh release asset |
 
 ---
 
@@ -137,7 +137,7 @@ ASCII art  →  Mermaid  →  SVG
 
 | Buoc | Muc tieu |
 |---|---|
-| Hub Admin chuan bi | Repo + PAT + invite |
+| Hub Admin chuan bi | Repo + deploy key + workflow + invite |
 | Station cai dat | Edge app san sang |
 | Kich hoat tram (lan dau) | Invite code + du lieu + PIN |
 
@@ -159,7 +159,7 @@ ASCII art  →  Mermaid  →  SVG
 | Buoc | Muc tieu |
 |---|---|
 | Snapshot | Dong goi SQLite ma hoa |
-| GitHub Releases | Luu tru |
+| GitHub repo + Actions | Nhan `git push`, publish Release `latest-snapshot` |
 | Hub | Tai + giai ma + tong hop |
 
 ---
@@ -171,13 +171,13 @@ ASCII art  →  Mermaid  →  SVG
 
 | Buoc | Muc tieu (tom tat) |
 |---|---|
-| 1 | Hub Admin: repo + PAT + invite |
+| 1 | Hub Admin: repo + deploy key + workflow + invite |
 | 2 | Cai dat tram (Edge tren Windows) |
 | 3 | Kich hoat tram lan dau: invite code / du lieu / PIN |
 | 4 | Van hanh hang ngay (tiep nhan, hang doi, lam sang, ket qua) |
 | 5 | Bao cao + audit **tai tram** |
 | 6 | Tao snapshot: SQLite → `.db.enc` |
-| 7 | Upload snapshot (GitHub Releases) |
+| 7 | Push snapshot vao repo; GitHub Actions tao/cap nhat Release |
 | 8 | Hub tai snapshot tu cac repo tram |
 | 9 | Hub: giai ma → tong hop DuckDB |
 | 10 | **Dau ra 1:** bao cao cap tinh (Excel / PDF / Parquet) |

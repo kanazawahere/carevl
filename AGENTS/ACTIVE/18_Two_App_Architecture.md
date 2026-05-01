@@ -29,7 +29,7 @@ Stack:
 Feature:
 - Kich hoat tram lan dau (Invite Code: du lieu + PIN)
 - 10 chuc nang sidebar
-- Active Sync upload snapshot len GitHub Releases
+- Active Sync: git push snapshot vao repo; GitHub Actions publish Release
 - Offline-first, PIN authentication
 
 Deployment:
@@ -72,7 +72,8 @@ Auth Hub:
 
 ### So do
 He sinh thai:
-- Edge app moi tram upload snapshot len GitHub Releases
+- Edge app moi tram push snapshot vao repo bang SSH deploy key
+- GitHub Actions trong repo publish Release `latest-snapshot`
 - Hub app download tat ca snapshot de aggregate
 - Sau aggregate, **hai nhanh dau ra** chuan: bao cao cap tinh (10) va lien thong batch VNEID/SKDT (11) — xem [26. Visualization Catalog](26_Visualization.md) / `overview_end_to_end.svg`
 - Khong co real-time sync; chi pull khi can
@@ -178,8 +179,8 @@ Hub:
 6. **(Planned)** Cai optional `streamlit`, chay `carevl-hub gui` tren may Admin (xem [22](22_Deployment_Guide.md), [29](29_Hub_Operator_Gui_Streamlit.md))
 
 ### Tach bao mat
-- Edge PAT: chi `1` repo
-- Hub PAT: nhieu repo, quyen cao hon
+- Edge deploy key: chi `1` repo
+- Hub PAT: nam tren may Hub, quyen doc/quan tri repo cao hon
 - Edge chi thay `1` tram
 - Hub thay tat ca tram
 - Edge offline-first; Hub online-required
@@ -211,7 +212,8 @@ Monorepo hai app giu code dung chung o `shared/`, giu doc tap trung, va de refac
 ## Related Documents
 - [01. FastAPI Core Architecture](01_FastAPI_Core.md)
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](07_active_sync_protocol.md)
-- [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](15_Hub_Aggregation.md)
+- [34. Active Sync via Git Push and GitHub Actions](34_Active_Sync_Via_Git_Push_And_Actions.md)
 - [26. Visualization Catalog: SVG, Mermaid & Tables](26_Visualization.md) (E2E buoc 1–11, fork dau ra Hub)
 - [29. Hub Operator GUI (Streamlit)](29_Hub_Operator_Gui_Streamlit.md)

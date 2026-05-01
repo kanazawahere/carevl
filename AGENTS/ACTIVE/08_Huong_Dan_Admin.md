@@ -117,5 +117,5 @@ Quan ly theo tram giup ro trach nhiem du lieu, de truy vet, va de tong hop. Chec
 ## Related Documents
 - [10. Quy che van hanh](10_Quy_Che_Van_Hanh.md)
 - [14. Bootstrap Infrastructure: One-Liner Setup](14_Bootstrap_Infrastructure.md)
-- [17. Invite Code Authentication: Fine-grained PAT Provisioning](17_Invite_Code_Authentication.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
