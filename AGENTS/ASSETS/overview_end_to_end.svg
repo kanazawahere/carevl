@@ -19,12 +19,12 @@
   </defs>
 
   <text x="40" y="42" class="title">CareVL End-to-End Workflow (Overview)</text>
-  <text x="40" y="68" class="subtitle">Hub Admin provisioning &#x2192; Station setup &#x2192; Daily ops &#x2192; Snapshot &#x2192; GitHub &#x2192; Hub pipeline &#x2192; VNEID + Reports</text>
+  <text x="40" y="68" class="subtitle">Hub Admin provisioning &#x2192; Station setup &#x2192; Daily ops &#x2192; Snapshot push &#x2192; GitHub Actions + Releases &#x2192; Hub pipeline &#x2192; VNEID + Reports</text>
 
   <!-- Row 1: Station-side -->
   <rect x="40"   y="100" width="220" height="70" rx="10" ry="10" class="box sectionA"/>
   <text x="58"  y="128" class="label">1) Hub Admin</text>
-  <text x="58"  y="148" class="small">Repo + PAT + Invite Code</text>
+  <text x="58"  y="148" class="small">Repo + deploy key + workflow + invite</text>
 
   <rect x="300"  y="100" width="220" height="70" rx="10" ry="10" class="box sectionA"/>
   <text x="318" y="128" class="label">2) Station install</text>
@@ -49,7 +49,7 @@
 
   <rect x="470"  y="290" width="240" height="80" rx="10" ry="10" class="box sectionC"/>
   <text x="490" y="322" class="label">7) Upload snapshot</text>
-  <text x="490" y="344" class="small">GitHub Releases asset</text>
+  <text x="490" y="344" class="small">Push repo &#x2192; Actions publish Release</text>
 
   <rect x="770"  y="290" width="240" height="80" rx="10" ry="10" class="box sectionC"/>
   <text x="790" y="322" class="label">8) Hub download</text>

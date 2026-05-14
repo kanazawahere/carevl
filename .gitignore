@@ -78,3 +78,7 @@ htmlcov/
 .env
 # Hub Streamlit operator — optional local secrets (never commit)
 .carevl_operator_local.json
+
+# Hub runtime data and local databases
+hub/hub_data/
+*.db

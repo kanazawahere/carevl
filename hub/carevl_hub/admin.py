@@ -24,14 +24,15 @@ def encode_invite_code(
     """
     Encode station data into invite code.
 
-    Provide either pat (Classic PAT) or ssh_private_key (deploy key).
+    - pat: Classic PAT (legacy git auth)
+    - ssh_private_key: SSH deploy key (git clone/push)
+    Upload Release dùng GitHub Actions trong repo — không cần PAT trên trạm.
     """
     data = {
         "station_id": station_id,
         "station_name": station_name,
         "repo_url": repo_url,
     }
-
     if pat:
         data["pat"] = pat
     if ssh_private_key:
@@ -49,17 +50,22 @@ def generate_single_code(
     station_id: str = typer.Option(..., help="Station ID (e.g., TRAM_001)"),
     station_name: str = typer.Option(..., help="Station name (e.g., Trạm Y Tế Xã A)"),
     repo_url: str = typer.Option(..., help="GitHub repo URL"),
-    pat: str = typer.Option(..., help="GitHub PAT (fine-grained)"),
+    pat: Optional[str] = typer.Option(None, help="GitHub PAT (legacy invite auth)"),
+    ssh_private_key: Optional[str] = typer.Option(None, help="SSH deploy key private key"),
     encryption_key: Optional[str] = typer.Option(None, help="Encryption key (optional)"),
     output: Optional[Path] = typer.Option(None, help="Save to file instead of stdout")
 ):
     """Generate single invite code for a station"""
+    if not pat and not ssh_private_key:
+        typer.echo("❌ Provide either --pat or --ssh-private-key", err=True)
+        raise typer.Exit(1)
     
     invite_code = encode_invite_code(
         station_id=station_id,
         station_name=station_name,
         repo_url=repo_url,
         pat=pat,
+        ssh_private_key=ssh_private_key,
         encryption_key=encryption_key
     )
     
@@ -178,11 +184,14 @@ def validate_code(
         data = json.loads(json_str)
         
         # Validate required fields
-        required = ['station_id', 'station_name', 'repo_url', 'pat']
+        required = ['station_id', 'station_name', 'repo_url']
         missing = [f for f in required if f not in data]
         
         if missing:
             typer.echo(f"❌ Missing required fields: {', '.join(missing)}", err=True)
+            raise typer.Exit(1)
+        if "pat" not in data and "ssh_private_key" not in data:
+            typer.echo("❌ Invite code must contain pat or ssh_private_key", err=True)
             raise typer.Exit(1)
         
         # Display decoded data
@@ -191,7 +200,10 @@ def validate_code(
         typer.echo(f"Station ID: {data['station_id']}")
         typer.echo(f"Station Name: {data['station_name']}")
         typer.echo(f"Repo URL: {data['repo_url']}")
-        typer.echo(f"PAT: {data['pat'][:10]}... (hidden)")
+        if 'ssh_private_key' in data and data['ssh_private_key']:
+            typer.echo("Auth: SSH deploy key (hidden)")
+        else:
+            typer.echo(f"PAT: {data['pat'][:10]}... (hidden)")
         
         if 'encryption_key' in data and data['encryption_key']:
             typer.echo(f"Encryption Key: {data['encryption_key'][:10]}... (hidden)")

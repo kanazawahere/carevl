@@ -17,14 +17,17 @@ Dung man hinh `GET /admin/backups` cho Persona D quan ly snapshot va sync.
 
 - Cho phep sao luu thu cong.
 - Hien trang thai dong bo tu dong.
-- Nen DB SQLite, ma hoa AES, day len GitHub Releases.
+- Nen DB SQLite, ma hoa AES, push file vao repo `snapshots/` bang SSH deploy key.
+- GitHub Actions trong repo tu dong tao/cap nhat GitHub Release `latest-snapshot`.
 - Theo doi vong doi snapshot de Hub lay ve va giai ma.
 
 ## Rationale
-Snapshot ma hoa giu an toan du lieu khi roi khoi Edge. GitHub Releases dong vai kho luu trung gian don gian, khong can dung server rieng.
+Snapshot ma hoa giu an toan du lieu khi roi khoi Edge. Tranh de PAT tren may tram giam rui ro lo credential; deploy key gioi han theo repo, con GitHub Actions dung `GITHUB_TOKEN` de publish Release.
 
 ## Related Endpoints
 - `GET /admin/backups`
+- `POST /sync/snapshot/create`
+- `POST /sync/snapshot/upload`
 
 ## FHIR/IHE Mapping
 - Resources: khong map truc tiep FHIR; tac dong cap DB SQLite va snapshot
@@ -38,6 +41,8 @@ Snapshot ma hoa giu an toan du lieu khi roi khoi Edge. GitHub Releases dong vai 
 ## Related Documents
 - [Sidebar UI Architecture](sidebar_ui.md)
 - [07. Active Sync Protocol: The Encrypted SQLite Blob](../ACTIVE/07_active_sync_protocol.md)
+- [31. Snapshot Upload via GitHub Actions](../ACTIVE/31_Snapshot_Upload_Via_GitHub_Actions.md)
+- [32. Hub Download & Process After GitHub Actions Release](../ACTIVE/32_Hub_Download_And_Process_After_Actions.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](../ACTIVE/15_Hub_Aggregation.md)
 - [18. Two-App Architecture: Edge vs Hub](../ACTIVE/18_Two_App_Architecture.md)
 - [26. Visualization Catalog](../ACTIVE/26_Visualization.md)

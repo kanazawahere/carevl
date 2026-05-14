@@ -1,6 +1,7 @@
-"""Git operations for station provisioning"""
+"""Git operations for station provisioning and snapshot sync."""
 
 import os
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -76,6 +77,11 @@ class GitOperations:
         Provide exactly one of pat or ssh_private_key.
         """
         try:
+            # Backward compatibility: some legacy callers still pass
+            # clone_repo(repo_url, pat, repo_dir).
+            if isinstance(target_dir, str) and isinstance(pat, Path):
+                target_dir, pat = pat, target_dir
+
             target_dir.parent.mkdir(parents=True, exist_ok=True)
 
             if ssh_private_key:
@@ -197,6 +203,108 @@ class GitOperations:
 
         except subprocess.TimeoutExpired:
             return False, "Git push timeout (60s)"
+        except Exception as e:
+            return False, f"Unexpected error: {e}"
+
+    @staticmethod
+    def push_snapshot_file(
+        repo_dir: Path,
+        snapshot_path: Path,
+        ssh_private_key: str | None = None,
+        pat: str | None = None,
+    ) -> Tuple[bool, str]:
+        """
+        Copy snapshot and sidecar into repo snapshots/ then commit + push.
+        """
+        try:
+            if not snapshot_path.exists():
+                return False, f"Snapshot not found: {snapshot_path}"
+
+            snapshots_dir = repo_dir / "snapshots"
+            snapshots_dir.mkdir(parents=True, exist_ok=True)
+
+            dest_snapshot = snapshots_dir / snapshot_path.name
+            shutil.copy2(snapshot_path, dest_snapshot)
+            tracked_paths = [str(dest_snapshot.relative_to(repo_dir))]
+
+            sidecar_path = snapshot_path.with_suffix("").with_suffix(".json")
+            if sidecar_path.exists():
+                dest_sidecar = snapshots_dir / sidecar_path.name
+                shutil.copy2(sidecar_path, dest_sidecar)
+                tracked_paths.append(str(dest_sidecar.relative_to(repo_dir)))
+
+            subprocess.run(
+                ["git", "config", "user.name", "CareVL Edge"],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            subprocess.run(
+                ["git", "config", "user.email", "carevl-edge@local.invalid"],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+
+            add_result = subprocess.run(
+                ["git", "add", *tracked_paths],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=20,
+            )
+            if add_result.returncode != 0:
+                return False, f"Git add failed: {add_result.stderr}"
+
+            commit_result = subprocess.run(
+                ["git", "commit", "-m", f"Add snapshot {snapshot_path.name}"],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=20,
+            )
+            if commit_result.returncode != 0:
+                stderr = (commit_result.stderr or "").strip()
+                stdout = (commit_result.stdout or "").strip()
+                if "nothing to commit" in stderr.lower() or "nothing to commit" in stdout.lower():
+                    return True, "Snapshot already synced"
+                return False, f"Git commit failed: {stderr or stdout}"
+
+            if ssh_private_key:
+                env, tmp_key = GitOperations._ssh_env(ssh_private_key)
+                try:
+                    result = subprocess.run(
+                        ["git", "push"],
+                        cwd=repo_dir,
+                        capture_output=True,
+                        text=True,
+                        timeout=60,
+                        env=env,
+                    )
+                finally:
+                    Path(tmp_key).unlink(missing_ok=True)
+            else:
+                env = {
+                    "GIT_ASKPASS": "echo",
+                    "GIT_USERNAME": "x-access-token",
+                    "GIT_PASSWORD": pat or "",
+                }
+                result = subprocess.run(
+                    ["git", "push"],
+                    cwd=repo_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                    env=env,
+                )
+
+            if result.returncode == 0:
+                return True, "Snapshot pushed successfully"
+            return False, f"Git push failed: {result.stderr}"
+        except subprocess.TimeoutExpired:
+            return False, "Git snapshot push timeout"
         except Exception as e:
             return False, f"Unexpected error: {e}"
 

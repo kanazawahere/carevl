@@ -10,6 +10,7 @@ MVP **ba tab** (cau hinh session / checklist / health) + lenh `carevl-hub gui` *
 - Hub hien la **Typer CLI** (`carevl-hub`); nhieu lenh (`download`, `decrypt`, …) con **TODO**.
 - Admin tinh van hanh tren **laptop Windows**, nhieu nguoi can **giam lenh shell** va **hien thi trang thai** (tien trinh, loi) ro hon terminal.
 - `streamlit` nam trong `hub` **dependencies** chinh (de `carevl-hub gui` sau `uv sync`); [18](18_Two_App_Architecture.md) mo ta Hub CLI + GUI.
+- Sau [30](30_Hub_Auto_Provisioning.md) va [31](31_Snapshot_Upload_Via_GitHub_Actions.md), Hub GUI dong vai tro tao repo tram, deploy key, va workflow release snapshot.
 
 ## Decision
 
@@ -37,8 +38,9 @@ MVP **ba tab** (cau hinh session / checklist / health) + lenh `carevl-hub gui` *
 ### 5. Pham vi MVP (**da lam**)
 
 1. Tab **Cau hinh**: PAT / org / `OUTPUT_DIR` / encryption key — **session** + masked summary + xoa session + **ghi/doc file JSON cuc bo** (tuy chon).
-2. Tab **Tien trinh**: checklist (noi dung inline + huong noi pipeline); placeholder download (chua noi code).
-3. Tab **Health:** `carevl-hub` version, CWD, OUTPUT_DIR, masked session.
+2. Tab **Tao ma kich hoat**: tao repo + deploy key + workflow `.github/workflows/release-snapshot.yml` + invite code.
+3. Tab **Tien trinh**: checklist (noi dung inline + huong noi pipeline); placeholder download (chua noi code).
+4. Tab **Health:** `carevl-hub` version, CWD, OUTPUT_DIR, masked session.
 
 **Sau MVP:** noi day cac buoc download → decrypt → aggregate → report bang UI; bieu do tu DuckDB/Parquet.
 
@@ -62,6 +64,11 @@ MVP **ba tab** (cau hinh session / checklist / health) + lenh `carevl-hub gui` *
 - [18. Two-App Architecture: Edge vs Hub](18_Two_App_Architecture.md)
 - [15. Hub Aggregation: DuckDB Analytics Pipeline](15_Hub_Aggregation.md)
 - [22. Deployment Guide: Edge & Hub](22_Deployment_Guide.md)
+- [30. Hub Auto-Provisioning: Device Flow + Classic PAT](30_Hub_Auto_Provisioning.md)
+- [31. Snapshot Upload via GitHub Actions](31_Snapshot_Upload_Via_GitHub_Actions.md)
+- [32. Hub Download & Process After GitHub Actions Release](32_Hub_Download_And_Process_After_Actions.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
+- [34. Active Sync via Git Push and GitHub Actions](34_Active_Sync_Via_Git_Push_And_Actions.md)
 - [26. Visualization Catalog](26_Visualization.md) — `hub_app_architecture.svg`, `hub_operator_config_fields.svg` (nguon tung o cau hinh GUI)
 - [FEATURE: Hub Operator GUI](../FEATURES/hub_operator_gui.md)
 - [08. Huong dan Admin](08_Huong_Dan_Admin.md) — checklist van hanh Hub

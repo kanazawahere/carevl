@@ -30,16 +30,16 @@
     <line x1="310" y1="155" x2="340" y2="155" stroke="#92400e" stroke-width="3" marker-end="url(#arrowhead)"/>
     
     <rect x="340" y="125" width="240" height="60" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" rx="5" filter="url(#shadow)"/>
-    <text x="460" y="150" text-anchor="middle" fill="white" font-size="13" font-weight="bold">2. Generate PATs</text>
-    <text x="460" y="168" text-anchor="middle" fill="white" font-size="11">Fine-grained (1 repo)</text>
-    <text x="460" y="183" text-anchor="middle" fill="white" font-size="10">Contents: Read/Write</text>
+    <text x="460" y="150" text-anchor="middle" fill="white" font-size="13" font-weight="bold">2. Lưu Admin PAT</text>
+    <text x="460" y="168" text-anchor="middle" fill="white" font-size="11">Classic PAT cho Hub GUI</text>
+    <text x="460" y="183" text-anchor="middle" fill="white" font-size="10">Tạo repo / deploy key / workflow</text>
     
     <line x1="580" y1="155" x2="610" y2="155" stroke="#92400e" stroke-width="3" marker-end="url(#arrowhead)"/>
     
     <rect x="610" y="125" width="240" height="60" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" rx="5" filter="url(#shadow)"/>
     <text x="730" y="150" text-anchor="middle" fill="white" font-size="13" font-weight="bold">3. Export Invite Codes</text>
     <text x="730" y="168" text-anchor="middle" fill="white" font-size="11">Base64 JSON</text>
-    <text x="730" y="183" text-anchor="middle" fill="white" font-size="10">{PAT, repo_url, station_name}</text>
+    <text x="730" y="183" text-anchor="middle" fill="white" font-size="10">{ssh_private_key, repo_url, station_name}</text>
     
     <line x1="850" y1="155" x2="880" y2="155" stroke="#92400e" stroke-width="3" marker-end="url(#arrowhead)"/>
     
@@ -63,7 +63,7 @@
     <text x="190" y="300" text-anchor="middle" fill="white" font-size="13" font-weight="bold">1. Nhập Invite Code</text>
     <text x="190" y="320" text-anchor="middle" fill="white" font-size="11">Paste code từ Zalo</text>
     <text x="190" y="335" text-anchor="middle" fill="white" font-size="10">App tự decode:</text>
-    <text x="190" y="348" text-anchor="middle" fill="white" font-size="10">{PAT, repo_url, station_name}</text>
+    <text x="190" y="348" text-anchor="middle" fill="white" font-size="10">{ssh_private_key, repo_url, station_name}</text>
     
     <!-- Arrow -->
     <line x1="310" y1="315" x2="340" y2="315" stroke="#1e40af" stroke-width="3" marker-end="url(#arrowhead)"/>
@@ -82,8 +82,8 @@
     <rect x="610" y="275" width="240" height="80" fill="#3b82f6" stroke="#2563eb" stroke-width="2" rx="5" filter="url(#shadow)"/>
     <text x="730" y="300" text-anchor="middle" fill="white" font-size="13" font-weight="bold">3. New / Restore</text>
     <text x="730" y="320" text-anchor="middle" fill="white" font-size="11">• New: Tạo DB trống</text>
-    <text x="730" y="335" text-anchor="middle" fill="white" font-size="10">• Restore: Git pull snapshot</text>
-    <text x="730" y="348" text-anchor="middle" fill="white" font-size="10">từ GitHub Releases</text>
+    <text x="730" y="335" text-anchor="middle" fill="white" font-size="10">• Restore: clone repo + lấy</text>
+    <text x="730" y="348" text-anchor="middle" fill="white" font-size="10">snapshot mới nhất trong repo</text>
     
     <!-- Arrow -->
     <line x1="850" y1="315" x2="880" y2="315" stroke="#1e40af" stroke-width="3" marker-end="url(#arrowhead)"/>

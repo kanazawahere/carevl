@@ -1,21 +1,26 @@
 from fastapi import APIRouter, HTTPException
 import os
-from app.services.snapshot import perform_snapshot
+from app.services.snapshot import perform_snapshot, perform_snapshot_and_upload
 
 router = APIRouter()
 
 @router.post("/sync/snapshot/create")
 def create_snapshot():
-    """
-    Creates an encrypted snapshot of the current local SQLite database.
-    This is triggered by the Site Operator to lock data and prepare for sync.
-    """
+    """Tạo snapshot mà không upload."""
     snapshot_path = perform_snapshot()
     if not snapshot_path:
         raise HTTPException(status_code=500, detail="Failed to create snapshot. Check logs.")
-
     return {
         "status": "success",
         "message": "Snapshot created and encrypted successfully.",
-        "snapshot_file": os.path.basename(snapshot_path)
+        "snapshot_file": os.path.basename(snapshot_path),
     }
+
+
+@router.post("/sync/snapshot/upload")
+def create_and_upload_snapshot():
+    """Tạo snapshot + upload lên GitHub Releases."""
+    result = perform_snapshot_and_upload()
+    if result["status"] == "error":
+        raise HTTPException(status_code=500, detail=result.get("error"))
+    return result

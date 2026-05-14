@@ -355,7 +355,7 @@ uv run carevl-hub --version
 ### Edge App
 - Store `.env` securely (contains encryption key)
 - Backup `data/` regularly
-- Use Windows Credential Manager for PAT
+- Use Windows Credential Manager for station credential (SSH deploy key first, PAT only legacy)
 - Enable Windows Firewall
 
 ### Hub CLI
@@ -372,11 +372,14 @@ uv run carevl-hub --version
 - Check `logs/carevl.log` for errors
 - Monitor disk space in `data/`
 - Check sync status in UI
+- Neu `Gui ve Hub` fail, check git push va repo access
+- Neu git push OK nhung Hub chua thay release moi, check GitHub Actions trong repo tram
 
 ### Hub CLI
 - Monitor scheduled task execution
 - Check output reports for data quality issues
 - Review audit logs for anomalies
+- Check release freshness per repo, khong chi check commit activity
 
 ## Rationale
 Deployment guide chuan giup:
@@ -389,3 +392,6 @@ Deployment guide chuan giup:
 - [14. Bootstrap Infrastructure: One-Liner Setup](14_Bootstrap_Infrastructure.md)
 - [16. Testing Guidelines](16_Testing_Guidelines.md)
 - [20. Monorepo Migration Complete](20_Monorepo_Migration_Complete.md)
+- [32. Hub Download & Process After GitHub Actions Release](32_Hub_Download_And_Process_After_Actions.md)
+- [33. Invite Code Authentication: Deploy Key First](33_Invite_Code_Authentication_Deploy_Key_First.md)
+- [34. Active Sync via Git Push and GitHub Actions](34_Active_Sync_Via_Git_Push_And_Actions.md)
